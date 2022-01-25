@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: pivot-configmap
+  name: pivot-configmap
+data:
+  config.json: |
+        {  }

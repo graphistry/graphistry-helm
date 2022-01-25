@@ -1,0 +1,131 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: caddy
+  name: caddy
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: caddy
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        autoheal: "true"
+        kompose.cmd: kompose --file ./compose/release.yml convert -c
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: caddy
+    spec:
+      containers:
+        - env:
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          image: graphistry/caddy:v2.38.7-orgs-gpu-universal ##{{.Values.azurecontainerregistry.name}}/{{.Values.caddy.repository}}:{{.Values.tag}}-universal
+          livenessProbe:
+            exec:
+              command:
+                - sh 
+                - -c 
+                - 'curl -f http://localhost/caddy/health/'
+
+          name: caddy
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          resources: {}
+          volumeMounts:
+            - mountPath: /etc/caddy/Caddyfile
+              name: caddy-config
+              subPath: Caddyfile
+            - mountPath: /config
+              name: caddy-claim1
+            - mountPath: /data
+              name: caddy-claim2
+      restartPolicy: {{ .Values.restartPolicy }}
+      volumes:
+        - name: caddy-config
+          configMap:
+            name: caddy-config
+            items:
+              - key: Caddyfile
+                path: Caddyfile
+                mode: 0644
+        - name: caddy-claim1
+          persistentVolumeClaim:
+            claimName: caddy-claim1
+        - name: caddy-claim2
+          persistentVolumeClaim:
+            claimName: caddy-claim2
+status: {}
+
+
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: caddy
+  name: caddy
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+    - name: "443"
+      port: 443
+      targetPort: 443
+  selector:
+    io.kompose.service: caddy
+status:
+  loadBalancer: {}
+#volumes
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: caddy-claim1
+  name: caddy-claim1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: caddy-claim2
+  name: caddy-claim2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}

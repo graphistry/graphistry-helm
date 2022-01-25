@@ -3,7 +3,7 @@ entries:
   Graphistry Helm Chart:
   - apiVersion: v1
     created: "2022-01-25T15:15:48.364259218-06:00"
-    description: A generated Helm Chart for Graphistry from Skippbox Kompose
+    description: Graphistry Helm Charts
     digest: dde92f3e6bf29b1798a612128dedce19c665a0dabf96e7aa3d19be577477e1b0
     keywords:
     - Graphistry

@@ -1,0 +1,141 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notebook
+  name: notebook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: notebook
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      annotations:
+        autoheal: "true"
+        kompose.cmd: kompose --file ./compose/release.yml convert -c
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: notebook
+    spec:
+      containers:
+        - env:
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          image: graphistry/jupyter-notebook:v2.38.7-orgs-gpu-11.0 ###{{.Values.azurecontainerregistry.name}}/{{.Values.notebook.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
+          livenessProbe:
+            exec:
+              command:
+                - sh 
+                - -c 
+                - 'curl -f -s -o /dev/null http://localhost:8888/notebook/api'
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 120
+            timeoutSeconds: 30
+          name: notebook
+          ports:
+
+            - containerPort: 8888
+          resources: {}
+          volumeMounts:
+            - mountPath: /home/graphistry/notebooks
+              name: notebook-claim0
+            - mountPath: /dask-shared
+              name: notebook-claim1
+            - mountPath: /home/graphistry/dask-shared
+              name: notebook-claim2
+      restartPolicy: {{ .Values.restartPolicy }}
+      volumes:
+        - name: notebook-claim0
+          persistentVolumeClaim:
+            claimName: notebook-claim0
+        - name: notebook-claim1
+          persistentVolumeClaim:
+            claimName: notebook-claim1
+        - name: notebook-claim2
+          persistentVolumeClaim:
+            claimName: notebook-claim2
+status: {}
+
+
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notebook
+  name: notebook
+spec:
+  ports:
+    - name: "8888"
+      port: 8888
+      targetPort: 8888
+  selector:
+    io.kompose.service: notebook
+status:
+  loadBalancer: {}
+
+---
+#volumes
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notebook-claim0
+  name: notebook-claim0
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notebook-claim1
+  name: notebook-claim1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notebook-claim2
+  name: notebook-claim2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}

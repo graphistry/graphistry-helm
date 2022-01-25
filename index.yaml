@@ -2,9 +2,9 @@ apiVersion: v1
 entries:
   Graphistry Helm Chart:
   - apiVersion: v1
-    created: "2022-01-25T15:12:18.256100737-06:00"
-    description: A generated Helm Chart for Graphistry 
-    digest: b8585f38dfc9681f2da157ec33810b263f404b9a4aa5332bbe2c5ae9a40632ec
+    created: "2022-01-25T15:15:48.364259218-06:00"
+    description: A generated Helm Chart for Graphistry from Skippbox Kompose
+    digest: dde92f3e6bf29b1798a612128dedce19c665a0dabf96e7aa3d19be577477e1b0
     keywords:
     - Graphistry
     - Helm
@@ -12,4 +12,4 @@ entries:
     urls:
     - https://graphistry.github.io/graphistry-helm/Graphistry%20Helm%20Chart-0.0.1.tgz
     version: 0.0.1
-generated: "2022-01-25T15:12:18.255175976-06:00"
+generated: "2022-01-25T15:15:48.363400269-06:00"

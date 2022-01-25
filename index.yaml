@@ -1,0 +1,15 @@
+apiVersion: v1
+entries:
+  Graphistry Helm Chart:
+  - apiVersion: v1
+    created: "2022-01-25T15:12:18.256100737-06:00"
+    description: A generated Helm Chart for Graphistry 
+    digest: b8585f38dfc9681f2da157ec33810b263f404b9a4aa5332bbe2c5ae9a40632ec
+    keywords:
+    - Graphistry
+    - Helm
+    name: Graphistry Helm Chart
+    urls:
+    - https://graphistry.github.io/graphistry-helm/Graphistry%20Helm%20Chart-0.0.1.tgz
+    version: 0.0.1
+generated: "2022-01-25T15:12:18.255175976-06:00"

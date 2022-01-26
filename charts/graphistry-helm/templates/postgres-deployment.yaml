@@ -33,7 +33,7 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: graphistry/graphistry-postgres:v2.38.7-orgs-gpu-universal ##{{.Values.azurecontainerregistry.name}}/{{.Values.postgres.repository}}:{{.Values.tag}}-universal
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.postgres.repository}}:{{.Values.tag}}-universal
           livenessProbe:
             exec:
               command:

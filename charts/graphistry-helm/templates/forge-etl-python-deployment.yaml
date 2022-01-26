@@ -33,7 +33,7 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: graphistry/etl-server-python:v2.38.10-11.0 ##{{.Values.azurecontainerregistry.name}}/{{.Values.forgeetlpython.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.forgeetlpython.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
           livenessProbe:
             exec:
               command:

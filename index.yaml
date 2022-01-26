@@ -8,7 +8,7 @@ entries:
     keywords:
     - Graphistry
     - Helm
-    name: Graphistry Helm Chart
+    name: Graphistry-Helm-Chart
     urls:
     - https://graphistry.github.io/graphistry-helm/Graphistry%20Helm%20Chart-0.0.1.tgz
     version: 0.0.1

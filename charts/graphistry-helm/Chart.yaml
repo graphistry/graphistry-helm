@@ -1,6 +1,6 @@
 name: Graphistry Helm Chart
 description: A generated Helm Chart for Graphistry from Skippbox Kompose
-version: 0.0.1
+version: 0.0.2
 apiVersion: v1
 keywords:
   - Graphistry

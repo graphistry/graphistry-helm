@@ -11,7 +11,7 @@ azurecontainerregistry:
 
 #cuda version
 cuda:
-  version: 11.0
+  version: "11.0"
 
 #tag for the docker image
 tag: latest

@@ -11,5 +11,5 @@ entries:
     name: Graphistry-Helm-Chart
     urls:
     - https://graphistry.github.io/graphistry-helm/Graphistry%20Helm%20Chart-0.0.1.tgz
-    version: 0.0.1
+    version: 0.0.2
 generated: "2022-01-25T15:15:48.363400269-06:00"

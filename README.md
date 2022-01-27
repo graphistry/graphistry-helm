@@ -17,3 +17,6 @@ and then run:
 
 ```
 ` bash acr-bootstrap/import-image-into-acr-from-dockerhub.sh `
+
+
+> **Note:** Be sure to change the azurecontainerregistry value in values.yaml to the name of your acr.

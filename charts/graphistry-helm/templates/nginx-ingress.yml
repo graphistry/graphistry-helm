@@ -1,10 +1,10 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+{{- if .Values.ingress.management.annotations }}
   annotations:
-    kompose.cmd: kompose --file ./compose/release.yml convert -c
-    kompose.service.expose: "true"
-    kompose.version: 1.26.0 (40646f47)
+{{ toYaml .Values.ingress.management.annotations | indent 4 }}
+{{- end }}
   creationTimestamp: null
   labels:
     io.kompose.service: nginx

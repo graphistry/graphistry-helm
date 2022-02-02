@@ -33,7 +33,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.notebook.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.notebook.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+          imagePullPolicy: {{.Values.imagePullPolicy }}          
           livenessProbe:
             exec:
               command:
@@ -67,6 +68,8 @@ spec:
         - name: notebook-claim2
           persistentVolumeClaim:
             claimName: notebook-claim2
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }}  
 status: {}
 
 

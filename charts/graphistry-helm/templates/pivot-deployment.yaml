@@ -33,7 +33,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.pivot.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+          imagePullPolicy: {{.Values.imagePullPolicy }}       
           livenessProbe:
             exec:
               command:
@@ -62,6 +63,8 @@ spec:
                 path: config.json
 
       restartPolicy: {{ .Values.restartPolicy }}
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }}  
 status: {}
 
 ---

@@ -1,6 +1,12 @@
+#internal LoadBalancer without a public IP for various cloud services
+ingress:
+  management:
+    annotations:
+      #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      #cloud.google.com/load-balancer-type: "Internal"
+      #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
-#gpu is the amount of GPUs to allocate to the cluster.
-#gpu: 1
+
 
 #restart policy
 restartPolicy: Always
@@ -9,6 +15,12 @@ restartPolicy: Always
 azurecontainerregistry:
   name: acrgraphistryk8s.azurecr.io
 
+#image pull secrets name
+imagePullSecrets: acr-secret
+
+#image pull policy
+imagePullPolicy: IfNotPresent #could also be Always
+
 #cuda version
 cuda:
   version: "11.0"
@@ -16,6 +28,8 @@ cuda:
 #tag for the docker image
 tag: latest
 
+#graphitry tag for the docker image
+graphistry: graphistry
 
 #caddy repository name
 caddy:

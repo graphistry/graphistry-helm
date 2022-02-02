@@ -2,6 +2,17 @@ apiVersion: v1
 entries:
   Graphistry-Helm-Chart:
   - apiVersion: v1
+    created: "2022-02-02T18:15:34.318756165Z"
+    description: Graphistry helm chart
+    digest: 778b8d59e8d7ae21ced1563a8af4ceca2431773b836d504d3ba1c887073fe12c
+    keywords:
+    - Graphistry
+    - Helm
+    name: Graphistry-Helm-Chart
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/Graphistry-Helm-Chart-0.0.3/Graphistry-Helm-Chart-0.0.3.tgz
+    version: 0.0.3
+  - apiVersion: v1
     created: "2022-01-26T22:01:23.083958286Z"
     description: Graphistry helm chart
     digest: 250f462dd27c1adc6f5f44bbfc0ee28ca9d52a08eb8fbeaeec974b47bdccf423
@@ -23,4 +34,4 @@ entries:
     urls:
     - https://github.com/graphistry/graphistry-helm/releases/download/Graphistry-Helm-Chart-0.0.1/Graphistry-Helm-Chart-0.0.1.tgz
     version: 0.0.1
-generated: "2022-01-26T22:01:23.083964886Z"
+generated: "2022-02-02T18:15:34.318768665Z"

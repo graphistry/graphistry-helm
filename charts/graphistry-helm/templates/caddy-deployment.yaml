@@ -34,6 +34,7 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.caddy.repository}}:{{.Values.tag}}-universal
+          imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:
             exec:
               command:
@@ -69,6 +70,8 @@ spec:
         - name: caddy-claim2
           persistentVolumeClaim:
             claimName: caddy-claim2
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }}     
 status: {}
 
 

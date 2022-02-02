@@ -34,6 +34,7 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
+          imagePullPolicy: {{.Values.imagePullPolicy }}         
           livenessProbe:
             exec:
               command:
@@ -54,6 +55,8 @@ spec:
         - name: redis-claim0
           persistentVolumeClaim:
             claimName: redis-claim0
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }}  
 status: {}
 ---
 apiVersion: v1

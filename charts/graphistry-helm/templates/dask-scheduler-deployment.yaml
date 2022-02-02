@@ -44,7 +44,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.daskscheduler.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskscheduler.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+          imagePullPolicy: {{.Values.imagePullPolicy }}           
           livenessProbe:
             exec:
               command:
@@ -73,6 +74,8 @@ spec:
         - name: dask-scheduler-claim1
           persistentVolumeClaim:
             claimName: dask-scheduler-claim1
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }}  
 status: {}
 
 ---

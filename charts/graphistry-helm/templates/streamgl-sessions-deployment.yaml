@@ -33,7 +33,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.streamglsessions.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglsessions.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+          imagePullPolicy: {{.Values.imagePullPolicy }}       
           livenessProbe:
             exec:
               command:
@@ -56,6 +57,8 @@ spec:
         - name: streamgl-sessions-claim0
           persistentVolumeClaim:
             claimName: streamgl-sessions-claim0
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }} 
 status: {}
 ---
 apiVersion: v1

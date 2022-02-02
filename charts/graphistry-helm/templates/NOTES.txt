@@ -33,3 +33,14 @@ VERSION
 tag - default release being deployed is:  {{ .Values.tag }}
 
 To change the tag while deployed set tag to another version that is in your Azure container registry by setting the proper version: helm upgrade {{ .Release.Name }} --set tag=v2.38.10 ./compose/graphistry_helm-release
+
+LOAD BALANCER
+ 
+ INGRESS - default is set to: {{ .Values.ingress.management.annotations }} can be configured for each major cloud service (aws, azure, gcp)
+ just uncomment out the desired configuration on the values.yaml file under ingress.management.annotations.
+ingress:
+  management:
+    annotations:
+      #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
+      #cloud.google.com/load-balancer-type: "Internal"
+      #service.beta.kubernetes.io/aws-load-balancer-internal: "true"

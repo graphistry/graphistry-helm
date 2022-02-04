@@ -42,7 +42,7 @@ spec:
                 - -c
                 - curl -sSf http://localhost:8080/check-workers | jq .status | grep 200 || exit 1
             failureThreshold: 3
-            initialDelaySeconds: 60
+            initialDelaySeconds: 180
             periodSeconds: 120
             timeoutSeconds: 30
           name: streamgl-gpu

@@ -43,17 +43,14 @@ spec:
                 - 'curl -f -s -o /dev/null http://localhost:8000/ht/'
                 
             failureThreshold: 3
-            initialDelaySeconds: 60
+            initialDelaySeconds: 180
             periodSeconds: 120
             timeoutSeconds: 30
           name: nexus
           ports:
             - containerPort: 8080
             - containerPort: 8000
-          resources:
-            limits:
-              cpu: "4"
-              memory: "3000M"    
+          resources: {} 
           volumeMounts:
             - mountPath: /opt/graphistry/apps/core/nexus/staticfiles
               name: local-media-mount

@@ -51,6 +51,7 @@ spec:
           volumeMounts:
             - mountPath: /var/lib/postgresql/data
               name: postgres-data
+              subPath: data
             - mountPath: /backups
               name: postgres-backups
             - mountPath: /var/graphistry/postgres

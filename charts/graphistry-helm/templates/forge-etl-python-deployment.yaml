@@ -42,16 +42,13 @@ spec:
                 - -c
                 - "curl -f http://localhost:8080/cudfhealth && curl -f http://localhost:8080/blazinghealth"
             failureThreshold: 3
-            initialDelaySeconds: 60
+            initialDelaySeconds: 180
             periodSeconds: 120
             timeoutSeconds: 30
           name: forge-etl-python
           ports:
             - containerPort: 8080
-          resources: 
-            limits:
-              cpu: "4"
-              memory: "3000M"
+          resources: {}
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: forge-etl-python-claim0

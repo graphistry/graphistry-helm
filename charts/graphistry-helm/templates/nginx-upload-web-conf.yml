@@ -1,0 +1,20 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: nginx-upload-web-configmap
+  name: nginx-upload-web-config
+data:
+  upload_web.conf: "#Fragment because template var UPLOAD_MAX_SIZE \n\n#Note the inexact
+    match: all /upload/* beyond root-level '/' POST is a file upload\nlocation ~ ^/web/v2/upload/files(.*)$
+    {\n\n    auth_request     /django-json-auth;\n    auth_request_set $auth_status
+    $upstream_status;\n    error_page 401 403 /accounts/login/?next=$request_uri ;\n\n
+    \   client_body_temp_path      /opt/graphistry/data/uploads/ 1 2 3;\n    client_body_in_file_only
+    \  clean; #set to 'clean' instead of 'on' in case upload interrupts or fails?\n
+    \   client_body_buffer_size    10M;\n    client_max_body_size       $UPLOAD_MAX_SIZE;\n\n
+    \   proxy_pass_request_headers on;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \   proxy_set_header X-Real-IP $remote_addr;\n    proxy_set_header Host $http_host;\n
+    \   proxy_set_header X-File-Name $request_body_file;\n\n    proxy_set_body             off;\n
+    \   proxy_redirect             off;\n\n    set $backend               \"http://forge-etl-python.default.svc.cluster.local:8080/upload/files$1?$args\";\n
+    \   proxy_pass                 $backend;\n}\n"

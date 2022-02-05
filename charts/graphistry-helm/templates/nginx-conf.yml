@@ -1,0 +1,531 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: nginx-configmap
+  name: nginx-config
+data:
+  default.conf: "#################\n## Proxy Setup ##\n#################\n\n# Support
+    WebSocket proxying by intelligently setting the `Connection` header passed to
+    the upstream\nmap $http_upgrade $connection_upgrade {\n    default                     Upgrade;\n
+    \   ''                          close;\n}\n\n#proxy_cache_path /etc/nginx/graphistry/cache
+    levels=1:2 use_temp_path=off keys_zone=global_cache:10m inactive=1d max_size=10g;\n\nproxy_cache_path
+    \           /etc/nginx/graphistry/dataset_cache levels=1:2 keys_zone=dataset_tmp_cache:10m
+    inactive=200h use_temp_path=off max_size=10g;\nproxy_cache_path            /etc/nginx/graphistry/session_cache
+    levels=1:2 keys_zone=session_tmp_cache:10m inactive=200h use_temp_path=off max_size=10g;\nproxy_cache_path
+    \           /etc/nginx/graphistry/static_cache levels=1:2 keys_zone=static_tmp_cache:10m
+    inactive=200h use_temp_path=off max_size=10g;\nproxy_cache_key             \"$scheme$request_method$host$request_uri$content_length\";\n\n\n#
+    this is the internal Docker DNS, cache only for 10s\n# routes can use to not block
+    on services (esp. when they may not exist till later)\n\n#resolver 127.0.0.11
+    valid=10s; commented out for k8s\n\nresolver kube-dns.kube-system.svc.cluster.local
+    valid=10s; #k8s requires this resolver\n\nupstream forge-etl {\n    server                      forge-etl:8080;\n
+    \   keepalive                   512;\n}\n\nupstream forge-etl-python {\n    server
+    \                     forge-etl-python:8080;\n    keepalive                   512;\n}\n\nupstream
+    streamgl-gpu {\n    server                      streamgl-gpu:8080;\n    keepalive
+    \                  512;\n}\n\nupstream streamgl-sessions {\n    server                      streamgl-sessions:8080;\n
+    \   keepalive                   512;\n}\n\nupstream streamgl-vgraph-etl {\n    server
+    \                     streamgl-vgraph-etl:8080;\n    keepalive                   512;\n}\n\nserver
+    {\n\n    ###################\n    ## General Setup ##\n    ###################\n\n
+    \   server_tokens               off;\n    server_name                 _;\n    sendfile
+    \                   on;\n    tcp_nopush                  on;\n    tcp_nodelay
+    \                on;\n    proxy_cache_lock            on;\n    proxy_cache_revalidate
+    \     on;\n    proxy_buffering             off;\n    proxy_http_version          1.1;\n
+    \   proxy_connect_timeout       3600;\n    proxy_send_timeout          3600;\n
+    \   proxy_read_timeout          3600;\n    # send_timeout                3600;\n\n
+    \   client_max_body_size        4096M;\n\n    proxy_set_header            Host
+    \             $http_host;\n    proxy_set_header            X-Real-IP         $remote_addr;\n
+    \   proxy_set_header            X-Forwarded-For   $proxy_add_x_forwarded_for;\n
+    \   proxy_set_header            X-Forwarded-Proto $scheme;\n\n    proxy_hide_header
+    X-Powered-By;\n\n    # Support proxying WebSocket connections\n    proxy_set_header
+    \           Upgrade           $http_upgrade;\n    proxy_set_header            Connection
+    \       $connection_upgrade;\n\n    #Base image rebinds to /dev/{stdout,stderr},
+    which docker logs gets \n    access_log  /var/log/nginx/access.log;\n    error_log
+    \  /var/log/nginx/error.log;\n\n    # set_by_lua $session_secret 'return os.getenv(\"OID_SESSION_SECRET\")';\n
+    \   # set_by_lua $session_check_ssi 'return os.getenv(\"OID_SESSION_CHECK_SSI\")';\n
+    \   # set_by_lua $session_name 'return os.getenv(\"OID_SESSION_NAME\")';\n    #
+    set_by_lua $proxy_host 'return os.getenv(\"PROXY_HOST\")';\n    # set_by_lua $proxy_port
+    'return os.getenv(\"PROXY_PORT\")';\n    # set_by_lua $proxy_protocol 'return
+    os.getenv(\"PROXY_PROTOCOL\")';\n\n    location /healthz {\n      return 201;\n
+    \   }\n\n    #####################################\n    ## INTERNAL GATE ##\n
+    \   #####################################\n    # When we fully assume JWT, this
+    check can go away\n\n    #Files: /api/v2/upload/...\n    location /api/v1/internal/
+    {\n        deny all;\n    }\n    location /api/v2/internal/ {\n        deny all;\n
+    \   }\n    location /api/experimental/internal/ {\n        deny all;\n    }\n\n
+    \   #####################################\n    ## Applications ##\n    #####################################\n\n
+    \   root  /opt/graphistry/apps/core/viz/build;\n\n    #Mount custom pages at /usr/share/nginx/html/custom_50x.html\n
+    \   location = /custom_502.html {\n        root /usr/share/nginx/html;\n        internal;\n
+    \   }\n    error_page 502 = /custom_502.html;\n    location /testing_502 {\n        return
+    502;\n    }\n    location = /custom_500.html {\n        root /usr/share/nginx/html;\n
+    \       internal;\n    }\n    error_page 500 = /custom_500.html;\n    location
+    /testing_500 {\n        return 500;\n    }\n\n    error_page 404 /400;\n    error_page
+    503 504 /50x;\n\n    # Redirect '/graph/graph.html' (and only that exact path)
+    to the root index\n    # rewrite  ^/graph/graph.html(\\?.*)?$  /$1  permanent;\n
+    \   # rewrite  ^/graph/index.html(\\?.*)?$  /graph/graph.html$1 permanent;\n\n
+    \   location / {\n        set $backend    \"http://nexus.default.svc.cluster.local:8000$request_uri\";\n
+    \       #set $backend    \"http://nexus:8000$request_uri\"; docker\n        proxy_pass
+    \     $backend;\n    }\n\n    location ~ ^/graph/graph.html(.*)$ {\n        set
+    $backend    \"http://streamgl-viz.default.svc.cluster.local:8080/graph.html$1?$args\";\n
+    \       #set $backend    \"http://streamgl-viz:8080/graph.html$1?$args\";\n        proxy_pass
+    \     $backend;\n    }\n\n    location ~ ^/graph/socket.io(.*)$ {\n        set
+    $backend    \"http://streamgl-viz.default.svc.cluster.local:8080/socket.io$1?$args\";\n
+    \       #set $backend    \"http://streamgl-viz:8080/socket.io$1?$args\";\n        proxy_pass
+    \     $backend;\n    }\n\n    location /streamgl/ {\n        proxy_cache               off;\n
+    \       keepalive_timeout         3600;\n        proxy_send_timeout        3600;\n
+    \       proxy_read_timeout        3600;\n        proxy_connect_timeout     3600;\n
+    \       chunked_transfer_encoding off;\n        proxy_set_header          Connection
+    '';\n        # proxy_set_header          Connection keep-alive;\n        proxy_pass
+    \               http://streamgl-gpu.default.svc.cluster.local/;\n        #proxy_pass
+    \               http://streamgl-gpu/;\n    }\n\n    location /etl {\n        include
+    /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n        client_max_body_size
+    4096M;\n        #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
+    /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
+    /api/check {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \       #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
+    /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
+    /api/encrypt {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \       #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
+    /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
+    /api/decrypt {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \       #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
+    /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
+    /api/v1/etl/vgraph/ {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \       sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
+    \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
+    on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
+    POST;\n        proxy_cache            dataset_tmp_cache;\n        proxy_cache_bypass
+    \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
+    $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl/vgraph/;\n
+    \       proxy_pass             http://forge-etl.default.svc.cluster.local/vgraph/;\n
+    \       include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n
+    \   location /api/v2/etl/vgraph/ {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \       sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
+    \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
+    on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
+    POST;\n        proxy_cache            dataset_tmp_cache;\n        proxy_cache_bypass
+    \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
+    $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl-python/vgraph/;\n
+    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/vgraph/;\n
+    \       include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n
+    \   location /api/v1/etl/shaper/ {\n        sendfile               on;\n        tcp_nopush
+    \            on;\n        tcp_nodelay            on;\n        proxy_cache_lock
+    \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
+    \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
+    \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
+    \            X-Proxy-Cache $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl-python/shaper/;\n
+    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/shaper/;\n
+    \   }\n\n    location /api/v1/etl/datasets/hello/ {\n        sendfile               on;\n
+    \       tcp_nopush             on;\n        tcp_nodelay            on;\n        proxy_cache_lock
+    \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
+    \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
+    \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
+    \            X-Proxy-Cache $upstream_cache_status;\n\n        #set $backend           \"http://forge-etl:8080/vgraph/hello/\";\n
+    \       set $backend           \"http://forge-etl.default.svc.cluster.local:8080/vgraph/hello/\";\n
+    \       proxy_pass              $backend;\n    }\n\n    location /api/v1/etl/datasets/verify/
+    {\n        sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
+    \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
+    on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
+    POST;\n        proxy_cache            dataset_tmp_cache;\n        proxy_cache_bypass
+    \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
+    $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl/vgraph/verify/;\n
+    \       proxy_pass             http://forge-etl.default.svc.cluster.local/vgraph/verify/;\n
+    \   }\n\n    location /api/v1/etl/datasets/ {\n        sendfile               on;\n
+    \       tcp_nopush             on;\n        tcp_nodelay            on;\n        proxy_cache_lock
+    \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
+    \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
+    \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
+    \            X-Proxy-Cache $upstream_cache_status;\n        #proxy_pass             http://forge-etl-python/datasets/;\n
+    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/datasets/;\n
+    \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
+    \    3600;\n        send_timeout           3600;\n    }\n\n    location /api/v1/revisions/session/
+    {\n        #proxy_pass             http://forge-etl-python/revisions/session/;\n
+    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/revisions/session/;\n
+    \       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
+    X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
+    1.1;\n        proxy_redirect off;\n        proxy_buffering off;\n        proxy_set_header
+    Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_read_timeout
+    86400;\n\n    }\n\n    location /api/v1/etl/revision/ {\n        sendfile               on;\n
+    \       tcp_nopush             on;\n        tcp_nodelay            on;\n        proxy_cache_lock
+    \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
+    \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
+    \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
+    \            X-Proxy-Cache $upstream_cache_status;\n        #proxy_pass             http://forge-etl-python/datasets/;\n
+    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/datasets/;\n
+    \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
+    \    3600;\n        send_timeout           3600;\n    }\n\n    location /glsession
+    {\n        sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
+    \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
+    on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
+    POST;\n        proxy_cache            session_tmp_cache;\n        proxy_cache_bypass
+    \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
+    $upstream_cache_status;\n        #proxy_pass             http://streamgl-sessions;\n
+    \       proxy_pass             http://streamgl-sessions.default.svc.cluster.local;\n
+    \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
+    \    3600;\n        send_timeout           3600;\n    }\n\n    location /snapshots
+    {\n        sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
+    \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
+    on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
+    POST;\n        proxy_cache            session_tmp_cache;\n        proxy_cache_bypass
+    \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
+    $upstream_cache_status;\n        #proxy_pass             http://streamgl-sessions;\n
+    \       proxy_pass             http://streamgl-sessions.default.svc.cluster.local;\n
+    \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
+    \    3600;\n        send_timeout           3600;\n    }\n\n    #location /snapshots/svg/
+    {\n    #    proxy_pass         http://streamgl-svg-snapshot/;\n    #}\n\n    #
+    location /zipkin/ {\n    #     proxy_pass  http://zipkin/;\n    # }\n\n    # location
+    /datasets/health {\n    #     proxy_pass            http://streamgl-datasets/health;\n
+    \   # }\n\n    # location /revision/health {\n    #     proxy_pass            http://streamgl-datasets/health;\n
+    \   # }\n\n    location /glsession/health {\n        #set $backend          \"http://streamgl-sessions:8080/health\";\n
+    \       set $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /snapshots/health
+    {\n        #set $backend          \"http://streamgl-sessions:8080/health\";\n
+    \       set $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /forge-etl/health
+    {\n        #set $backend          \"http://forge-etl:8080/health\";\n        set
+    $backend          \"http://forge-etl.default.svc.cluster.local:8080/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /streamgl-vgraph-etl/health
+    {\n        #set $backend          \"http://streamgl-vgraph-etl:8080/health\";\n
+    \       set $backend          \"http://streamgl-vgraph-etl.default.svc.cluster.local:8080/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /streamgl-gpu/primary/health
+    {\n        #set $backend          \"http://streamgl-gpu:8080/health\";\n        set
+    $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /streamgl-gpu/secondary/cpu/health
+    {\n        #set $backend          \"http://streamgl-gpu:8080/health/workers/cpu\";\n
+    \       set $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health/workers/cpu\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /streamgl-gpu/secondary/gpu/health
+    {\n        #set $backend          \"http://streamgl-gpu:8080/health/workers/gpu\";\n
+    \       set $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health/workers/gpu\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /streamgl-viz/health
+    {\n        #set $backend          \"http://streamgl-viz:8080/health\";\n        set
+    $backend          \"http://streamgl-viz.default.svc.cluster.local:8080/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /streamgl-sessions/health
+    {\n        #set $backend          \"http://streamgl-sessions:8080/health\";\n
+    \       set $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /pivot/health {\n
+    \       #set $backend          \"http://pivot:8080/pivot/health\";\n        set
+    $backend          \"http://pivot.default.svc.cluster.local:8080/pivot/health\";\n
+    \       proxy_pass            $backend;\n    }\n\n    location /streamgl-sessions/hello
+    {\n        #set $backend          \"http://streamgl-sessions:8080/hello\";\n        set
+    $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/hello\";\n
+    \       proxy_pass            $backend;\n    }\n\n    #########\n    ## Viz ##\n
+    \   #########\n\n    #FIXME this should be unecessary - does anything use it?\n
+    \   location /static/viz/ {\n        expires 30d;\n        add_header 'Access-Control-Allow-Origin'
+    '*';\n        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n
+    \       add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n        alias /opt/graphistry/apps/core/viz/build/static/viz/;\n
+    \   }\n\n    location /graph/static/viz/ {\n        expires 30d;\n        add_header
+    'Access-Control-Allow-Origin' '*';\n        add_header 'Access-Control-Allow-Methods'
+    'GET, POST, OPTIONS';\n        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n        alias /opt/graphistry/apps/core/viz/build/static/viz/;\n
+    \   }\n\n    #FIXME: this should be unnecessary - viz fontawesome gets placed
+    weirdly\n    location /graph/static/static/viz/ {\n        expires 30d;\n        add_header
+    'Access-Control-Allow-Origin' '*';\n        add_header 'Access-Control-Allow-Methods'
+    'GET, POST, OPTIONS';\n        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n        alias /opt/graphistry/apps/core/viz/build/static/viz/;\n
+    \   }\n\n    location /graph/css/ {\n        expires 30d;\n        add_header
+    'Access-Control-Allow-Origin' '*';\n        add_header 'Access-Control-Allow-Methods'
+    'GET, POST, OPTIONS';\n        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n        alias /opt/graphistry/apps/core/viz/build/css/;\n
+    \   }\n\n    location /graph/img/ {\n        expires 30d;\n        add_header
+    'Access-Control-Allow-Origin' '*';\n        add_header 'Access-Control-Allow-Methods'
+    'GET, POST, OPTIONS';\n        add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n        alias /opt/graphistry/apps/core/viz/build/img/;\n
+    \   }\n\n    location /graph/fonts/ {\n        add_header 'Access-Control-Allow-Origin'
+    '*';\n        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n
+    \       add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n        alias /opt/graphistry/apps/core/viz/build/fonts/;\n
+    \   }\n\n    ###########\n    ## Nexus ##\n    ###########\n\n    location /static/
+    {\n        expires 30d;\n        add_header 'Access-Control-Allow-Origin' '*';\n
+    \       add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n        add_header
+    'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n\n        alias /opt/graphistry/apps/core/nexus/staticfiles/;\n
+    \   }\n\n    #################\n    ##--- Pivot ---##\n    #################\n\n
+    \   location ~* ^/pivot$ {\n        #set $backend    \"http://pivot:8080\";\n
+    \       set $backend    \"http://pivot.default.svc.cluster.local:8080\";\n        proxy_pass
+    \     $backend;\n        auth_request    /django-json-auth-staff;\n        auth_request_set
+    $auth_status $upstream_status;\n        error_page 401 403 /accounts/login/?next=$request_uri;\n
+    \       error_page 502 /custom_502.html;\n        error_page 500 /custom_500.html;\n
+    \       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
+    X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
+    1.1;\n        proxy_pass_header X-CSRFToken;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n    }\n\n    location
+    /pivot/socket.io/ {\n        #set $backend    \"http://pivot:8080\";\n        set
+    $backend    \"http://pivot.default.svc.cluster.local:8080\";\n        proxy_pass
+    \     $backend;\n        auth_request    /django-json-auth;\n        auth_request_set
+    $auth_status $upstream_status;\n        error_page 401 403 /accounts/login/?next=$request_uri;\n
+    \       error_page 502 /custom_502.html;\n        error_page 500 /custom_500.html;\n
+    \       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
+    X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
+    1.1;\n        proxy_pass_header X-CSRFToken;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n    }\n\n    location
+    /pivot/error {\n        #set $backend    \"http://pivot:8080\";\n        set $backend
+    \   \"http://pivot.default.svc.cluster.local:8080\";\n        proxy_pass      $backend;\n
+    \       auth_request    /django-json-auth;\n        auth_request_set $auth_status
+    $upstream_status;\n        error_page 401 403 /accounts/login/?next=$request_uri;\n
+    \       error_page 502 /custom_502.html;\n        error_page 500 /custom_500.html;\n
+    \       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
+    X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
+    1.1;\n        proxy_pass_header X-CSRFToken;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n    }\n\n    location
+    /pivot/ {\n        #set $backend    \"http://pivot:8080\";\n        set $backend
+    \   \"http://pivot.default.svc.cluster.local:8080\";\n        proxy_pass      $backend;\n
+    \       auth_request    /django-json-auth-staff;\n        auth_request_set $auth_status
+    $upstream_status;\n        error_page 401 403 /accounts/login/?next=$request_uri;\n
+    \       error_page 502 /custom_502.html;\n        error_page 500 /custom_500.html;\n
+    \       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
+    X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
+    1.1;\n        proxy_pass_header X-CSRFToken;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n    }\n\n    location
+    /pivot/upload-file {\n        #set $backend    \"http://pivot:8080/pivot/upload-file\";\n
+    \       set $backend    \"http://pivot.default.svc.cluster.local:8080/pivot/upload-file\";\n
+    \       proxy_pass      $backend;\n        auth_request    /django-json-auth;\n
+    \       auth_request_set $auth_status $upstream_status;\n        error_page 401
+    403 /accounts/login/?next=$request_uri;\n        error_page 502 /custom_502.html;\n
+    \       error_page 500 /custom_500.html;\n        proxy_set_header X-Forwarded-For
+    $proxy_add_x_forwarded_for;\n        proxy_set_header X-Real-IP $remote_addr;\n
+    \       proxy_set_header Host $http_host;\n        proxy_http_version 1.1;\n        proxy_pass_header
+    X-CSRFToken;\n        proxy_redirect off;\n        proxy_buffering off;\n        proxy_set_header
+    Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_read_timeout
+    86400;\n    }\n\n    ### For simpler API clients, uses key exchange over ws(s)
+    rather than regular auth\n    location /pivot_proxy {\n        #set $backend       \"http://pivot:8080/pivot/proxy\";\n
+    \       set $backend       \"http://pivot.default.svc.cluster.local:8080/pivot/proxy\";\n
+    \       proxy_pass         $backend;\n        error_page 401 403 /accounts/login/?next=$request_uri
+    ;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
+    X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
+    1.1;\n        proxy_pass_header X-CSRFToken;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n    }\n\n    location
+    /pivot/css/ {\n        add_header 'Access-Control-Allow-Origin' '*';\n        add_header
+    'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n        add_header 'Access-Control-Allow-Headers'
+    'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n\n        alias /opt/graphistry/apps/core/pivot/www/client/public/css/;\n
+    \   }\n\n    location /pivot/js/ {\n        add_header 'Access-Control-Allow-Origin'
+    '*';\n        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n
+    \       add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n\n        alias /opt/graphistry/apps/core/pivot/www/client/public/js/;\n
+    \   }\n\n    location /pivot/img/ {\n        add_header 'Access-Control-Allow-Origin'
+    '*';\n        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n
+    \       add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n\n        alias /opt/graphistry/apps/core/pivot/www/server/server/public/img/;\n
+    \   }\n\n    location /pivot/favicon/ {\n        add_header 'Access-Control-Allow-Origin'
+    '*';\n        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n
+    \       add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n\n        alias /opt/graphistry/apps/core/pivot/www/server/server/public/favicon/;\n
+    \   }\n\n    location /pivot/fonts/ {\n        add_header 'Access-Control-Allow-Origin'
+    '*';\n        add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';\n
+    \       add_header 'Access-Control-Allow-Headers' 'DNT,X-CustomHeader,Keep-Alive,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Content-Range,Range';\n
+    \       add_header 'Access-Control-Max-Age' 20000000;\n\n        alias /opt/graphistry/apps/core/pivot/www/client/public/fonts/;\n
+    \   }\n\n\n\n    ###################\n    ##--- Jupyter ---##\n    ###################\n\n
+    \   location /notebook/dash {\n\n        #set $backend notebook:8866;\n        set
+    $backend notebook.default.svc.cluster.local:8866;\n        proxy_pass http://$backend;\n\n
+    \       auth_request     /django-json-auth-staff;\n        auth_request_set $auth_status
+    $upstream_status;\n        error_page 401 403 /accounts/login/?next=$request_uri
+    ;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
+    X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
+    1.1;\n        proxy_redirect off;\n        proxy_buffering off;\n        proxy_set_header
+    Upgrade $http_upgrade;\n        proxy_set_header Connection \"upgrade\";\n        proxy_read_timeout
+    86400;\n\n        # Otherwise ws:// 403s\n        proxy_set_header Origin \"\";\n
+    \   }\n\n    location /notebook/static/ {\n        expires 30d;\n\n        #set
+    $backend     \"http://notebook:8888\";\n        set $backend     \"http://notebook.default.svc.cluster.local:8888\";\n
+    \       proxy_pass       $backend;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \       proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header Host
+    $http_host;\n        proxy_http_version 1.1;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n\n        proxy_cache
+    \           static_tmp_cache;\n        proxy_cache_valid      200  1d;\n        proxy_cache_use_stale
+    \ error timeout invalid_header updating\n                                http_500
+    http_502 http_503 http_504;\n    }\n\n    location ~ /notebook/lab/extensions/(.*)/static/(.*)$
+    {\n        expires 30d;\n\n        #set $backend     \"http://notebook:8888\";\n
+    \       set $backend     \"http://notebook.default.svc.cluster.local:8888\";\n
+    \       proxy_pass       $backend;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \       proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header Host
+    $http_host;\n        proxy_http_version 1.1;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n\n        proxy_cache
+    \           static_tmp_cache;\n        proxy_cache_valid      200  1d;\n        proxy_cache_use_stale
+    \ error timeout invalid_header updating\n                                http_500
+    http_502 http_503 http_504;\n    }\n\n    location /notebook/ {\n        auth_request
+    \    /django-json-auth-staff;\n        auth_request_set $auth_status $upstream_status;\n
+    \       error_page 401 403 /accounts/login/?next=$request_uri ;\n        #set
+    $backend     \"http://notebook:8888\";\n        set $backend     \"http://notebook.default.svc.cluster.local:8888\";\n
+    \       proxy_pass       $backend;\n        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \       proxy_set_header X-Real-IP $remote_addr;\n        proxy_set_header Host
+    $http_host;\n        proxy_http_version 1.1;\n        proxy_redirect off;\n        proxy_buffering
+    off;\n        proxy_set_header Upgrade $http_upgrade;\n        proxy_set_header
+    Connection \"upgrade\";\n        proxy_read_timeout 86400;\n    }\n\n    #regular
+    user cookie\n    location = /django-json-auth {\n        #Manually avoid ref collision
+    w/ callers\n        #set $backend_user_auth     \"http://nexus:8000/users/current.json\";\n
+    \       set $backend_user_auth     \"http://nexus.default.svc.cluster.local:8000/users/current.json\";\n
+    \       proxy_pass       $backend_user_auth;\n        proxy_set_header Cookie
+    \"graphistry_jwt=$cookie_graphistry_jwt; sessionid=$cookie_sessionid\";\n        proxy_set_header
+    Content-Length \"\";\n        proxy_set_header Content-Type \"\";\n        proxy_set_header
+    Accept \"\";\n        proxy_set_header User-Agent \"\";\n        proxy_pass_request_body
+    off;\n    }\n\n    #staff user cookie\n    location = /django-json-auth-staff
+    {\n        #Manually avoid ref collision w/ callers\n        #set $backend_staff_auth
+    \    \"http://nexus:8000/users/current_staffuser.json\";\n        set $backend_staff_auth
+    \    \"http://nexus.default.svc.cluster.local:8000/users/current_staffuser.json\";\n
+    \       proxy_pass       $backend_staff_auth;\n        proxy_set_header Cookie
+    \"graphistry_jwt=$cookie_graphistry_jwt; sessionid=$cookie_sessionid\";\n        proxy_set_header
+    Content-Length \"\";\n        proxy_set_header Content-Type \"\";\n        proxy_set_header
+    Accept \"\";\n        proxy_set_header User-Agent \"\";\n        proxy_pass_request_body
+    off;\n    }\n\n\n    ###############\n    ##--- API ---##\n    ###############\n\n
+    \   client_header_buffer_size 16k;\n    large_client_header_buffers 8 64k; # support
+    longer urls for wide col dtypes\n\n    location = /401.json {\n        root /usr/share/nginx/json;\n
+    \       internal;\n    }\n    #error_page 401 = /401.json;\n\n    location = /403.json
+    {\n        root /usr/share/nginx/json;\n        internal;\n    }\n    #error_page
+    403 = /403.json;\n\n    location = /413.json {\n        root /usr/share/nginx/json;\n
+    \       internal;\n    }\n    #error_page 413 = /413.json;\n\n    location = /500.json
+    {\n        root /usr/share/nginx/json;\n        internal;\n    }\n    #error_page
+    500 = /500.json;\n\n    location = /502.json {\n        root /usr/share/nginx/json;\n
+    \       internal;\n    }\n    #error_page 502 = /502.json;\n\n\n    #internal-only\n
+    \   #location /api/v1/csrfmiddlewaretoken/ {\n    #    return 401;\n    #}\n\n
+    \   #internal-only\n    #location /api/v2/csrfmiddlewaretoken/ {\n    #    return
+    401;\n    #}\n\n    #session cookie conveniences\n    location /web/v2/ {\n\n
+    \       #/web/v2/upload/files\n        include /etc/nginx/conf.d/templates/dist/upload_web.conf;\n\n
+    \       #Web: nexus web cookie gate -> internal forge tok services\n        location
+    /web/v2/upload/nodexl/url/ {\n            auth_request     /django-json-auth;\n
+    \           auth_request_set $auth_status $upstream_status;\n            error_page
+    401 403 /accounts/login/?next=$request_uri ;\n\n            proxy_set_header X-Forwarded-For
+    $proxy_add_x_forwarded_for;\n            proxy_set_header X-Real-IP $remote_addr;\n
+    \           proxy_set_header Host $http_host;\n            #proxy_http_version
+    1.1;\n            #proxy_redirect off;\n            #proxy_buffering off;\n\n
+    \           #set $backend      \"http://nexus:8000/api/v1/datasets/nodexl?$args\";\n
+    \           set $backend      \"http://nexus.default.svc.cluster.local:8000/api/v1/datasets/nodexl?$args\";\n
+    \           proxy_pass        $backend;\n        }\n\n        location ~ ^/web/v2/datasets/(.*)$
+    {\n            #auth_request     /django-json-auth;\n            #auth_request_set
+    $auth_status $upstream_status;\n            #error_page 401 403 /accounts/login/?next=$request_uri
+    ;\n\n            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \           proxy_set_header X-Real-IP $remote_addr;\n            proxy_set_header
+    Host $http_host;\n\n            #set $backend     \"http://nexus:8000/api/v1/datasets/$1?$args\";\n
+    \           set $backend     \"http://nexus.default.svc.cluster.local:8000/api/v1/datasets/$1?$args\";\n
+    \           proxy_pass       $backend;\n        }\n\n        location ~ ^/web/v2/datasetrevisions/(.*)$
+    {\n            #auth_request     /django-json-auth;\n            #auth_request_set
+    $auth_status $upstream_status;\n            #error_page 401 403 /accounts/login/?next=$request_uri
+    ;\n\n            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \           proxy_set_header X-Real-IP $remote_addr;\n            proxy_set_header
+    Host $http_host;\n\n            #set $backend     \"http://nexus:8000/api/v1/datasetrevisions/$1?$args\";\n
+    \           set $backend     \"http://nexus.default.svc.cluster.local:8000/api/v1/datasetrevisions/$1?$args\";\n
+    \           proxy_pass       $backend;\n        }\n\n        #FIXME does not work
+    with upload-files pivot app, which instead goes through /api/v1/files/..\n        location
+    ~ ^/web/v2/files/(.*)$ {\n\n            #auth_request     /django-json-auth;\n
+    \           #auth_request_set $auth_status $upstream_status;\n            #error_page
+    401 403 /accounts/login/?next=$request_uri ;\n\n            #proxy_set_header
+    Cookie \"graphistry_jwt=$cookie_graphistry_jwt; sessionid=$cookie_sessionid\";\n
+    \           #proxy_set_header Content-Length \"\";\n            #proxy_set_header
+    Content-Type \"\";\n            #proxy_set_header Accept \"\";\n            #proxy_set_header
+    User-Agent \"\";\n            #proxy_pass_request_body off;\n\n            proxy_set_header
+    X-Forwarded-For $proxy_add_x_forwarded_for;\n            proxy_set_header X-Forwarded-Proto
+    http;\n            proxy_set_header X-Real-IP $remote_addr;\n            proxy_set_header
+    Host $http_host;\n            proxy_set_header Upgrade $http_upgrade;\n            #proxy_set_header
+    Cookie $http_cookie;\n            proxy_set_header Connection close;\n            proxy_pass_header
+    X-CSRFToken;\n            proxy_pass_header Set-Cookie;\n\n            #preserve
+    client cookie state on fail\n            #proxy_hide_header Set-Cookie;\n\n            #proxy_redirect
+    off;\n            #set $backend       \"http://nexus:8000/api/v1/files/$1?$args\";\n
+    \           set $backend       \"http://nexus.default.svc.cluster.local:8000/api/v1/files/$1?$args\";\n
+    \           proxy_pass         $backend;\n        }\n\n        location /web/v2/upload/datasets/
+    {\n\n            auth_request     /django-json-auth;\n            auth_request_set
+    $auth_status $upstream_status;\n            error_page 401 403 /accounts/login/?next=$request_uri
+    ;\n\n            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \           proxy_set_header X-Forwarded-Proto http;\n            proxy_set_header
+    X-Real-IP $remote_addr;\n            proxy_set_header Host $http_host;\n            proxy_set_header
+    Upgrade $http_upgrade;\n            #proxy_set_header Cookie $http_cookie;\n            proxy_set_header
+    Connection close;\n            proxy_pass_header X-CSRFToken;\n            proxy_pass_header
+    Set-Cookie;\n\n            #set $backend       \"http://forge-etl-python:8080/upload/datasets\";\n
+    \           set $backend       \"http://forge-etl-python.default.svc.cluster.local:8080/upload/datasets\";\n
+    \           proxy_pass         $backend;\n        }\n\n    }\n\n    location /api/v2/
+    {\n\n        error_page 401 /401.json;\n        error_page 403 /403.json;\n        error_page
+    413 /413.json;\n        error_page 500 /500.json;\n        error_page 502 /502.json;\n\n
+    \       #token header\n        location = /api/v2/auth/token/verify {\n            include
+    /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n            proxy_set_header
+    Host $http_host;\n            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
+    \           proxy_set_header X-Real-IP $remote_addr;\n\n            proxy_set_header
+    Content-Length \"\";\n            proxy_set_header Content-Type \"\";\n            proxy_set_header
+    Accept \"\";\n            proxy_set_header User-Agent \"\";\n            proxy_pass_request_body
+    off;\n\n            #Manually avoid ref collision w/ callers\n            #set
+    $backend_api_auth   \"http://nexus:8000/api/v1/test/auth\";\n            set $backend_api_auth
+    \  \"http://nexus.default.svc.cluster.local:8000/api/v1/test/auth\";\n            proxy_pass
+    \             $backend_api_auth;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        #POST\n        location = /api/v2/auth/token/generate {\n
+    \           include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \           proxy_set_header Host $http_host;\n            proxy_set_header X-Real-IP
+    $remote_addr;\n            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n\n
+    \           #set $backend       \"http://nexus:8000/api-token-auth/\";\n            set
+    $backend       \"http://nexus.default.svc.cluster.local:8000/api-token-auth/\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        #POST\n        location = /api/v2/auth/token/refresh {\n
+    \           include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \           proxy_set_header Host $http_host;\n            proxy_set_header X-Real-IP
+    $remote_addr;\n            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n\n
+    \           #set $backend       \"http://nexus:8000/api-token-refresh/\";\n            set
+    $backend       \"http://nexus.default.svc.cluster.local:8000/api-token-refresh/\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        #PRIVATE (DEBUG FOR NOW)\n        location /api/v2/pivot/
+    {\n            include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \           auth_request    /api/v2/auth/token/verify;\n            auth_request_set
+    $auth_status $upstream_status;\n\n            proxy_set_header X-Forwarded-For
+    $proxy_add_x_forwarded_for;\n            proxy_set_header X-Real-IP $remote_addr;\n
+    \           proxy_set_header Host $http_host;\n\n            proxy_http_version
+    1.1;\n            proxy_redirect off;\n            proxy_buffering off;\n            proxy_set_header
+    Upgrade $http_upgrade;\n            proxy_set_header Connection \"upgrade\";\n
+    \           proxy_read_timeout 86400;\n\n            #set $backend       \"http://pivot:8080\";\n
+    \           set $backend       \"http://pivot.default.svc.cluster.local:8080\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n        \n        location = /api/v2/upload/datasets/ {\n            include
+    /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n            auth_request
+    \   /api/v2/auth/token/verify;\n            auth_request_set $auth_status $upstream_status;\n\n
+    \           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n            proxy_set_header
+    X-Real-IP $remote_addr;\n            proxy_set_header Host $http_host;\n\n            #set
+    $backend       \"http://forge-etl-python:8080/upload/datasets\";\n            set
+    $backend       \"http://forge-etl-python.default.svc.cluster.local:8080/upload/datasets\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        #api jwt -> nexus\n        location ~ ^/api/v2/upload/nodexl/url/(.*)$
+    {\n            include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \           auth_request    /api/v2/auth/token/verify;\n            auth_request_set
+    $auth_status $upstream_status;\n\n            proxy_set_header X-Forwarded-For
+    $proxy_add_x_forwarded_for;\n            proxy_set_header X-Real-IP $remote_addr;\n
+    \           proxy_set_header Host $http_host;\n\n            #set $backend       \"http://forge-etl-python:8080/upload/nodexl/url/$1?$args\";\n
+    \           set $backend       \"http://forge-etl-python.default.svc.cluster.local:8080/upload/nodexl/url/$1?$args\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        #/api/v2/upload/datasets, /api/v2/upload/files\n        include
+    /etc/nginx/conf.d/templates/dist/upload.conf;\n\n        location ~ ^/api/v2/datasets/(.*)$
+    {\n            include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n            proxy_set_header
+    X-Real-IP $remote_addr;\n            proxy_set_header Host $http_host;\n\n            #set
+    $backend       \"http://nexus:8000/api/v1/datasets/$1?$args\";\n            set
+    $backend       \"http://nexus.default.svc.cluster.local:8000/api/v1/datasets/$1?$args\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        location ~ ^/api/v2/datasetrevisions/(.*)$ {\n            include
+    /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n            proxy_set_header
+    X-Forwarded-For $proxy_add_x_forwarded_for;\n            proxy_set_header X-Real-IP
+    $remote_addr;\n            proxy_set_header Host $http_host;\n\n            #set
+    $backend       \"http://nexus:8000/api/v1/datasetrevisions/$1?$args\";\n            set
+    $backend       \"http://nexus.default.svc.cluster.local:8000/api/v1/datasetrevisions/$1?$args\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        location ~ ^/api/v2/files/(.*)$ {\n            include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n            proxy_set_header
+    X-Real-IP $remote_addr;\n            proxy_set_header Host $http_host;\n\n            #set
+    $backend       \"http://nexus:8000/api/v1/files/$1?$args\";\n            set $backend
+    \      \"http://nexus.default.svc.cluster.local:8000/api/v1/files/$1?$args\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        location /api/v2/share/link/ {\n            include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
+    \           proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n            proxy_set_header
+    X-Real-IP $remote_addr;\n            proxy_set_header Host $http_host;\n\n            #set
+    $backend       \"http://nexus:8000/api/v1/create/share/link/\";\n            set
+    $backend       \"http://nexus.default.svc.cluster.local:8000/api/v1/create/share/link/\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n        location /api/v2/share/entitlements/ {\n            include
+    /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n            proxy_set_header
+    X-Forwarded-For $proxy_add_x_forwarded_for;\n            proxy_set_header X-Real-IP
+    $remote_addr;\n            proxy_set_header Host $http_host;\n\n            #set
+    $backend       \"http://nexus:8000/api/v1/obj/entitlements/\";\n            set
+    $backend       \"http://nexus.default.svc.cluster.local:8000/api/v1/obj/entitlements/\";\n
+    \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
+    \       }\n\n    }\n\n}\n\n"

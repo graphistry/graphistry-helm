@@ -16,7 +16,7 @@ Set up the Azure Container Registry, get your docker login credentials, and then
 and then run:
 
 
-    bash $ACR_NAME=myacr $DOCKERHUB_USERNAME=mydockerhubuser $DOCKERHUB_TOKEN=mydockerhubtoken import-image-into-acr-from-dockerhub.sh 
+    bash $ACR_NAME=myacr $DOCKERHUB_USERNAME=mydockerhubuser $DOCKERHUB_TOKEN=mydockerhubtoken acr-bootstrap/import-image-into-acr-from-dockerhub.sh 
 
 
 > **Note:** Be sure to change the azurecontainerregistry value in values.yaml to the name of your acr.

@@ -1,10 +1,27 @@
 #!/bin/bash
+
+
+####these three enviroment variables are required###
+#ACR_NAME
+#DOCKERHUB_USERNAME
+#DOCKERHUB_TOKEN
+###ex: bash $ACR_NAME=myacr $DOCKERHUB_USERNAME=mydockerhubuser $DOCKERHUB_TOKEN=mydockerhubtoken import-image-into-acr-from-dockerhub.sh ###
+
+echo "ACR_NAME: $ACR_NAME"
+echo "DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME"
+echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
+
+[[ ! -z "${ACR_NAME}" ]] \
+    || { echo "Set ACR_NAME (ex: myacr )" && exit 1; }
+
+[[ ! -z "${DOCKERHUB_USERNAME}" ]] \
+    || { echo "Set DOCKERHUB_USERNAME (ex: mydockerhubusere )" && exit 1; }
+
+
+[[ ! -z "${DOCKERHUB_TOKEN}" ]] \
+    || { echo "Set DOCKERHUB_TOKEN (ex: mydockerhubtoken )" && exit 1; }
+
 #this script will import graphistry images into ACR
-
-
-
-export $(cat azure.env | xargs) ##this reads in the azure.env file and exports the variables
-
 
 echo "importing streamgl-viz image into ACR"
 #graphistry/streamgl-viz:${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0} 

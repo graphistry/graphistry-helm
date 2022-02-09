@@ -19,30 +19,31 @@ data:
     this is the internal Docker DNS, cache only for 10s\n# routes can use to not block
     on services (esp. when they may not exist till later)\n\n#resolver 127.0.0.11
     valid=10s; commented out for k8s\n\nresolver kube-dns.kube-system.svc.cluster.local
-    valid=10s; #k8s requires this resolver\n\nupstream forge-etl {\n    server                      forge-etl:8080;\n
+    valid=10s; #k8s requires this resolver\n\nupstream forge-etl {\n    server                      forge-etl.default.svc.cluster.local:8080;\n
     \   keepalive                   512;\n}\n\nupstream forge-etl-python {\n    server
-    \                     forge-etl-python:8080;\n    keepalive                   512;\n}\n\nupstream
-    streamgl-gpu {\n    server                      streamgl-gpu:8080;\n    keepalive
-    \                  512;\n}\n\nupstream streamgl-sessions {\n    server                      streamgl-sessions:8080;\n
-    \   keepalive                   512;\n}\n\nupstream streamgl-vgraph-etl {\n    server
-    \                     streamgl-vgraph-etl:8080;\n    keepalive                   512;\n}\n\nserver
-    {\n\n    ###################\n    ## General Setup ##\n    ###################\n\n
-    \   server_tokens               off;\n    server_name                 _;\n    sendfile
-    \                   on;\n    tcp_nopush                  on;\n    tcp_nodelay
-    \                on;\n    proxy_cache_lock            on;\n    proxy_cache_revalidate
-    \     on;\n    proxy_buffering             off;\n    proxy_http_version          1.1;\n
-    \   proxy_connect_timeout       3600;\n    proxy_send_timeout          3600;\n
-    \   proxy_read_timeout          3600;\n    # send_timeout                3600;\n\n
-    \   client_max_body_size        4096M;\n\n    proxy_set_header            Host
-    \             $http_host;\n    proxy_set_header            X-Real-IP         $remote_addr;\n
-    \   proxy_set_header            X-Forwarded-For   $proxy_add_x_forwarded_for;\n
-    \   proxy_set_header            X-Forwarded-Proto $scheme;\n\n    proxy_hide_header
-    X-Powered-By;\n\n    # Support proxying WebSocket connections\n    proxy_set_header
-    \           Upgrade           $http_upgrade;\n    proxy_set_header            Connection
-    \       $connection_upgrade;\n\n    #Base image rebinds to /dev/{stdout,stderr},
-    which docker logs gets \n    access_log  /var/log/nginx/access.log;\n    error_log
-    \  /var/log/nginx/error.log;\n\n    # set_by_lua $session_secret 'return os.getenv(\"OID_SESSION_SECRET\")';\n
-    \   # set_by_lua $session_check_ssi 'return os.getenv(\"OID_SESSION_CHECK_SSI\")';\n
+    \                     forge-etl-python.default.svc.cluster.local:8080;\n    keepalive
+    \                  512;\n}\n\nupstream streamgl-gpu {\n    server                      streamgl-gpu.default.svc.cluster.local:8080;\n
+    \   keepalive                   512;\n}\n\nupstream streamgl-sessions {\n    server
+    \                     streamgl-sessions.default.svc.cluster.local:8080;\n    keepalive
+    \                  512;\n}\n\nupstream streamgl-vgraph-etl {\n    server                      streamgl-vgraph-etl.default.svc.cluster.local:8080;\n
+    \   keepalive                   512;\n}\n\nserver {\n\n    ###################\n
+    \   ## General Setup ##\n    ###################\n\n    server_tokens               off;\n
+    \   server_name                 _;\n    sendfile                    on;\n    tcp_nopush
+    \                 on;\n    tcp_nodelay                 on;\n    proxy_cache_lock
+    \           on;\n    proxy_cache_revalidate      on;\n    proxy_buffering             off;\n
+    \   proxy_http_version          1.1;\n    proxy_connect_timeout       3600;\n
+    \   proxy_send_timeout          3600;\n    proxy_read_timeout          3600;\n
+    \   # send_timeout                3600;\n\n    client_max_body_size        4096M;\n\n
+    \   proxy_set_header            Host              $http_host;\n    proxy_set_header
+    \           X-Real-IP         $remote_addr;\n    proxy_set_header            X-Forwarded-For
+    \  $proxy_add_x_forwarded_for;\n    proxy_set_header            X-Forwarded-Proto
+    $scheme;\n\n    proxy_hide_header X-Powered-By;\n\n    # Support proxying WebSocket
+    connections\n    proxy_set_header            Upgrade           $http_upgrade;\n
+    \   proxy_set_header            Connection        $connection_upgrade;\n\n    #Base
+    image rebinds to /dev/{stdout,stderr}, which docker logs gets \n    access_log
+    \ /var/log/nginx/access.log;\n    error_log   /var/log/nginx/error.log;\n\n    #
+    set_by_lua $session_secret 'return os.getenv(\"OID_SESSION_SECRET\")';\n    #
+    set_by_lua $session_check_ssi 'return os.getenv(\"OID_SESSION_CHECK_SSI\")';\n
     \   # set_by_lua $session_name 'return os.getenv(\"OID_SESSION_NAME\")';\n    #
     set_by_lua $proxy_host 'return os.getenv(\"PROXY_HOST\")';\n    # set_by_lua $proxy_port
     'return os.getenv(\"PROXY_PORT\")';\n    # set_by_lua $proxy_protocol 'return
@@ -74,23 +75,23 @@ data:
     \       keepalive_timeout         3600;\n        proxy_send_timeout        3600;\n
     \       proxy_read_timeout        3600;\n        proxy_connect_timeout     3600;\n
     \       chunked_transfer_encoding off;\n        proxy_set_header          Connection
-    '';\n        # proxy_set_header          Connection keep-alive;\n        proxy_pass
-    \               http://streamgl-gpu.default.svc.cluster.local/;\n        #proxy_pass
+    '';\n        # proxy_set_header          Connection keep-alive;\n        #proxy_pass
+    \               http://streamgl-gpu.default.svc.cluster.local/;\n        proxy_pass
     \               http://streamgl-gpu/;\n    }\n\n    location /etl {\n        include
     /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n        client_max_body_size
-    4096M;\n        #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    4096M;\n        proxy_pass           http://streamgl-vgraph-etl;\n        #proxy_pass
     \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
     /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
     /api/check {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
-    \       #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    \       proxy_pass           http://streamgl-vgraph-etl;\n        #proxy_pass
     \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
     /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
     /api/encrypt {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
-    \       #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    \       proxy_pass           http://streamgl-vgraph-etl;\n        #proxy_pass
     \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
     /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
     /api/decrypt {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
-    \       #proxy_pass           http://streamgl-vgraph-etl;\n        proxy_pass
+    \       proxy_pass           http://streamgl-vgraph-etl;\n        #proxy_pass
     \          http://streamgl-vgraph-etl.default.svc.cluster.local;\n        include
     /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n    location
     /api/v1/etl/vgraph/ {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
@@ -99,8 +100,8 @@ data:
     on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
     POST;\n        proxy_cache            dataset_tmp_cache;\n        proxy_cache_bypass
     \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
-    $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl/vgraph/;\n
-    \       proxy_pass             http://forge-etl.default.svc.cluster.local/vgraph/;\n
+    $upstream_cache_status;\n\n        proxy_pass             http://forge-etl/vgraph/;\n
+    \       #proxy_pass             http://forge-etl.default.svc.cluster.local/vgraph/;\n
     \       include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n
     \   location /api/v2/etl/vgraph/ {\n        include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
     \       sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
@@ -108,42 +109,42 @@ data:
     on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
     POST;\n        proxy_cache            dataset_tmp_cache;\n        proxy_cache_bypass
     \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
-    $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl-python/vgraph/;\n
-    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/vgraph/;\n
+    $upstream_cache_status;\n\n        proxy_pass             http://forge-etl-python/vgraph/;\n
+    \       #proxy_pass             http://forge-etl-python.default.svc.cluster.local/vgraph/;\n
     \       include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n    }\n\n
     \   location /api/v1/etl/shaper/ {\n        sendfile               on;\n        tcp_nopush
     \            on;\n        tcp_nodelay            on;\n        proxy_cache_lock
     \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
     \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
     \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
-    \            X-Proxy-Cache $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl-python/shaper/;\n
-    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/shaper/;\n
+    \            X-Proxy-Cache $upstream_cache_status;\n\n        proxy_pass             http://forge-etl-python/shaper/;\n
+    \       #proxy_pass             http://forge-etl-python.default.svc.cluster.local/shaper/;\n
     \   }\n\n    location /api/v1/etl/datasets/hello/ {\n        sendfile               on;\n
     \       tcp_nopush             on;\n        tcp_nodelay            on;\n        proxy_cache_lock
     \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
     \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
     \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
-    \            X-Proxy-Cache $upstream_cache_status;\n\n        #set $backend           \"http://forge-etl:8080/vgraph/hello/\";\n
-    \       set $backend           \"http://forge-etl.default.svc.cluster.local:8080/vgraph/hello/\";\n
+    \            X-Proxy-Cache $upstream_cache_status;\n\n        set $backend           \"http://forge-etl:8080/vgraph/hello/\";\n
+    \       #set $backend           \"http://forge-etl.default.svc.cluster.local:8080/vgraph/hello/\";\n
     \       proxy_pass              $backend;\n    }\n\n    location /api/v1/etl/datasets/verify/
     {\n        sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
     \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
     on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
     POST;\n        proxy_cache            dataset_tmp_cache;\n        proxy_cache_bypass
     \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
-    $upstream_cache_status;\n\n        #proxy_pass             http://forge-etl/vgraph/verify/;\n
-    \       proxy_pass             http://forge-etl.default.svc.cluster.local/vgraph/verify/;\n
+    $upstream_cache_status;\n\n        proxy_pass             http://forge-etl/vgraph/verify/;\n
+    \       #proxy_pass             http://forge-etl.default.svc.cluster.local/vgraph/verify/;\n
     \   }\n\n    location /api/v1/etl/datasets/ {\n        sendfile               on;\n
     \       tcp_nopush             on;\n        tcp_nodelay            on;\n        proxy_cache_lock
     \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
     \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
     \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
-    \            X-Proxy-Cache $upstream_cache_status;\n        #proxy_pass             http://forge-etl-python/datasets/;\n
-    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/datasets/;\n
+    \            X-Proxy-Cache $upstream_cache_status;\n        proxy_pass             http://forge-etl-python/datasets/;\n
+    \       #proxy_pass             http://forge-etl-python.default.svc.cluster.local/datasets/;\n
     \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
     \    3600;\n        send_timeout           3600;\n    }\n\n    location /api/v1/revisions/session/
-    {\n        #proxy_pass             http://forge-etl-python/revisions/session/;\n
-    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/revisions/session/;\n
+    {\n        proxy_pass             http://forge-etl-python/revisions/session/;\n
+    \       #proxy_pass             http://forge-etl-python.default.svc.cluster.local/revisions/session/;\n
     \       proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n        proxy_set_header
     X-Real-IP $remote_addr;\n        proxy_set_header Host $http_host;\n        proxy_http_version
     1.1;\n        proxy_redirect off;\n        proxy_buffering off;\n        proxy_set_header
@@ -153,63 +154,64 @@ data:
     \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
     \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            dataset_tmp_cache;\n
     \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
-    \            X-Proxy-Cache $upstream_cache_status;\n        #proxy_pass             http://forge-etl-python/datasets/;\n
-    \       proxy_pass             http://forge-etl-python.default.svc.cluster.local/datasets/;\n
+    \            X-Proxy-Cache $upstream_cache_status;\n        proxy_pass             http://forge-etl-python/datasets/;\n
+    \       #proxy_pass             http://forge-etl-python.default.svc.cluster.local/datasets/;\n
     \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
-    \    3600;\n        send_timeout           3600;\n    }\n\n    location /glsession
+    \    3600;\n        send_timeout           3600;\n    }\n\n    location /glsession/
     {\n        sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
     \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
     on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
     POST;\n        proxy_cache            session_tmp_cache;\n        proxy_cache_bypass
     \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
-    $upstream_cache_status;\n        #proxy_pass             http://streamgl-sessions;\n
-    \       proxy_pass             http://streamgl-sessions.default.svc.cluster.local;\n
-    \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
-    \    3600;\n        send_timeout           3600;\n    }\n\n    location /snapshots
-    {\n        sendfile               on;\n        tcp_nopush             on;\n        tcp_nodelay
-    \           on;\n        proxy_cache_lock       on;\n        proxy_cache_revalidate
-    on;\n        proxy_buffering        off;\n        proxy_cache_methods    GET HEAD
-    POST;\n        proxy_cache            session_tmp_cache;\n        proxy_cache_bypass
-    \    $http_cache_control $http_pragma;\n        add_header             X-Proxy-Cache
-    $upstream_cache_status;\n        #proxy_pass             http://streamgl-sessions;\n
-    \       proxy_pass             http://streamgl-sessions.default.svc.cluster.local;\n
+    $upstream_cache_status;\n        proxy_pass             http://streamgl-sessions;\n
+    \       #proxy_pass             http://streamgl-sessions.default.svc.cluster.local;\n\t#set
+    $backend     \"http://streamgl-sessions.default.svc.cluster.local:8080/glsession/$1?$args\";\n\t#proxy_pass
+    \      $backend;\n        proxy_connect_timeout  3600;\n        proxy_send_timeout
+    \    3600;\n        proxy_read_timeout     3600;\n        send_timeout           3600;\n
+    \   }\n\n    location /snapshots {\n        sendfile               on;\n        tcp_nopush
+    \            on;\n        tcp_nodelay            on;\n        proxy_cache_lock
+    \      on;\n        proxy_cache_revalidate on;\n        proxy_buffering        off;\n
+    \       proxy_cache_methods    GET HEAD POST;\n        proxy_cache            session_tmp_cache;\n
+    \       proxy_cache_bypass     $http_cache_control $http_pragma;\n        add_header
+    \            X-Proxy-Cache $upstream_cache_status;\n        proxy_pass             http://streamgl-sessions;\n
+    \       #proxy_pass             http://streamgl-sessions.default.svc.cluster.local;\n
     \       proxy_connect_timeout  3600;\n        proxy_send_timeout     3600;\n        proxy_read_timeout
     \    3600;\n        send_timeout           3600;\n    }\n\n    #location /snapshots/svg/
     {\n    #    proxy_pass         http://streamgl-svg-snapshot/;\n    #}\n\n    #
     location /zipkin/ {\n    #     proxy_pass  http://zipkin/;\n    # }\n\n    # location
     /datasets/health {\n    #     proxy_pass            http://streamgl-datasets/health;\n
     \   # }\n\n    # location /revision/health {\n    #     proxy_pass            http://streamgl-datasets/health;\n
-    \   # }\n\n    location /glsession/health {\n        #set $backend          \"http://streamgl-sessions:8080/health\";\n
-    \       set $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
+    \   # }\n\n    location /glsession/health {\n        set $backend          \"http://streamgl-sessions:8080/health\";\n
+    \       #set $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /snapshots/health
-    {\n        #set $backend          \"http://streamgl-sessions:8080/health\";\n
-    \       set $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
+    {\n        set $backend          \"http://streamgl-sessions:8080/health\";\n        #set
+    $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /forge-etl/health
-    {\n        #set $backend          \"http://forge-etl:8080/health\";\n        set
+    {\n        set $backend          \"http://forge-etl:8080/health\";\n        #set
     $backend          \"http://forge-etl.default.svc.cluster.local:8080/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /streamgl-vgraph-etl/health
-    {\n        #set $backend          \"http://streamgl-vgraph-etl:8080/health\";\n
-    \       set $backend          \"http://streamgl-vgraph-etl.default.svc.cluster.local:8080/health\";\n
+    {\n        set $backend          \"http://streamgl-vgraph-etl:8080/health\";\n
+    \       #set $backend          \"http://streamgl-vgraph-etl.default.svc.cluster.local:8080/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /streamgl-gpu/primary/health
-    {\n        #set $backend          \"http://streamgl-gpu:8080/health\";\n        set
+    {\n        set $backend          \"http://streamgl-gpu:8080/health\";\n        #set
     $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /streamgl-gpu/secondary/cpu/health
-    {\n        #set $backend          \"http://streamgl-gpu:8080/health/workers/cpu\";\n
-    \       set $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health/workers/cpu\";\n
+    {\n        set $backend          \"http://streamgl-gpu:8080/health/workers/cpu\";\n
+    \       #set $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health/workers/cpu\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /streamgl-gpu/secondary/gpu/health
-    {\n        #set $backend          \"http://streamgl-gpu:8080/health/workers/gpu\";\n
-    \       set $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health/workers/gpu\";\n
+    {\n        set $backend          \"http://streamgl-gpu:8080/health/workers/gpu\";\n
+    \       #set $backend          \"http://streamgl-gpu.default.svc.cluster.local:8080/health/workers/gpu\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /streamgl-viz/health
     {\n        #set $backend          \"http://streamgl-viz:8080/health\";\n        set
     $backend          \"http://streamgl-viz.default.svc.cluster.local:8080/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /streamgl-sessions/health
-    {\n        #set $backend          \"http://streamgl-sessions:8080/health\";\n
-    \       set $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
+    {\n        set $backend          \"http://streamgl-sessions:8080/health\";\n        #set
+    $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /pivot/health {\n
     \       #set $backend          \"http://pivot:8080/pivot/health\";\n        set
     $backend          \"http://pivot.default.svc.cluster.local:8080/pivot/health\";\n
     \       proxy_pass            $backend;\n    }\n\n    location /streamgl-sessions/hello
-    {\n        #set $backend          \"http://streamgl-sessions:8080/hello\";\n        set
+    {\n        set $backend          \"http://streamgl-sessions:8080/hello\";\n        #set
     $backend          \"http://streamgl-sessions.default.svc.cluster.local:8080/hello\";\n
     \       proxy_pass            $backend;\n    }\n\n    #########\n    ## Viz ##\n
     \   #########\n\n    #FIXME this should be unecessary - does anything use it?\n
@@ -529,3 +531,4 @@ data:
     $backend       \"http://nexus.default.svc.cluster.local:8000/api/v1/obj/entitlements/\";\n
     \           proxy_pass         $backend;\n            include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n
     \       }\n\n    }\n\n}\n\n"
+

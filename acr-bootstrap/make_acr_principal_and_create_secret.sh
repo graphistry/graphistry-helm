@@ -42,7 +42,7 @@ USER_NAME=$(az ad sp list --display-name $SERVICE_PRINCIPAL_NAME --query "[].app
 echo "Service principal ID: $USER_NAME"
 echo "Service principal password: $PASSWORD" 
 
-echo "Creating kubernetes impage pull secret named acr-secret"
+echo "Creating kubernetes image pull secret named acr-secret"
 
 #assumes default namespace
 kubectl create secret docker-registry acr-secret \

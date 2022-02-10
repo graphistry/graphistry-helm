@@ -15,7 +15,7 @@ echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
     || { echo "Set ACR_NAME (ex: myacr )" && exit 1; }
 
 [[ ! -z "${DOCKERHUB_USERNAME}" ]] \
-    || { echo "Set DOCKERHUB_USERNAME (ex: mydockerhubusere )" && exit 1; }
+    || { echo "Set DOCKERHUB_USERNAME (ex: mydockerhubuser )" && exit 1; }
 
 
 [[ ! -z "${DOCKERHUB_TOKEN}" ]] \

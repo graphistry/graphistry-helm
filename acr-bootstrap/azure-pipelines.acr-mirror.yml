@@ -13,7 +13,7 @@ variables:
   tag: 'latest'
 
 pool:
-  name: devops-agent-pool-dev
+  name: ubuntu-latest
 
 stages:
 

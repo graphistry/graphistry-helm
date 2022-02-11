@@ -15,15 +15,15 @@ For contributing to this repository as a developer, see [DEVELOP.md](DEVELOP.md)
 Set up the Azure Container Registry, get your docker login credentials, and then run the following command with your credentials and username and ACR information to import the images into the registry:
 
 
-    bash $ACR_NAME=myacr $DOCKERHUB_USERNAME=mydockerhubuser $DOCKERHUB_TOKEN=mydockerhubtoken acr-bootstrap/import-image-into-acr-from-dockerhub.sh 
+    ACR_NAME=myacr DOCKERHUB_USERNAME=mydockerhubuser DOCKERHUB_TOKEN=mydockerhubtoken ./acr-bootstrap/import-image-into-acr-from-dockerhub.sh 
 
 Create a Azure Container Registry Container principal ID and run the following command with your ACR information to create a kube secret with the ACR principal ID:
 
-    bash $ACR_NAME=myacr $AZSUBSCRIPTION="my subscription name" $SERVICE_PRINCIPAL_NAME=acrk8sprincipal $CONTAINER_REGISTRY_NAME=myacrk8sregistry acr-bootstrap/make_acr_principal_and_create_secret.sh
+    ACR_NAME=myacr AZSUBSCRIPTION="my subscription name" SERVICE_PRINCIPAL_NAME=acrk8sprincipal CONTAINER_REGISTRY_NAME=myacrk8sregistry ./acr-bootstrap/make_acr_principal_and_create_secret.sh
 
 
 
 > **Note:** Be sure to change the azurecontainerregistry value in values.yaml to the name of your acr.
 
 
-    helm install my-graphistry-chart --set azurecontainerregistry.name=$CONTAINER_REGISTRY_NAME.azurecr.io graphistry-helm/Graphistry-Helm-Chart
+    helm install my-graphistry-chart --set azurecontainerregistry.name=<container-registry-name>.azurecr.io graphistry-helm/Graphistry-Helm-Chart

@@ -13,7 +13,7 @@ variables:
   tag: 'latest'
 
 pool:
-  name: ubuntu-latest
+  vmImage: ubuntu-latest
 
 stages:
 

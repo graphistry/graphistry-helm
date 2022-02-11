@@ -1,0 +1,33 @@
+# Docker
+
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- none
+
+resources:
+- repo: self
+
+variables:
+  tag: 'latest'
+
+pool:
+  name: devops-agent-pool-dev
+
+stages:
+
+- stage: Mirror
+  displayName: Copy Graphistry DockerHub containers to private ACR
+  jobs:
+  - job: Mirror2ACR
+    steps:
+    - task: AzureCLI@2
+      displayName: 'login'
+      inputs:
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          echo "howdy neighbor"
+          echo "I am here: `pwd`"
+          ls -alh

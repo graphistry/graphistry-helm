@@ -22,12 +22,11 @@ stages:
   jobs:
   - job: Mirror2ACR
     steps:
-    - task: AzureCLI@2
-      displayName: 'login'
+    - task: bash@3
       inputs:
-        scriptType: bash
-        scriptLocation: inlineScript
-        inlineScript: |
+        targetType: 'inleine'
+        failOnStderr: true
+        script: |
           echo "howdy neighbor"
           echo "I am here: `pwd`"
           ls -alh

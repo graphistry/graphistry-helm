@@ -49,14 +49,7 @@ spec:
           ports:
             - containerPort: 8080
           resources: {}
-          volumeMounts:
-            - mountPath: /opt/graphistry/apps/core/viz/build
-              name: viz-static-files
       restartPolicy: {{ .Values.restartPolicy }}
-      volumes:
-        - name: viz-static-files
-          persistentVolumeClaim:
-            claimName: viz-static-files
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }} 
 status: {}

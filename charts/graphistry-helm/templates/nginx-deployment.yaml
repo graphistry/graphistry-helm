@@ -27,6 +27,26 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: nginx
     spec:
+      initContainers:
+      - name: nginx-init-streamgl-viz
+        image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+        command: 
+        - sh 
+        - -c 
+        - cp -r /opt/graphistry/apps/core/viz/build/* /tmp/build/
+        volumeMounts:
+        - name: viz-static
+          mountPath: /tmp/build
+      - name: nginx-init-pivot
+        image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+        command: 
+        - sh 
+        - -c
+        - cp -r /opt/graphistry/apps/core/pivot/www/* /tmp/www/
+        volumeMounts:
+        - name: pivot-static
+          mountPath: /tmp/www
+          
       containers:
         - env:
    {{- range .Values.env }}
@@ -61,9 +81,9 @@ spec:
               name: nginx-upload-config
               subPath: upload.conf
             - mountPath: /opt/graphistry/apps/core/viz/build
-              name: viz-static-files
+              name: viz-static
             - mountPath: /opt/graphistry/apps/core/pivot/www
-              name: pivot-static-files
+              name: pivot-static
             - mountPath: /opt/graphistry/apps/core/nexus/staticfiles
               name: local-media-mount
             - mountPath: /opt/graphistry/data/uploads
@@ -91,12 +111,12 @@ spec:
               - key: upload.conf
                 path: upload.conf
                 mode: 0644
-        - name: viz-static-files
+        - name: viz-static
           persistentVolumeClaim:
-            claimName: viz-static-files
-        - name: pivot-static-files
+            claimName: viz-static
+        - name: pivot-static
           persistentVolumeClaim:
-            claimName: pivot-static-files
+            claimName: pivot-static           
         - name: local-media-mount
           persistentVolumeClaim:
             claimName: local-media-mount
@@ -132,3 +152,34 @@ spec:
     io.kompose.service: nginx
 status:
   loadBalancer: {}
+
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: pivot-static
+  name: pivot-static
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: viz-static
+  name: viz-static
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 100Mi
+status: {}

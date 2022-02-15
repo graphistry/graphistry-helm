@@ -49,20 +49,23 @@ import_if_missing ()
 
 #####
 
-import_if_missing "graphistry:streamgl-viz-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
-import_if_missing "graphistry:streamgl-gpu-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
-import_if_missing "graphistry:streamgl-sessions-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
-import_if_missing "graphistry:streamgl-vgraph-etl-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
-import_if_missing "graphistry:graphistry-pivot-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+# cuda
 import_if_missing "graphistry:etl-server-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:etl-server-python-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:graphistry-nexus-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+import_if_missing "graphistry:graphistry-pivot-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:jupyter-notebook-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
-import_if_missing "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+import_if_missing "graphistry:streamgl-gpu-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+import_if_missing "graphistry:streamgl-sessions-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+import_if_missing "graphistry:streamgl-vgraph-etl-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+import_if_missing "graphistry:streamgl-viz-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 
+# universal
 import_if_missing "graphistry:streamgl-nginx-${APP_BUILD_TAG:-latest}-universal"
+import_if_missing "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-universal"
 import_if_missing "caddy:${APP_BUILD_TAG:-latest}-universal"
 
+# third-party
 echo "importing redis image into ACR"
 az acr import \
   --name $ACR_NAME \

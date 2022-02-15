@@ -23,10 +23,20 @@ stages:
   - job: Mirror2ACR
     steps:
     - task: bash@3
+      displayName: Bash CLI test
       inputs:
-        targetType: 'inleine'
+        targetType: 'inline'
         failOnStderr: true
         script: |
           echo "howdy neighbor"
           echo "I am here: `pwd`"
           ls -alh
+    - task: AzureCLI@2
+      displayName: Azure CLI
+      inputs:
+        azureSubscription: acrgraphistryk8s
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
+          az --version
+          az account show

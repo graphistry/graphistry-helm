@@ -1,14 +1,18 @@
 #!/bin/bash
+# Import Graphistry DockerHub images into a private Azure ACR
+# If you do not have read access to the Graphistry DockerHub, please contact Graphistry
 
 set -ex
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
-####these three enviroment variables are required###
-#ACR_NAME
-#DOCKERHUB_USERNAME
-#DOCKERHUB_TOKEN
-###ex: bash $ACR_NAME=myacr $DOCKERHUB_USERNAME=mydockerhubuser $DOCKERHUB_TOKEN=mydockerhubtoken import-image-into-acr-from-dockerhub.sh ###
+#### Required ###
+# ACR_NAME
+# DOCKERHUB_USERNAME
+# DOCKERHUB_TOKEN
+###
+# ex: bash ACR_NAME=myacr DOCKERHUB_USERNAME=mydockerhubuser DOCKERHUB_TOKEN=mydockerhubtoken import-image-into-acr-from-dockerhub.sh
+###
 
 echo "ACR_NAME: $ACR_NAME"
 echo "DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME"
@@ -24,14 +28,9 @@ echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
 [[ ! -z "${DOCKERHUB_TOKEN}" ]] \
     || { echo "Set DOCKERHUB_TOKEN (ex: mydockerhubtoken )" && exit 1; }
 
-#this script will import graphistry images into ACR
-
-
-
-
 #####
 
-import_if_missing () {
+import_if_missing {
   echo "Importing image if missing: $1"
   az acr repository show --name $ACR_NAME --image $1 \
     && echo "Image \"$1\" already imported, skipping" \
@@ -48,7 +47,6 @@ import_if_missing () {
 }
 
 #####
-
 
 import_if_missing "graphistry:streamgl-viz-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:streamgl-gpu-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"

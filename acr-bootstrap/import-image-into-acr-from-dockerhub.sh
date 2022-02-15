@@ -30,16 +30,17 @@ echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
 
 #####
 
-import_if_missing {
+import_if_missing ()
+{
   echo "Importing image if missing: $1"
-  az acr repository show --name $ACR_NAME --image $1 \
+  az acr repository show --name $ACR_NAME --image "$1" \
     && echo "Image \"$1\" already imported, skipping" \
     || { \
-      echo "Image \"$1\" not yet imported, importing...\" \
+      echo "Image \"$1\" not yet imported, importing..." \
       && az acr import \
-        --name $ACR_NAME \
-        --source docker.io/graphistry/$1 \
-        --image $1 \
+        --name ${ACR_NAME} \
+        --source "docker.io/graphistry/$1" \
+        --image "$1" \
         --username $DOCKERHUB_USERNAME \
         --password $DOCKERHUB_TOKEN \
       ; \

@@ -38,7 +38,8 @@ echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
 import_if_missing ()
 {
   IMAGE=$1
-  OWNER=${$2:-graphistry}
+  OWNER=$2
+  OWNER=${OWNER:-graphistry}
   echo "Importing image if missing: image $IMAGE from docker.io/$OWNER"
   az acr repository show --name $ACR_NAME --image "$IMAGE" \
     && echo "Image \"$IMAGE\" already imported, skipping" \

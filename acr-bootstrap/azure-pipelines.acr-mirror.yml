@@ -1,7 +1,4 @@
-# Docker
-
-# Build a Docker image
-# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+# Mirror official Graphistry images from Graphistry DockerHub to a private Azure ACR 
 
 trigger:
 - none
@@ -34,7 +31,7 @@ stages:
       displayName: Azure CLI
       inputs:
         azureSubscription: $(ACR_SERVICE_CONNECTION_NAME)
-        scriptType: ps
+        scriptType: bash
         scriptLocation: inlineScript
         inlineScript: |
           az --version

@@ -41,10 +41,10 @@ import_if_missing ()
   OWNER=$2
   OWNER=${OWNER:-graphistry}
   echo "Importing image if missing: image $IMAGE from docker.io/$OWNER"
-  az acr repository show --name $ACR_NAME --image "$IMAGE" \
-    && echo "Image \"$IMAGE\" already imported, skipping" \
+  ( az acr repository show --name $ACR_NAME --image "$IMAGE" > /dev/null ) \
+    && echo "Image \"$IMAGE\" found in ACR, skipping" \
     || { \
-      echo "Image \"$IMAGE\" not yet imported, importing..." \
+      echo "Image \"$IMAGE\" not found in ACR, importing..." \
       && az acr import \
         --name ${ACR_NAME} \
         --source "docker.io/$OWNER/$IMAGE" \
@@ -53,6 +53,7 @@ import_if_missing ()
         --password $DOCKERHUB_TOKEN \
       ; \
     }
+  echo "... Finished handling $IMAGE"
 }
 
 #####

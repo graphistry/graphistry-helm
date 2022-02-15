@@ -30,12 +30,12 @@ stages:
           echo "howdy neighbor"
           echo "I am here: `pwd`"
           ls -alh
-    - task: bash@3
+    - task: AzureCLI@2
       displayName: Azure CLI
       inputs:
-        targetType: 'inline'
-        failOnStderr: true
-        script: |
-          az account set --subscription $(ACR_SUBSCRIPTION_ID) 
+        azureSubscription: $(ACR_SUBSCRIPTION_ID)
+        scriptType: ps
+        scriptLocation: inlineScript
+        inlineScript: |
           az --version
           az account show

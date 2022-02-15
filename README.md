@@ -16,9 +16,13 @@ We recommend using a private repository to avoid rate-limiting and improve secur
 #### Option 1 (Recommended): Automatic - Azure Pipelines
 
 * Fork this repository
-* In Azure Pipelines, load [azure-pipelines.acr-mirror.yml](acr-bootstrap/azure-pipelines.acr-mirror.yml)
-* Create pipeline variables as defined in the script
+* In Azure Pipelines, connect to your forked repository and load pipeline [azure-pipelines.acr-mirror.yml](acr-bootstrap/azure-pipelines.acr-mirror.yml)
+* In the Azure Pipelines UI, add pipeline variables as defined in the script
 * Run the pipeline
+
+Updates:
+* Update the pipeline by pulling the latest changes of this repository into your fork
+* Get new Graphistry versions by updating variable `GRAPHISTRY_VERSION` and rerunning the pipeline
 
 #### Option 2: Manual
 

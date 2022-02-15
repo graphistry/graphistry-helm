@@ -6,11 +6,10 @@
 trigger:
 - none
 
+
 resources:
 - repo: self
 
-variables:
-  tag: 'latest'
 
 pool:
   vmImage: ubuntu-latest
@@ -34,7 +33,7 @@ stages:
     - task: AzureCLI@2
       displayName: Azure CLI
       inputs:
-        azureSubscription: acrgraphistryk8s
+        azureSubscription: $(ACR_SUBSCRIPTION_ID)
         scriptType: ps
         scriptLocation: inlineScript
         inlineScript: |

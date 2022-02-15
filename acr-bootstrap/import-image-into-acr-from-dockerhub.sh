@@ -1,6 +1,7 @@
 #!/bin/bash
 # Import Graphistry DockerHub images into a private Azure ACR
 # If you do not have read access to the Graphistry DockerHub, please contact Graphistry
+# Shell most already be logged in to az aubscripton for acr
 
 set -ex
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
@@ -10,8 +11,12 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 # ACR_NAME
 # DOCKERHUB_USERNAME
 # DOCKERHUB_TOKEN
+#### Optional ###
+# APP_BUILD_TAG
+# CUDA_SHORT_VERSION
 ###
-# ex: bash ACR_NAME=myacr DOCKERHUB_USERNAME=mydockerhubuser DOCKERHUB_TOKEN=mydockerhubtoken import-image-into-acr-from-dockerhub.sh
+# ex: 
+# ACR_NAME=myacr DOCKERHUB_USERNAME=mydockerhubuser DOCKERHUB_TOKEN=mydockerhubtoken import-image-into-acr-from-dockerhub.sh
 ###
 
 echo "ACR_NAME: $ACR_NAME"
@@ -32,15 +37,17 @@ echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
 
 import_if_missing ()
 {
-  echo "Importing image if missing: $1"
-  az acr repository show --name $ACR_NAME --image "$1" \
-    && echo "Image \"$1\" already imported, skipping" \
+  IMAGE=$1
+  OWNER=${$2:-graphistry}
+  echo "Importing image if missing: image $IMAGE from docker.io/$OWNER"
+  az acr repository show --name $ACR_NAME --image "$IMAGE" \
+    && echo "Image \"$IMAGE\" already imported, skipping" \
     || { \
-      echo "Image \"$1\" not yet imported, importing..." \
+      echo "Image \"$IMAGE\" not yet imported, importing..." \
       && az acr import \
         --name ${ACR_NAME} \
-        --source "docker.io/graphistry/$1" \
-        --image "$1" \
+        --source "docker.io/$OWNER/$IMAGE" \
+        --image $IMAGE \
         --username $DOCKERHUB_USERNAME \
         --password $DOCKERHUB_TOKEN \
       ; \
@@ -66,12 +73,5 @@ import_if_missing "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-unive
 import_if_missing "caddy:${APP_BUILD_TAG:-latest}-universal"
 
 # third-party
-echo "importing redis image into ACR"
-az acr import \
-  --name $ACR_NAME \
-  --source docker.io/library/redis:6.0.5 \
-  --image redis:6.0.5 \
-  --username $DOCKERHUB_USERNAME \
-  --password $DOCKERHUB_TOKEN
-
+import_if_missing "caddy:${APP_BUILD_TAG:-latest}-universal" "library"
 

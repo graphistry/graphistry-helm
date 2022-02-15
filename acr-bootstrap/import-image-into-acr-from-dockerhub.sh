@@ -28,6 +28,10 @@ echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
 
 echo "importing streamgl-viz image into ACR"
 #graphistry/streamgl-viz:${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0} 
+
+az acr repository show --name ACR_NAME --image graphistry:streamgl-viz-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0} || echo oops
+az acr repository show --name ACR_NAME --image graphistry:fake-viz-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0} || echo oops
+
 az acr import \
   --name $ACR_NAME \
   --source docker.io/graphistry/graphistry:streamgl-viz-${APP_BUILD_TAG:-latest} \

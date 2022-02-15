@@ -8,3 +8,12 @@ For using the Graphistry helm charts in your own Kubernetes,  See the main [READ
 https://dev.azure.com/graphistry/Graphistry%20Dev 
 
 
+
+# TO-DOs
+
+1) calico rules 
+2) env secrets 
+3) autoscaling 
+4) tls intercontainer termination 
+5) some sort of observability down the line with Prometheus and grafana  with traefik when we begin to phase out nginx in favor of traefik 
+6) k8s api dashboard

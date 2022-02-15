@@ -1,5 +1,13 @@
 # Mirror official Graphistry images from Graphistry DockerHub to a private Azure ACR 
 
+# Configuration:
+#   In your Azure pipeline, add variables:
+#     ACR_SERVICE_CONNECTION_NAME (public; Project settings -> Pipelines -> Service connections)
+#     ACR_NAME (public; your ACR short name)
+#     DOCKERHUB_USERNAME (public; your DockerHub service account ID with read access to Graphistry repos)
+#     DOCKERHUB_TOKEN (private; your DockerHub service account token with read access to Graphistry repos)
+#     GRAPHISTRY_VERSION (public; latest or value like v2.38.10)
+
 trigger:
 - none
 
@@ -36,3 +44,9 @@ stages:
         inlineScript: |
           az --version
           az account show
+          ACR_NAME=$(ACR_NAME) \
+            DOCKERHUB_USERNAME=$(GRAPHISTRY_DOCKERHUB_USERNAME) \
+            DOCKERHUB_TOKEN=$(GRAPHISTRY_DOCKERHUB_TOKEN) \
+            CUDA_SHORT_VERSION=11.0 \
+            APP_BUILD_TAG=$(GRAPHISTRY_VERSION)
+            ./acr-bootstrap/import-image-into-acr-from-dockerhub.sh

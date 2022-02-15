@@ -1,5 +1,8 @@
 #!/bin/bash
 
+set -ex
+trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
+trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
 ####these three enviroment variables are required###
 #ACR_NAME

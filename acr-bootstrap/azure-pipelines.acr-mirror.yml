@@ -33,7 +33,7 @@ stages:
     - task: AzureCLI@2
       displayName: Azure CLI
       inputs:
-        azureSubscription: $(ACR_SUBSCRIPTION_ID)
+        azureSubscription: $(ACR_SERVICE_CONNECTION_NAME)
         scriptType: ps
         scriptLocation: inlineScript
         inlineScript: |

@@ -55,7 +55,7 @@ import_if_missing "graphistry:streamgl-sessions-${APP_BUILD_TAG:-latest}-${CUDA_
 import_if_missing "graphistry:streamgl-vgraph-etl-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:graphistry-pivot-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:etl-server-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
-import_if_missing "graphistry:forge-etl-python-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+import_if_missing "graphistry:etl-server-python-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:graphistry-nexus-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:jupyter-notebook-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"

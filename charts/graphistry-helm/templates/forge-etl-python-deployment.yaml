@@ -63,7 +63,10 @@ spec:
           persistentVolumeClaim:
             claimName: uploads-files
       imagePullSecrets:
-          - name: {{ .Values.imagePullSecrets }}  
+          - name: {{ .Values.imagePullSecrets }} 
+{{- if .Values.nodeSelector }}
+      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+{{- end }}  
 status: {}
 
 ---

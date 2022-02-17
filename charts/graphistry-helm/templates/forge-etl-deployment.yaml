@@ -58,7 +58,10 @@ spec:
           persistentVolumeClaim:
             claimName: forge-etl-claim0
       imagePullSecrets:
-          - name: {{ .Values.imagePullSecrets }}  
+          - name: {{ .Values.imagePullSecrets }} 
+{{- if .Values.nodeSelector }}
+      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+{{- end }}  
 status: {}
 
 ---
@@ -81,6 +84,7 @@ spec:
       targetPort: 8080
   selector:
     io.kompose.service: forge-etl
+  
 status:
   loadBalancer: {}
 

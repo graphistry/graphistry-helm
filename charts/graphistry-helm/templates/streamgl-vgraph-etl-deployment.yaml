@@ -59,6 +59,9 @@ spec:
             claimName: streamgl-vgraph-etl-claim0
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
+{{- if .Values.nodeSelector }}
+      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+{{- end }} 
 status: {}
 
 ---

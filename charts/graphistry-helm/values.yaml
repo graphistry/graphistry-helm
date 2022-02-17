@@ -1,4 +1,6 @@
-#internal LoadBalancer without a public IP for various cloud services
+
+nodeSelector: {"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
+#--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
 ingress:
   management:
     annotations:

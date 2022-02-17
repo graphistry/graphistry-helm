@@ -75,7 +75,10 @@ spec:
           persistentVolumeClaim:
             claimName: dask-scheduler-claim1
       imagePullSecrets:
-          - name: {{ .Values.imagePullSecrets }}  
+          - name: {{ .Values.imagePullSecrets }} 
+{{- if .Values.nodeSelector }}
+      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+{{- end }}  
 status: {}
 
 ---

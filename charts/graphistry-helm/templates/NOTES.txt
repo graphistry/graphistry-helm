@@ -26,21 +26,38 @@ RESTART POLICY
 
 restartPolicy - default is set to: {{ .Values.restartPolicy }}
 
-To change the restartPolicy while deployed: helm upgrade {{ .Release.Name }} --set restartPolicy=Never ./compose/graphistry_helm-release
+To change the restartPolicy while deployed: 
+
+helm upgrade {{ .Release.Name }} --set restartPolicy=Never graphistry-helm/Graphistry-Helm-Chart
 
 VERSION
 
 tag - default release being deployed is:  {{ .Values.tag }}
 
-To change the tag while deployed set tag to another version that is in your Azure container registry by setting the proper version: helm upgrade {{ .Release.Name }} --set tag=v2.38.10 ./compose/graphistry_helm-release
+To change the tag while deployed set tag to another version that is in your Azure container registry by setting the proper version: 
+
+helm upgrade {{ .Release.Name }} --set tag=v2.38.10 graphistry-helm/Graphistry-Helm-Chart
 
 LOAD BALANCER
  
- INGRESS - default is set to: {{ .Values.ingress.management.annotations }} can be configured for each major cloud service (aws, azure, gcp)
- just uncomment out the desired configuration on the values.yaml file under ingress.management.annotations.
+ INGRESS MANAGEMENT ANNOTATIONS - default is set to: {{ .Values.ingress.management.annotations }} can be configured for each major cloud service (aws, azure, gcp)
+in the values.yaml file:
 ingress:
   management:
     annotations:
       #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+ Can change while deployed : 
+
+ helm upgrade {{ .Release.Name }} --set-string ingress.management.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-internal"="true" graphistry-helm/Graphistry-Helm-Chart
+
+
+NODE SELECTOR
+
+nodeSelector - default is set to: {{ .Values.nodeSelector }}
+can change the nodeSelector while deployed: 
+
+helm upgrade {{ .Release.Name }} --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal graphistry-helm/Graphistry-Helm-Chart
+
+can change to any label provided by kubectl describe node <node_name> just follow the format provided.

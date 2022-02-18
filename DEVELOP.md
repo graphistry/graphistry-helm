@@ -153,9 +153,15 @@ if successful will see nvidia.com/gpu in nodes capacity here \
 
 
 
-## change contexts for kubectl 
+## get contexts for kubectl 
 ```kubectl config get-contexts```
 
 
 ## change kubectl context
 ```kubectl config use-context <yourClusterName>```
+
+## get nodes
+```kubectl get nodes```
+
+## describe the specified node
+```kubectl describe node <node-name>```

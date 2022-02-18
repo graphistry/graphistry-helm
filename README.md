@@ -37,9 +37,17 @@ APP_BUILD_TAG=latest ACR_NAME=myacr DOCKERHUB_USERNAME=mydockerhubuser DOCKERHUB
 
 ### Azure
 
-Create a Azure Container Registry Container principal ID by running the following command with your ACR information to create a kube secret with the ACR principal ID:
+Create a Azure Container Registry Container principal ID by running the following command with your ACR information to create a kube secret with the ACR principal ID(This script assumes a default namespace, to change, edit the script):
 
     ACR_NAME=myacr AZSUBSCRIPTION="my subscription name" SERVICE_PRINCIPAL_NAME=acrk8sprincipal CONTAINER_REGISTRY_NAME=myacrk8sregistry ./acr-bootstrap/make_acr_principal_and_create_secret.sh
+
+### Any other Kubernetes cluster (assumes a default namespace)
+
+    kubectl create secret docker-registry acr-secret \
+    --namespace default \
+    --docker-server=<CONTAINER_REGISTRY_NAME>.azurecr.io \
+    --docker-username=<Docker username> \
+    --docker-password=<Docker password> 
 
 ## Add gpu daemonset to cluster
 > **Note:** Be sure to add the nvidia device plugin daemonset to the cluster before deployment. \

@@ -42,7 +42,7 @@ Create a Azure Container Registry Container principal ID by running the followin
     ACR_NAME=myacr AZSUBSCRIPTION="my subscription name" SERVICE_PRINCIPAL_NAME=acrk8sprincipal CONTAINER_REGISTRY_NAME=myacrk8sregistry ./acr-bootstrap/make_acr_principal_and_create_secret.sh
 
 ## Add gpu daemonset to cluster
-> **Note:** Be sure to add the nvidia device plugin daemonset to the cluster before deployment.
+> **Note:** Be sure to add the nvidia device plugin daemonset to the cluster before deployment. \
 ```kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml```
 
 once daemonset has been installed and started

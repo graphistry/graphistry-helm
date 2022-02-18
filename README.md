@@ -56,6 +56,8 @@ once you have a node selected, run the following command and find the hostname o
 and then set the nodeSelector value to the hostname of the selected node along with your acr container registry name.:
 
 
-    helm install my-graphistry-chart --set azurecontainerregistry.name=<container-registry-name>.azurecr.io --set nodeSelector."kubernetes\\.io/hostname"=<node hostname> graphistry-helm/Graphistry-Helm-Chart
+    helm install my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
+     --set azurecontainerregistry.name=<container-registry-name>.azurecr.io \
+     --set nodeSelector."kubernetes\\.io/hostname"=<node hostname> 
 
 > **Note:** different labels can be used for the nodeSelector value, but some labels between the nodes may not be unique.

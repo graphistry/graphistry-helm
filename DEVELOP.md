@@ -73,11 +73,11 @@ if successful will see nvidia.com/gpu in nodes capacity here \
 
 
 ## upgrade with a test run to check that charts are working
-```helm upgrade --dry-run graphchart-release  ./compose/graphistry_helm-release```
+```helm upgrade --dry-run graphchart-release  <chart dir>```
 
 
 ## lint helm charts
-```helm lint  ./compose/graphistry_helm-release```
+```helm lint  <chart dir>```
 
 
 ## print env in a pod
@@ -85,7 +85,7 @@ if successful will see nvidia.com/gpu in nodes capacity here \
 
 
 ## how to restart a pod 
-```kubectl scale deployment nginx --replicas=0```
+```kubectl scale deployment nginx --replicas=0 && kubectl scale deployment nginx --replicas=1 ```
 
 
 ## cat a file in a pod
@@ -96,11 +96,11 @@ if successful will see nvidia.com/gpu in nodes capacity here \
 ```kubectl create configmap nginx-conf --from-file=./default.conf```
 
 
-## describe yaml 
+## describe configmap config in yaml 
 ```kubectl get configmaps nginx-conf -o yaml```
 
 
-## describe prettified
+## describe prettified configmap config
 ```kubectl describe configmaps nginx-config | nl```
 
 

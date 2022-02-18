@@ -42,7 +42,20 @@ Create a Azure Container Registry Container principal ID and run the following c
     ACR_NAME=myacr AZSUBSCRIPTION="my subscription name" SERVICE_PRINCIPAL_NAME=acrk8sprincipal CONTAINER_REGISTRY_NAME=myacrk8sregistry ./acr-bootstrap/make_acr_principal_and_create_secret.sh
 
 
-> **Note:** Be sure to change the azurecontainerregistry value in values.yaml to the name of your acr.
 
 
-    helm install my-graphistry-chart --set azurecontainerregistry.name=<container-registry-name>.azurecr.io graphistry-helm/Graphistry-Helm-Chart
+
+> **Note:** Be sure to change the azurecontainerregistry value in values.yaml to the name of your acr as well as setting the nodeSelector value to your preferred node to deploy the cluster onto.
+    
+```kubectl get nodes```
+
+once you have a node selected, run the following command and find the hostname of the node to use with the nodeSelector value:
+
+```kubectl describe node <node name>```
+
+and then set the nodeSelector value to the hostname of the selected node along with your acr container registry name.:
+
+
+    helm install my-graphistry-chart --set azurecontainerregistry.name=<container-registry-name>.azurecr.io --set nodeSelector."kubernetes\\.io/hostname"=<node hostname> graphistry-helm/Graphistry-Helm-Chart
+
+> **Note:** different labels can be used for the nodeSelector value, but some labels between the nodes may not be unique.

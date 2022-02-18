@@ -37,7 +37,7 @@ APP_BUILD_TAG=latest ACR_NAME=myacr DOCKERHUB_USERNAME=mydockerhubuser DOCKERHUB
 
 ### Azure
 
-Create a Azure Container Registry Container principal ID and run the following command with your ACR information to create a kube secret with the ACR principal ID:
+Create a Azure Container Registry Container principal ID by running the following command with your ACR information to create a kube secret with the ACR principal ID:
 
     ACR_NAME=myacr AZSUBSCRIPTION="my subscription name" SERVICE_PRINCIPAL_NAME=acrk8sprincipal CONTAINER_REGISTRY_NAME=myacrk8sregistry ./acr-bootstrap/make_acr_principal_and_create_secret.sh
 

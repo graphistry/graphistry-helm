@@ -44,7 +44,7 @@ Create a Azure Container Registry Container principal ID and run the following c
 
 
 
-
+## Setting the node selector and the acr container registry for deployment 
 > **Note:** Be sure to change the azurecontainerregistry value in values.yaml to the name of your acr as well as setting the nodeSelector value to your preferred node to deploy the cluster onto.
     
 ```kubectl get nodes```

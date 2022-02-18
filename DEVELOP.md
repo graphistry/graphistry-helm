@@ -73,7 +73,7 @@ if successful will see nvidia.com/gpu in nodes capacity here \
 
 
 ## upgrade with a test run to check that charts are working
-```helm upgrade --dry-run graphchart-release  <chart dir>```
+```helm upgrade --dry-run graphchart-release  ./<chart dir>```
 
 
 ## lint helm charts

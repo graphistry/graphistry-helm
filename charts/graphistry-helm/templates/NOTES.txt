@@ -58,6 +58,6 @@ NODE SELECTOR
 nodeSelector - default is set to: {{ .Values.nodeSelector }}
 can change the nodeSelector while deployed: 
 
-helm upgrade {{ .Release.Name }} --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal graphistry-helm/Graphistry-Helm-Chart
+helm upgrade {{ .Release.Name }} --set nodeSelector."kubernetes\\.io/hostname"=<node hostname> graphistry-helm/Graphistry-Helm-Chart
 
 can change to any label provided by kubectl describe node <node_name> just follow the format provided.

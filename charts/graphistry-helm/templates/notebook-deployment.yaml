@@ -54,20 +54,14 @@ spec:
             - mountPath: /home/graphistry/notebooks
               name: notebook-claim0
             - mountPath: /dask-shared
-              name: notebook-claim1
+              name: notebook-claim0
             - mountPath: /home/graphistry/dask-shared
-              name: notebook-claim2
+              name: notebook-claim0
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: notebook-claim0
           persistentVolumeClaim:
             claimName: notebook-claim0
-        - name: notebook-claim1
-          persistentVolumeClaim:
-            claimName: notebook-claim1
-        - name: notebook-claim2
-          persistentVolumeClaim:
-            claimName: notebook-claim2
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
 {{- if .Values.nodeSelector }}
@@ -113,35 +107,5 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: notebook-claim1
-  name: notebook-claim1
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: notebook-claim2
-  name: notebook-claim2
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
+      storage: 40Gi
 status: {}

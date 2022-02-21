@@ -53,20 +53,14 @@ spec:
               name: postgres-data
               subPath: data
             - mountPath: /backups
-              name: postgres-backups
+              name: postgres-data
             - mountPath: /var/graphistry/postgres
-              name: postgres-claim2
+              name: postgres-data
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: postgres-data
-        - name: postgres-backups
-          persistentVolumeClaim:
-            claimName: postgres-backups
-        - name: postgres-claim2
-          persistentVolumeClaim:
-            claimName: postgres-claim2
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}    
 {{- if .Values.nodeSelector }}
@@ -111,35 +105,6 @@ spec:
     - ReadWriteOnce
   resources:
     requests:
-      storage: 100Mi
+      storage: 1Gi
 status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: postgres-backups
-  name: postgres-backups
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: postgres-claim2
-  name: postgres-claim2
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
+

@@ -54,7 +54,7 @@ spec:
             - mountPath: /config
               name: caddy-claim1
             - mountPath: /data
-              name: caddy-claim2
+              name: caddy-claim1
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: caddy-config
@@ -67,9 +67,6 @@ spec:
         - name: caddy-claim1
           persistentVolumeClaim:
             claimName: caddy-claim1
-        - name: caddy-claim2
-          persistentVolumeClaim:
-            claimName: caddy-claim2
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}    
 {{- if .Values.nodeSelector }}
@@ -113,21 +110,6 @@ metadata:
   labels:
     io.kompose.service: caddy-claim1
   name: caddy-claim1
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: caddy-claim2
-  name: caddy-claim2
 spec:
   accessModes:
     - ReadWriteOnce

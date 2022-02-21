@@ -64,15 +64,12 @@ spec:
             - mountPath: /opt/graphistry/data
               name: dask-cuda-worker-claim0
             - mountPath: /dask-shared
-              name: dask-cuda-worker-claim1
+              name: dask-cuda-worker-claim0
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: dask-cuda-worker-claim0
           persistentVolumeClaim:
             claimName: dask-cuda-worker-claim0
-        - name: dask-cuda-worker-claim1
-          persistentVolumeClaim:
-            claimName: dask-cuda-worker-claim1
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
 {{- if .Values.nodeSelector }}
@@ -98,22 +95,6 @@ spec:
       storage: 100Mi
 status: {}
 ---
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: dask-cuda-worker-claim1
-  name: dask-cuda-worker-claim1
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-
 #service
 apiVersion: v1
 kind: Service

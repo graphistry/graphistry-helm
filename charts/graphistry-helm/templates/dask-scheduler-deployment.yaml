@@ -65,15 +65,12 @@ spec:
             - mountPath: /opt/graphistry/data
               name: dask-scheduler-claim0
             - mountPath: /dask-shared
-              name: dask-scheduler-claim1
+              name: dask-scheduler-claim0
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: dask-scheduler-claim0
           persistentVolumeClaim:
             claimName: dask-scheduler-claim0
-        - name: dask-scheduler-claim1
-          persistentVolumeClaim:
-            claimName: dask-scheduler-claim1
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }} 
 {{- if .Values.nodeSelector }}
@@ -124,20 +121,4 @@ spec:
     requests:
       storage: 100Mi
 status: {}
-
 ---
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: dask-scheduler-claim1
-  name: dask-scheduler-claim1
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}

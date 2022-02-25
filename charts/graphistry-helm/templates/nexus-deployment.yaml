@@ -15,7 +15,14 @@ spec:
     matchLabels:
       io.kompose.service: nexus
   strategy:
+{{ if eq .Values.rollingUpdate true }}
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "25%"
+      maxUnavailable: "0%"
+{{ else }}
     type: Recreate
+{{- end }}
   template:
     metadata:
       annotations:

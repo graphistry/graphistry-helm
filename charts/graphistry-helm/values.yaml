@@ -1,8 +1,10 @@
-
+#node selector to determine which node to deploy cluster to
 nodeSelector: {"accelerator": "nvidia"}
 #--set nodeSelector."accelerator"=nvidia
 #{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
 #--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
+
+#ingress management - determines if ingress is going to be on internal load balancer 
 ingress:
   management:
     annotations:
@@ -10,7 +12,11 @@ ingress:
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
+# multinode selector switch to determine if going multi/single node
 multiNode: false
+
+# rolling update deployment strategy switch
+rollingUpdate: false
 
 #restart policy
 restartPolicy: Always

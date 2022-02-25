@@ -107,3 +107,20 @@ ex:
 helm upgrade {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \ 
   --set multiNode=true \
   --set nodeSelector."accelerator"=nvidia  
+
+
+DEPLOYMENT STRATEGY
+
+rollingUpdate: is set to {{ .Values.rollingUpdate }}
+
+false: sets deployment strategy to Recreate
+true: sets deployment strategy to RollingUpdate
+
+HOW TO:
+
+to change deployment strategy to rollingUpdate while deployed:
+
+ex:
+
+helm upgrade {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
+  --set rollingUpdate=true

@@ -54,11 +54,16 @@ spec:
           volumeMounts:
             - mountPath: /opt/graphistry/apps/core/nexus/staticfiles
               name: local-media-mount
+            - mountPath: /opt/graphistry/data
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: local-media-mount
           persistentVolumeClaim:
             claimName: local-media-mount
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }} 
 {{- if .Values.nodeSelector }}

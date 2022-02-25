@@ -54,6 +54,10 @@ spec:
               subPath: config.json
               name: pivot-config-volume
               readOnly: true
+            - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /opt/graphistry/apps/core/pivot/data
+              name: data-mount
       volumes:
         - name: pivot-config-volume
           configMap:
@@ -61,7 +65,9 @@ spec:
             items:
               - key: config.json
                 path: config.json
-
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  

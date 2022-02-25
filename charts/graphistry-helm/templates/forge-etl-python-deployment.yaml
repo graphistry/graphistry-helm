@@ -51,14 +51,14 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /opt/graphistry/data
-              name: forge-etl-python-claim0
+              name: data-mount
             - mountPath: /opt/graphistry/data/uploads
               name: uploads-files
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
-        - name: forge-etl-python-claim0
+        - name: data-mount
           persistentVolumeClaim:
-            claimName: forge-etl-python-claim0
+            claimName: data-mount
         - name: uploads-files
           persistentVolumeClaim:
             claimName: uploads-files
@@ -95,19 +95,3 @@ status:
 
 ---
 
-#volumes
-
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: forge-etl-python-claim0
-  name: forge-etl-python-claim0
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}

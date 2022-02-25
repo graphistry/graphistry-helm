@@ -51,12 +51,12 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /opt/graphistry/data
-              name: forge-etl-claim0
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
-        - name: forge-etl-claim0
+        - name: data-mount
           persistentVolumeClaim:
-            claimName: forge-etl-claim0
+            claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }} 
 {{- if .Values.nodeSelector }}
@@ -88,19 +88,3 @@ spec:
 status:
   loadBalancer: {}
 
----
-#volumes
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: forge-etl-claim0
-  name: forge-etl-claim0
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}

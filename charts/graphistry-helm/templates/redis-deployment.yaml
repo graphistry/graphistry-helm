@@ -49,17 +49,14 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /opt/graphistry/data
-              name: redis-claim0
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
-        - name: redis-claim0
+        - name: data-mount
           persistentVolumeClaim:
-            claimName: redis-claim0
+            claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
-{{- if .Values.nodeSelector }}
-      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
-{{- end }} 
 status: {}
 ---
 apiVersion: v1
@@ -83,21 +80,3 @@ spec:
     io.kompose.service: redis
 status:
   loadBalancer: {}
-
-
-#volumes
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: redis-claim0
-  name: redis-claim0
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}

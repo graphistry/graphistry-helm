@@ -51,12 +51,12 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /opt/graphistry/data
-              name: streamgl-gpu-claim0
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
-        - name: streamgl-gpu-claim0
+        - name: data-mount
           persistentVolumeClaim:
-            claimName: streamgl-gpu-claim0
+            claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }} 
 {{- if .Values.nodeSelector }}
@@ -86,20 +86,3 @@ spec:
     io.kompose.service: streamgl-gpu
 status:
   loadBalancer: {}
-
-#volumes
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: streamgl-gpu-claim0
-  name: streamgl-gpu-claim0
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}

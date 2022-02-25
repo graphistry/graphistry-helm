@@ -1,5 +1,7 @@
 
-nodeSelector: {"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
+nodeSelector: {"accelerator": "nvidia"}
+#--set nodeSelector."accelerator"=nvidia
+#{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
 #--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
 ingress:
   management:
@@ -8,7 +10,7 @@ ingress:
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
-
+multiNode: false
 
 #restart policy
 restartPolicy: Always

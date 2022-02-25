@@ -52,16 +52,21 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /home/graphistry/notebooks
-              name: notebook-claim0
+              subPath: notebooks
+              name: data-mount
             - mountPath: /dask-shared
-              name: notebook-claim0
+              name: data-mount
             - mountPath: /home/graphistry/dask-shared
-              name: notebook-claim0
+              subPath: dask-shared
+              name: data-mount
+            - mountPath: /opt/graphistry/data
+              subPath: data
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
-        - name: notebook-claim0
+        - name: data-mount
           persistentVolumeClaim:
-            claimName: notebook-claim0
+            claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
 {{- if .Values.nodeSelector }}
@@ -92,20 +97,3 @@ spec:
     io.kompose.service: notebook
 status:
   loadBalancer: {}
-
----
-#volumes
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: notebook-claim0
-  name: notebook-claim0
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 40Gi
-status: {}

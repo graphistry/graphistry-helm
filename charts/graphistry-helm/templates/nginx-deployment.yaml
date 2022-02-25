@@ -88,6 +88,8 @@ spec:
               name: local-media-mount
             - mountPath: /opt/graphistry/data/uploads
               name: uploads-files
+            - mountPath: /opt/graphistry/data
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: nginx-config
@@ -112,17 +114,18 @@ spec:
                 path: upload.conf
                 mode: 0644
         - name: viz-static
-          persistentVolumeClaim:
-            claimName: viz-static
+          emptyDir: {}
         - name: pivot-static
-          persistentVolumeClaim:
-            claimName: pivot-static           
+          emptyDir: {}           
         - name: local-media-mount
           persistentVolumeClaim:
             claimName: local-media-mount
         - name: uploads-files
           persistentVolumeClaim:
             claimName: uploads-files
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
 {{- if .Values.nodeSelector }}
@@ -156,33 +159,4 @@ spec:
 status:
   loadBalancer: {}
 
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: pivot-static
-  name: pivot-static
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
----
-apiVersion: v1
-kind: PersistentVolumeClaim
-metadata:
-  creationTimestamp: null
-  labels:
-    io.kompose.service: viz-static
-  name: viz-static
-spec:
-  accessModes:
-    - ReadWriteOnce
-  resources:
-    requests:
-      storage: 100Mi
-status: {}
+

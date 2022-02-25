@@ -56,11 +56,16 @@ spec:
               name: postgres-data
             - mountPath: /var/graphistry/postgres
               name: postgres-data
+            - mountPath: /opt/graphistry/data
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
             claimName: postgres-data
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}    
 {{- if .Values.nodeSelector }}

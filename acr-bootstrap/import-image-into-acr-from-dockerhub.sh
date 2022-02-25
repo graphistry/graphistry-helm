@@ -75,5 +75,5 @@ import_if_missing "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-unive
 import_if_missing "caddy:${APP_BUILD_TAG:-latest}-universal"
 
 # third-party
-import_if_missing "caddy:${APP_BUILD_TAG:-latest}-universal" "library"
+import_if_missing "redis:${APP_BUILD_TAG:-6.0.5}" "library"
 

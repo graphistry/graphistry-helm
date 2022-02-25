@@ -73,9 +73,9 @@ spec:
             claimName: data-mount            
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }} 
-{{- if .Values.nodeSelector }}
+{{ if eq .Values.multiNode false }}
       nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
-{{- end }}  
+{{- end }} 
 status: {}
 
 ---

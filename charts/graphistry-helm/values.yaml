@@ -15,7 +15,7 @@ ingress:
 # multinode selector switch to determine if going multi/single node
 multiNode: false
 
-# rolling update deployment strategy switch
+# rolling update deployment strategy switch (postgres and nexus are exempt)
 rollingUpdate: false
 
 #restart policy

@@ -1,0 +1,59 @@
+# Initial Deployment of Graphistry Helm Charts on cluster
+
+# Configuration:
+#   In your Azure pipeline, add variables:
+#     ACR_SERVICE_CONNECTION_NAME (public; Project settings -> Pipelines -> Service connections)
+#     SERVICE_PRINCIPAL_NAME (public; your ACR service principal name)
+#     SERVICE_PRINCIPAL_PASSWORD  (private; your ACR service principal password)
+#     TENANT_ID (public; your ACR service principal tenant ID)
+#     RESOURCE_GROUP (public; your ACR resource group)
+#     CLUSTER_NAME (public; your ACR cluster name)
+#     CONTAINER_REGISTRY_NAME (public; your ACR container registry name)
+#     NODE_NAME (public; your ACR node name)
+#     IMAGE_PULL_SECRETS (private; your ACR image pull secrets)
+
+
+trigger:
+- none
+
+
+resources:
+- repo: self
+
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+- stage: Mirror
+  displayName: Helm Deploy
+  jobs:
+  - job: HelmDeploy
+    steps:
+    - task: bash@3
+      displayName: Bash CLI test
+      inputs:
+        targetType: 'inline'
+        failOnStderr: true
+        script: |
+          echo "howdy neighbor"
+          echo "I am here: `pwd`"
+          ls -alh
+    - task: AzureCLI@2
+      displayName: Azure CLI
+      inputs:
+        azureSubscription: $(ACR_SERVICE_CONNECTION_NAME)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az --version
+          SERVICE_PRINCIPAL_NAME=$(SERVICE_PRINCIPAL_NAME) \
+          SERVICE_PRINCIPAL_PASSWORD=$(SERVICE_PRINCIPAL_PASSWORD) \
+          TENANT_ID=$(TENANT_ID) \
+          RESOURCE_GROUP = $(RESOURCE_GROUP) \
+          CLUSTER_NAME = $(CLUSTER_NAME) \
+          CONTAINER_REGISTRY_NAME=$(CONTAINER_REGISTRY_NAME) \
+          NODE_NAME=$(NODE_NAME) \
+          IMAGE_PULL_SECRETS=$(IMAGE_PULL_SECRETS) \
+          ./acr-bootstrap/helm-deploy.sh

@@ -117,6 +117,8 @@ daskcudaworker:
 
 #environment variables 
 env:
+ - name: HOST
+   value: 0.0.0.0
  - name: AUTH_LDAP_BIND_PASSWORD
    value: abc123xyz
  - name: DJANGO_SECRET_KEY

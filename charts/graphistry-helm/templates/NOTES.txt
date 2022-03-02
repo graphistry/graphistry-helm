@@ -108,6 +108,10 @@ helm upgrade {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
   --set multiNode=true \
   --set nodeSelector."accelerator"=nvidia  
 
+NOTE:
+azure has a predefined nodelabel for GPUS:  --set nodeSelector."kubernetes\\.azure\\.com/accelerator"=nvidia 
+
+
 
 DEPLOYMENT STRATEGY
 

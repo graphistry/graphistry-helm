@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: DaemonSet
 metadata:
   annotations:
     autoheal: "true"
@@ -10,18 +10,15 @@ metadata:
     io.kompose.service: dask-cuda-worker
   name: dask-cuda-worker
 spec:
-  replicas: 1
   selector:
     matchLabels:
       io.kompose.service: dask-cuda-worker
-  strategy:
 {{ if eq .Values.rollingUpdate true }}
+  updateStrategy:
     type: RollingUpdate
     rollingUpdate:
+      maxUnavailable: 0%
       maxSurge: "25%"
-      maxUnavailable: "0%"
-{{ else }}
-    type: Recreate
 {{- end }}
   template:
     metadata:
@@ -80,7 +77,6 @@ spec:
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
       nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
-status: {}
 ---
 #service
 apiVersion: v1

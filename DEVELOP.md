@@ -11,13 +11,14 @@ https://dev.azure.com/graphistry/Graphistry%20Dev
 
 # TO-DOs
 
-1) calico rules 
+1) <s> calico rules </s>
 2) env secrets 
 3) autoscaling 
 4) tls intercontainer termination 
 5) some sort of observability down the line with Prometheus and grafana  with traefik when we begin to phase out nginx in favor of traefik 
 6) k8s api dashboard
-
+7) add logging
+8) add multinode volume support with NFS (longhorn)
 
 # Convenient Commands
 
@@ -165,3 +166,6 @@ if successful will see nvidia.com/gpu in nodes capacity here \
 
 ## describe the specified node
 ```kubectl describe node <node-name>```
+
+## get yaml of particular pod
+```kubectl get pod <pod_name> -o yaml```

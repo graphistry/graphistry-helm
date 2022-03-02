@@ -13,13 +13,10 @@ spec:
   selector:
     matchLabels:
       io.kompose.service: forge-etl-python
-{{ if eq .Values.rollingUpdate true }}
   updateStrategy:
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 0%
-      maxSurge: "25%"
-{{- end }}
+      maxUnavailable: 1
   template:
     metadata:
       annotations:

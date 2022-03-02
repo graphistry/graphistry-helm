@@ -51,8 +51,18 @@ echo "IMAGE_PULL_SECRETS: $IMAGE_PULL_SECRETS"
     || { echo "Set IMAGE_PULL_SECRETS (ex: acrk8s )" && exit 1; }
 
 
+echo "installing helm charts, if already installed. upgrading to latest version..."
 
+if [[ $(helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/ | grep "exists")  ]]; 
+then
+  echo "Repo already exists upgrading..."
+  helm repo update graphistry-helm
+else
+    echo "Repo does not exist adding..."
+    helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+fi
 
+echo "logging into az"
 az login --service-principal --username $SERVICE_PRINCIPAL_USERNAME --password $SERVICE_PRINCIPAL_PASSWORD --tenant $TENANT_ID
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME –admin
 

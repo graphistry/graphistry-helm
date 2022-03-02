@@ -62,11 +62,11 @@ else
     helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
 fi
 
-echo "logging into az"
+echo "logging into az..."
 az login --service-principal --username $SERVICE_PRINCIPAL_USERNAME --password $SERVICE_PRINCIPAL_PASSWORD --tenant $TENANT_ID
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME –admin
 
-
+echo "deploying to the cluster..."
 helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
  --set azurecontainerregistry.name=$CONTAINER_REGISTRY_NAME.azurecr.io  \
  --set nodeSelector."kubernetes\\.io/hostname"=$NODE_NAME \

@@ -60,6 +60,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: NAMESPACE
+            value: {{ .Release.Namespace }}
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
           imagePullPolicy: {{.Values.imagePullPolicy }}          
           livenessProbe:
@@ -163,7 +165,6 @@ spec:
       targetPort: 443
   selector:
     io.kompose.service: nginx
-status:
-  loadBalancer: {}
+
 
 

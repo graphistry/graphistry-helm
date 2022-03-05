@@ -13,7 +13,7 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 #CONTAINER_REGISTRY_NAME
 #NODE_NAME
 #IMAGE_PULL_SECRETS
-
+#APP_TAG
 
 echo "SERVICE_PRINCIPAL USERNAME: $SERVICE_PRINCIPAL_USERNAME"
 echo "SERVICE_PRINCIPAL_PASSWORD: $SERVICE_PRINCIPAL_PASSWORD"
@@ -25,6 +25,7 @@ echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
 echo "NODE_NAME: $NODE_NAME"
 echo "IMAGE_PULL_SECRETS: $IMAGE_PULL_SECRETS"
 
+echo "APP_TAG": $APP_TAG
     
 [[ ! -z "${SERVICE_PRINCIPAL_USERNAME}" ]] \
     || { echo "Set SERVICE_PRINCIPAL_USERNAME (ex: myserviceprincipalusername )" && exit 1; }
@@ -50,25 +51,57 @@ echo "IMAGE_PULL_SECRETS: $IMAGE_PULL_SECRETS"
 [[ ! -z "${IMAGE_PULL_SECRETS}" ]] \
     || { echo "Set IMAGE_PULL_SECRETS (ex: acrk8s )" && exit 1; }
 
-
-echo "installing helm charts, if already installed. upgrading to latest version..."
-
-if [[ $(helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/ | grep "exists")  ]]; 
-then
-  echo "Repo already exists upgrading..."
-  helm repo update graphistry-helm
-else
-    echo "Repo does not exist adding..."
-    helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-fi
+[[ ! -z "${APP_TAG}" ]] \
+    || { echo "Set APP_TAG (ex: v2.39.4-org_sso_k8s )" && exit 1; }
 
 echo "logging into az..."
 az login --service-principal --username $SERVICE_PRINCIPAL_USERNAME --password $SERVICE_PRINCIPAL_PASSWORD --tenant $TENANT_ID
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME –admin
 
-echo "deploying to the cluster..."
+
+
+echo "installing nvidia device plugin DaemonSet"
+kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+
+
+
+echo "installing nginx controller"
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
+
+
+
+echo "installing Longhorn NFS"
+
+if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")  ]]; 
+then
+  echo "Longhorn Helm Repo already exists upgrading..."
+  helm repo update longhorn
+else
+    echo "Longhorn Helm Repo does not exist adding..."
+    helm repo add longhorn https://charts.longhorn.io
+fi
+
+kubectl create namespace longhorn-system
+kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/prerequisite/longhorn-iscsi-installation.yaml -n longhorn-system
+helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system 
+
+
+
+echo "deploying graphistry cluster"
+
+if [[ $(helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/ | grep "exists")  ]]; 
+then
+  echo "Graphistry Helm Repo already exists upgrading..."
+  helm repo update graphistry-helm
+else
+    echo "Graphistry Helm Repo does not exist adding..."
+    helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+fi
+
 helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
  --set azurecontainerregistry.name=$CONTAINER_REGISTRY_NAME.azurecr.io  \
  --set nodeSelector."kubernetes\\.io/hostname"=$NODE_NAME \
+ --set tag=$APP_TAG \ 
  --set imagePullSecrets=$IMAGE_PULL_SECRETS
- 

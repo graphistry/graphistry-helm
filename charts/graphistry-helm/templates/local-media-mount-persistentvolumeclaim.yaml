@@ -7,8 +7,9 @@ metadata:
   name: local-media-mount
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
+  storageClassName: longhorn
   resources:
     requests:
-      storage: 100Mi
+      storage: 1Gi
 status: {}

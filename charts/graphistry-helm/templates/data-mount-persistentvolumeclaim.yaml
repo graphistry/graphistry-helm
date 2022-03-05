@@ -4,7 +4,8 @@ metadata:
   name: data-mount
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
+  storageClassName: longhorn
   resources:
     requests:
       storage: 64Gi

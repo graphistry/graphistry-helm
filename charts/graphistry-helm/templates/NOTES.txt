@@ -128,3 +128,21 @@ ex:
 
 helm upgrade {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
   --set rollingUpdate=true
+
+DOMAIN
+
+domain is set to : {{ .Values.domain }}
+
+HOW TO:
+to change the domain while deployed:
+
+ex: 
+
+  helm upgrade {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
+    --set domain=graphistry.com but DNS has to resolve to the IP address of the node and you must own the domain.
+
+ can use  http://nip.io  for wildcard DNS for any address 
+ https://<node_IP>.nip.io
+
+ to visit the deployed application:
+http://{{ .Values.domain }}

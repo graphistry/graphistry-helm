@@ -57,6 +57,18 @@ once daemonset has been installed and started
 if successful will see nvidia.com/gpu in nodes capacity here \
 ```kubectl get nodes -ojson | jq .items[].status.capacity```
 
+## install Nginx ingress controller
+> **Note:** Be sure to add the nginx ingress controller to the cluster before deployment. \
+```helm upgrade --install ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace```
+
+## install Longhorn NFS
+> **Note:** Be sure to add Longhorn  to the cluster before deployment. \
+```helm repo add longhorn https://charts.longhorn.io ``` \
+```helm repo update``` \
+```kubectl create namespace longhorn-system``` \ 
+```kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/prerequisite/longhorn-iscsi-installation.yaml -n longhorn-system``` \
+```helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system ```
+
 
 ## Setting the node selector and the acr container registry for deployment 
 > **Note:** Be sure to change the azurecontainerregistry value in values.yaml to the name of your acr as well as setting the nodeSelector value to your preferred node to deploy the cluster onto.
@@ -70,8 +82,9 @@ once you have a node selected, run the following command and find the hostname o
 and then set the nodeSelector value to the hostname of the selected node along with your acr container registry name.:
 
 
-    helm install my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
+    helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
      --set azurecontainerregistry.name=<container-registry-name>.azurecr.io \
-     --set nodeSelector."kubernetes\\.io/hostname"=<node hostname> 
-
+     --set nodeSelector."kubernetes\\.io/hostname"=<node hostname> \ 
+     --set domain = <FQDN or node external IP ex: example.com> \
+     --set imagePullSecrets=<secrets_name>  (has to go last) 
 > **Note:** different labels can be used for the nodeSelector value, but some labels between the nodes may not be unique.

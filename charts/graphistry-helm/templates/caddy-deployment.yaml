@@ -91,12 +91,10 @@ metadata:
     autoheal: "true"
     kompose.cmd: kompose --file ./compose/release.yml convert -c
     kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     io.kompose.service: caddy
   name: caddy
 spec:
-  type: LoadBalancer
   ports:
     - name: "80"
       port: 80
@@ -106,6 +104,5 @@ spec:
       targetPort: 443
   selector:
     io.kompose.service: caddy
-status:
-  loadBalancer: {}
+
 

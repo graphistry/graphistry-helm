@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "sessionid"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+{{- if .Values.ingress.management.annotations }}
+{{ toYaml .Values.ingress.management.annotations | indent 4 }}
+{{- end }}
+  labels:
+  name: caddy-ingress
+spec:
+  rules:
+    - host: {{.Values.Domain}}
+      http:
+        paths:
+          - backend:
+              service:
+                name: caddy
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix

@@ -107,7 +107,8 @@ metadata:
   name: postgres-data
 spec:
   accessModes:
-    - ReadWriteOnce
+    - ReadWriteMany
+  storageClassName: longhorn
   resources:
     requests:
       storage: 1Gi

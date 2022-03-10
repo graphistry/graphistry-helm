@@ -34,6 +34,13 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: dask-scheduler
     spec:
+      initContainers:
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:latest"
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - args:
             - dask-scheduler
@@ -74,6 +81,7 @@ spec:
             - mountPath: /dask-shared
               name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
       volumes:
         - name: data-mount
           persistentVolumeClaim:

@@ -34,7 +34,15 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: caddy
     spec:
+      initContainers:
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:latest"
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
+
         - env:
    {{- range .Values.env }}
           - name: {{ .name  }}
@@ -63,6 +71,7 @@ spec:
             - mountPath: /data
               name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
       volumes:
         - name: caddy-config
           configMap:

@@ -63,14 +63,14 @@ az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME –
 echo "installing nvidia device plugin DaemonSet"
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
 
-
-
-echo "installing nginx controller"
-helm upgrade --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
-
-
+echo "installing cert-manager"
+helm upgrade --install cert-manager cert-manager \
+  --repo https://charts.jetstack.io \
+  --namespace cert-manager \
+  --create-namespace \
+  --version v1.7.1 \
+  --set installCRDs=true \
+  --set createCustomResource=true
 
 echo "installing Longhorn NFS"
 
@@ -105,3 +105,10 @@ helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
  --set nodeSelector."kubernetes\\.io/hostname"=$NODE_NAME \
  --set tag=$APP_TAG \ 
  --set imagePullSecrets=$IMAGE_PULL_SECRETS
+
+
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+

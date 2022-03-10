@@ -15,7 +15,14 @@ spec:
     matchLabels:
       io.kompose.service: nexus
   strategy:
+{{ if eq .Values.rollingUpdate true }}
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: "25%"
+      maxUnavailable: "0%"
+{{ else }}
     type: Recreate
+{{- end }}
   template:
     metadata:
       annotations:
@@ -27,6 +34,13 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: nexus
     spec:
+      initContainers:
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:latest"
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - env:
    {{- range .Values.env }}
@@ -59,6 +73,7 @@ spec:
             - mountPath: /nexus_media
               name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
       volumes:
         - name: local-media-mount
           persistentVolumeClaim:

@@ -145,4 +145,8 @@ ex:
  https://<node_IP>.nip.io
 
  to visit the deployed application:
-http://{{ .Values.domain }}
+https://{{ .Values.domain }}
+
+
+longhorn dashboard is at:
+https://longhorn.{{ .Values.domain }}

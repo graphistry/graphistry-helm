@@ -1,4 +1,4 @@
-name: Graphistry-Helm-Chart
+name: graphistry-helm-chart
 description: Helm Charts to deploy Graphistry to kubernetes for 100x visualizations
 version: 0.1.8
 apiVersion: v1

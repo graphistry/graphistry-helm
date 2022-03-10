@@ -34,6 +34,13 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: streamgl-vgraph-etl
     spec:
+      initContainers:
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:latest"
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - env:
    {{- range .Values.env }}
@@ -60,6 +67,7 @@ spec:
             - mountPath: /opt/graphistry/data
               name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
       volumes:
         - name: data-mount
           persistentVolumeClaim:

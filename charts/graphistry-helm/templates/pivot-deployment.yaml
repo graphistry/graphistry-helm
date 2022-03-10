@@ -34,6 +34,13 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: pivot
     spec:
+      initContainers:
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:latest"
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - env:
    {{- range .Values.env }}
@@ -76,6 +83,7 @@ spec:
           persistentVolumeClaim:
             claimName: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
 {{ if eq .Values.multiNode false }}

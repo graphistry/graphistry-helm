@@ -16,5 +16,5 @@ data:
     \   proxy_pass_request_headers on;\n    proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;\n
     \   proxy_set_header X-Real-IP $remote_addr;\n    proxy_set_header Host $http_host;\n
     \   proxy_set_header X-File-Name $request_body_file;\n\n    proxy_set_body             off;\n
-    \   proxy_redirect             off;\n\n    set $backend               \"http://forge-etl-python.default.svc.cluster.local:8080/upload/files$1?$args\";\n
+    \   proxy_redirect             off;\n\n    set $backend               \"http://forge-etl-python.{{ .Release.Namespace }}.svc.cluster.local:8080/upload/files$1?$args\";\n
     \   proxy_pass                 $backend;\n}\n"

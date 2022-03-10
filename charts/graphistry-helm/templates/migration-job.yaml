@@ -1,0 +1,24 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: nexus-migration-job-{{ .Release.Revision }}
+  labels:
+    io.kompose.service: nexus-migration-job
+spec:
+  backoffLimit: 1
+  template:
+    metadata:
+      labels:
+        io.kompose.service: nexus-migration-job
+    spec:
+      containers:
+      - name: nexus-migration-job
+        image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+        imagePullPolicy: {{.Values.imagePullPolicy }}    
+        args: ["python", "manage.py" , "migrate"]
+        env:
+   {{- range .Values.env }}
+            - name: {{ .name  }}
+              value: {{ .value | quote }}
+   {{- end }}
+      restartPolicy: Never

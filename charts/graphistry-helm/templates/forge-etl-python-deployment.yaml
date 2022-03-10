@@ -28,6 +28,13 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: forge-etl-python
     spec:
+      initContainers:
+      - name: "{{ .Chart.Name }}-init"
+        image: "groundnuty/k8s-wait-for:latest"
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - env:
    {{- range .Values.env }}
@@ -56,6 +63,7 @@ spec:
             - mountPath: /opt/graphistry/data/uploads
               name: uploads-files
       restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
       volumes:
         - name: data-mount
           persistentVolumeClaim:

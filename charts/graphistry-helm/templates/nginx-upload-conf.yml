@@ -17,7 +17,7 @@ data:
     X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Real-IP $remote_addr;\n
     \   proxy_set_header Host $http_host;\n    proxy_set_header X-File-Name $request_body_file;\n
     \   proxy_set_body             off;\n    proxy_redirect             off;\n\n    set
-    $backend               \"http://forge-etl-python.default.svc.cluster.local:8080/upload/datasets$1?$args\";\n
+    $backend               \"http://forge-etl-python.{{ .Release.Namespace }}.svc.cluster.local:8080/upload/datasets$1?$args\";\n
     \   proxy_pass                 $backend;\n\n    include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n}\n\nlocation
     ~ ^/api/v2/upload/files(.*)$ {\n    include /etc/nginx/conf.d/cors_cross_origin_preflight_allow_all.txt;\n\n
     \   auth_request    /api/v2/auth/token/verify;\n    auth_request_set $auth_status
@@ -28,5 +28,5 @@ data:
     X-Forwarded-For $proxy_add_x_forwarded_for;\n    proxy_set_header X-Real-IP $remote_addr;\n
     \   proxy_set_header Host $http_host;\n    proxy_set_header X-File-Name $request_body_file;\n
     \   proxy_set_body             off;\n    proxy_redirect             off;\n\n    set
-    $backend               \"http://forge-etl-python.default.svc.cluster.local:8080/upload/files$1?$args\";\n
+    $backend               \"http://forge-etl-python.{{ .Release.Namespace }}.svc.cluster.local:8080/upload/files$1?$args\";\n
     \   proxy_pass                 $backend;\n\n    include /etc/nginx/conf.d/cors_cross_origin_proxied_response.txt;\n}\n"

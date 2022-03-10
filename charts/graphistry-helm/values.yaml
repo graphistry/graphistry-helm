@@ -16,7 +16,7 @@ ingress:
 multiNode: false
 
 # rolling update deployment strategy switch (postgres and nexus are exempt)
-rollingUpdate: false
+rollingUpdate: true
 
 #restart policy
 restartPolicy: Always
@@ -25,6 +25,11 @@ restartPolicy: Always
 #example: 18.116.94.149.nip.io - graphistry.18.116.94.149.nip.io
 domain: eks-dev.graphistry.com
 
+tls: true
+#email to send tls notifications to
+tlsEmail: ""
+
+#enables longhorn dashboard
 longhornDashboard: false
 
 #azure container registry name

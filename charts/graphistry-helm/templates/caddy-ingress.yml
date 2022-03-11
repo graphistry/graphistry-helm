@@ -11,6 +11,11 @@ metadata:
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-production"
     ingress.kubernetes.io/ssl-redirect: "true"
+
+{{- else if eq .Values.tlsStaging true }}
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    ingress.kubernetes.io/ssl-redirect: "true"
 {{- end  }}
 {{- if .Values.ingress.management.annotations }}
 {{ toYaml .Values.ingress.management.annotations | indent 4 }}
@@ -34,4 +39,9 @@ spec:
   - hosts:
     - {{.Values.domain}}
     secretName: letsencrypt-tls
+{{- else if eq .Values.tlsStaging true }}
+  tls:
+  - hosts:
+    - {{.Values.domain}}
+    secretName: letsencrypt-staging
 {{- end }}

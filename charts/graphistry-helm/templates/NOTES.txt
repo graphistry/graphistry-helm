@@ -141,6 +141,7 @@ ex:
   helm upgrade {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
     --set domain=graphistry.com but DNS has to resolve to the IP address of the node and you must own the domain.
 
+{{- if eq .Values.tls true  }}
  can use  http://nip.io  for wildcard DNS for any address 
  https://<node_IP>.nip.io
 
@@ -150,3 +151,17 @@ https://{{ .Values.domain }}
 
 longhorn dashboard is at:
 https://longhorn.{{ .Values.domain }}
+
+{{ else }}
+
+ can use  http://nip.io  for wildcard DNS for any address 
+ http://<node_IP>.nip.io
+
+ to visit the deployed application:
+http://{{ .Values.domain }}
+
+
+longhorn dashboard is at:
+http://longhorn.{{ .Values.domain }}
+
+{{- end }}

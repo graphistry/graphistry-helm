@@ -66,6 +66,7 @@ spec:
             - mountPath: /opt/graphistry/data
               name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
       volumes:
         - name: postgres-data
           persistentVolumeClaim:
@@ -104,6 +105,22 @@ status:
   loadBalancer: {}
 
 ---
+# longhorn storageclass setting reclaim policy to retain
+kind: StorageClass
+apiVersion: storage.k8s.io/v1
+metadata:
+  name: postgres-longhorn
+  annotations:
+    # make this class the default storage class
+    #storageclass.kubernetes.io/is-default-class: "true"
+provisioner: driver.longhorn.io
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+parameters:
+  numberOfReplicas: "3"
+  staleReplicaTimeout: "2880" # 48 hours in minutes
+  fromBackup: ""
+---
 #volumes
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -115,7 +132,7 @@ metadata:
 spec:
   accessModes:
     - ReadWriteMany
-  storageClassName: longhorn
+  storageClassName: postgres-longhorn
   resources:
     requests:
       storage: 1Gi

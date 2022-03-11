@@ -13,6 +13,11 @@ metadata:
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-production"
     ingress.kubernetes.io/ssl-redirect: "true"
+
+{{- else if eq .Values.tlsStaging true  }}
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging"
+    ingress.kubernetes.io/ssl-redirect: "true"
 {{- end  }}
 {{- if .Values.ingress.management.annotations }}
 {{ toYaml .Values.ingress.management.annotations | indent 4 }}
@@ -29,13 +34,21 @@ spec:
                 name: longhorn-frontend
                 port:
                   number: 80
+
             path: /
             pathType: Prefix
 {{- if eq .Values.tls true  }}
   tls:
-  - hosts: 
+  - hosts:
     - longhorn.{{ .Values.domain }}
     secretName: letsencrypt-tls
+  
+{{- else if eq .Values.tlsStaging true  }}
+  tls:
+  - hosts:
+    - longhorn.{{ .Values.domain }}
+    secretName: letsencrypt-staging-tls
 {{- end }}
+
 {{- end }}
 

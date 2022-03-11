@@ -72,9 +72,9 @@ import_if_missing "graph-app-kit-st:latest"
 # universal
 import_if_missing "graphistry:streamgl-nginx-${APP_BUILD_TAG:-latest}-universal"
 import_if_missing "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-universal"
-import_if_missing "caddy:${APP_BUILD_TAG:-latest}-universal"
+import_if_missing "caddy:latest-universal"
 
 # third-party
-import_if_missing "redis:${APP_BUILD_TAG:-6.0.5}" "library"
+import_if_missing "redis:6.0.5" "library"
 
 

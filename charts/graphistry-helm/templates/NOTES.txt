@@ -149,8 +149,6 @@ ex:
 https://{{ .Values.domain }}
 
 
-longhorn dashboard is at:
-https://longhorn.{{ .Values.domain }}
 
 {{ else }}
 
@@ -160,8 +158,5 @@ https://longhorn.{{ .Values.domain }}
  to visit the deployed application:
 http://{{ .Values.domain }}
 
-
-longhorn dashboard is at:
-http://longhorn.{{ .Values.domain }}
 
 {{- end }}

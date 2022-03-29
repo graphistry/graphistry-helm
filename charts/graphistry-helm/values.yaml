@@ -1,5 +1,6 @@
 #node selector to determine which node to deploy cluster to
-nodeSelector: {"accelerator": "nvidia"}
+nodeSelector: 
+#{"accelerator": "nvidia"}
 #--set nodeSelector."accelerator"=nvidia
 #{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
 #--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
@@ -11,6 +12,10 @@ ingress:
       #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
+
+
+# graph app kit public - determines if public dashboard is going to be deployed
+graphAppKitPublic: true
 
 # multinode selector switch to determine if going multi/single node
 multiNode: false
@@ -61,6 +66,10 @@ graphistry: graphistry
 caddy:
   repository: caddy
 
+#graph app kit repository name and tag
+graphAppKit:
+  repository: graph-app-kit-st
+  tag: latest
 
 #redis repository name and tag
 redis:
@@ -132,6 +141,8 @@ daskcudaworker:
   repository: etl-server-python
 
 #environment variables 
+ # can be set like helm install chart_name --name release_name \
+ #--set env.DBUser="FOO" --set env.DBPassword="BAR"
 env:
  - name: HOST
    value: 0.0.0.0
@@ -265,3 +276,52 @@ env:
    value: "true"
  - name: ENABLE_TELEMETRY
    value: "false"
+
+#streamlit environment variables
+ # can be set like helm upgrade -i  chart_name --name release_name \
+ #--set stENV.LOG_LEVEL="FOO" 
+stENV:
+ - name: LOG_LEVEL
+   value: DEBUG
+ - name: BASE_PATH
+   value: "dashboard/"
+ - name: BASE_URL
+   value: "http://localhost:8501/dashboard"
+ - name: GRAPH_VIEWS
+   value: "../python/views"
+ - name: GRAPHISTRY_USERNAME
+   value: ""
+ - name: GRAPHISTRY_PASSWORD
+   value: "" 
+ - name: COMPOSE_PROJECT_NAME
+   value: 
+ - name: VERSION_BASE
+   value: "v2.32.4"
+ - name: GRAPHISTRY_PROTOCOL
+   value: 
+ - name: GRAPHISTRY_SERVER
+   value: 
+ - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
+   value: 
+ - name: NEPTUNE_READER_PROTOCOL
+   value: 
+ - name: NEPTUNE_READER_HOST
+   value: 
+ - name: NEPTUNE_READER_PORT
+   value: 
+ - name: NEPTUNE_KEY_PATH
+   value: 
+ - name: NEPTUNE_TUNNEL_HOST
+   value: 
+ - name: NEPTUNE_TUNNEL_USER
+   value:  
+ - name: TIGERGRAPH_HOST
+   value: 
+ - name: TIGERGRAPH_USERNAME
+   value: 
+ - name: TIGERGRAPH_PASSWORD
+   value: 
+ - name: TIGERGRAPH_GRAPHNAME
+   value: 
+ - name: TIGERGRAPH_SECRET
+   value: 

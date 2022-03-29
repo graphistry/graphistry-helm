@@ -6,10 +6,16 @@ metadata:
     io.kompose.service: local-media-mount
   name: local-media-mount
 spec:
+{{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: local-media-mount-longhorn
+  storageClassName: datamount-longhorn
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp2-retain
   resources:
     requests:
       storage: 1Gi
 status: {}
+{{- end }}

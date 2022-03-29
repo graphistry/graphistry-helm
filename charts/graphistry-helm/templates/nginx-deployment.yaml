@@ -66,8 +66,15 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          - name: NAMESPACE
-            value: {{ .Release.Namespace }}
+          - name: K8S_NAMESPACE_SUFFIX
+            value: .{{ .Release.Namespace }}.svc.cluster.local
+          - name: LONGHORN_NAMESPACE
+            value: .longhorn-system.svc.cluster.local
+          - name: IS_K8S
+            value: "1"
+          - name: NGINX_RESOLVER
+            value: kube-dns.kube-system.svc.cluster.local
+          #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:dev
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
           imagePullPolicy: {{.Values.imagePullPolicy }}          
           livenessProbe:
@@ -95,6 +102,7 @@ spec:
             - mountPath: /etc/nginx/conf.d/templates/src/upload.conf
               name: nginx-upload-config
               subPath: upload.conf
+
             - mountPath: /opt/graphistry/apps/core/viz/build
               name: viz-static
             - mountPath: /opt/graphistry/apps/core/pivot/www
@@ -129,6 +137,7 @@ spec:
               - key: upload.conf
                 path: upload.conf
                 mode: 0644
+
         - name: viz-static
           emptyDir: {}
         - name: pivot-static

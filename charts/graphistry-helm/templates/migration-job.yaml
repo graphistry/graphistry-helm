@@ -16,9 +16,12 @@ spec:
         image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
         imagePullPolicy: {{.Values.imagePullPolicy }}    
         args: ["python", "manage.py" , "migrate"]
+
         env:
    {{- range .Values.env }}
             - name: {{ .name  }}
               value: {{ .value | quote }}
    {{- end }}
       restartPolicy: Never
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }}

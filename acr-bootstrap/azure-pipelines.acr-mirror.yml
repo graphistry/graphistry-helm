@@ -47,6 +47,6 @@ stages:
           ACR_NAME=$(ACR_NAME) \
             DOCKERHUB_USERNAME=$(GRAPHISTRY_DOCKERHUB_USERNAME) \
             DOCKERHUB_TOKEN=$(GRAPHISTRY_DOCKERHUB_PASSWORD) \
-            CUDA_SHORT_VERSION=11.0 \
+            CUDA_SHORT_VERSION=$(CUDA_SHORT_VERSION) \
             APP_BUILD_TAG=$(GRAPHISTRY_VERSION) \
             ./acr-bootstrap/import-image-into-acr-from-dockerhub.sh

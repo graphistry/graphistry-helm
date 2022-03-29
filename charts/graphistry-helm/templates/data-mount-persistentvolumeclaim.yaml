@@ -3,10 +3,16 @@ kind: PersistentVolumeClaim
 metadata:
   name: data-mount
 spec:
+{{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
   storageClassName: datamount-longhorn
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp2-retain
   resources:
-    requests:
+    requests: 
       storage: 64Gi
 status: {}
+{{- end }}

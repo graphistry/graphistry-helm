@@ -106,6 +106,7 @@ status:
 
 ---
 # longhorn storageclass setting reclaim policy to retain
+{{- if eq .Values.multiNode true  }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -120,6 +121,7 @@ parameters:
   numberOfReplicas: "3"
   staleReplicaTimeout: "2880" # 48 hours in minutes
   fromBackup: ""
+{{- end }}
 ---
 #volumes
 apiVersion: v1
@@ -130,11 +132,16 @@ metadata:
     io.kompose.service: postgres-data
   name: postgres-data
 spec:
+{{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: postgres-longhorn
+  storageClassName: datamount-longhorn
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp2-retain
   resources:
     requests:
       storage: 1Gi
 status: {}
-
+{{- end }}

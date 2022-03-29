@@ -4,7 +4,7 @@ set -ex
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
-#these 8 enviroment variables are required
+#these 9 enviroment variables are required
 #SERVICE_PRINCIPAL_NAME
 #SERVICE_PRINCIPAL_PASSWORD
 #TENANT_ID
@@ -14,6 +14,7 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 #NODE_NAME
 #IMAGE_PULL_SECRETS
 #APP_TAG
+#MULTINODE
 
 echo "SERVICE_PRINCIPAL USERNAME: $SERVICE_PRINCIPAL_USERNAME"
 echo "SERVICE_PRINCIPAL_PASSWORD: $SERVICE_PRINCIPAL_PASSWORD"
@@ -26,6 +27,8 @@ echo "NODE_NAME: $NODE_NAME"
 echo "IMAGE_PULL_SECRETS: $IMAGE_PULL_SECRETS"
 
 echo "APP_TAG": $APP_TAG
+
+echo "MULTINODE": $MULTINODE
     
 [[ ! -z "${SERVICE_PRINCIPAL_USERNAME}" ]] \
     || { echo "Set SERVICE_PRINCIPAL_USERNAME (ex: myserviceprincipalusername )" && exit 1; }
@@ -54,6 +57,9 @@ echo "APP_TAG": $APP_TAG
 [[ ! -z "${APP_TAG}" ]] \
     || { echo "Set APP_TAG (ex: v2.39.4-org_sso_k8s )" && exit 1; }
 
+[[ ! -z "${MULTINODE}" ]] \
+    || { echo "Set MULTINODE (ex: TRUE/FALSE  )" && exit 1; }
+
 echo "logging into az..."
 az login --service-principal --username $SERVICE_PRINCIPAL_USERNAME --password $SERVICE_PRINCIPAL_PASSWORD --tenant $TENANT_ID
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME –admin
@@ -62,6 +68,21 @@ az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME –
 
 echo "installing nvidia device plugin DaemonSet"
 kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+
+if [[ $(helm repo add nvdp https://nvidia.github.io/k8s-device-plugin | grep "exists")  ]]; 
+then
+  echo "NVIDIA Device Plugin repo already exists upgrading..."
+  helm repo update nvdp
+else
+    echo "Longhorn Helm Repo does not exist adding..."
+    helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
+fi
+helm install \
+    --version=0.11.0 \
+    --generate-name \
+    --set nodeSelector."accelerator"=nvidia \
+    nvdp/nvidia-device-plugin
+
 
 echo "installing cert-manager"
 helm upgrade --install cert-manager cert-manager \
@@ -72,9 +93,10 @@ helm upgrade --install cert-manager cert-manager \
   --set installCRDs=true \
   --set createCustomResource=true
 
-echo "installing Longhorn NFS"
 
-if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")  ]]; 
+
+longhorn () {
+if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
 then
   echo "Longhorn Helm Repo already exists upgrading..."
   helm repo update longhorn
@@ -86,7 +108,16 @@ fi
 kubectl create namespace longhorn-system
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/prerequisite/longhorn-iscsi-installation.yaml -n longhorn-system
 helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system 
+}
 
+
+if [[ $MULTINODE=TRUE ]]
+then
+echo "installing Longhorn NFS "
+longhorn()
+else
+:
+fi
 
 
 echo "deploying graphistry cluster"

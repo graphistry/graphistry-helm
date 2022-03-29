@@ -6,10 +6,16 @@ metadata:
     io.kompose.service: uploads-files
   name: uploads-files
 spec:
+{{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: longhorn
+  storageClassName: datamount-longhorn
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: gp2
   resources:
     requests:
       storage: 40Gi
 status: {}
+{{- end }}

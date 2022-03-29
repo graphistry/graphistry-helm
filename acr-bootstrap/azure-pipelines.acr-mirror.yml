@@ -44,7 +44,7 @@ stages:
         inlineScript: |
           az --version
           az account show
-          ACR_NAME=$(ACR_NAME) \
+          ACR_NAME=$(ACR_NAME) 
             DOCKERHUB_USERNAME=$(GRAPHISTRY_DOCKERHUB_USERNAME) \
             DOCKERHUB_TOKEN=$(GRAPHISTRY_DOCKERHUB_PASSWORD) \
             CUDA_SHORT_VERSION=$(CUDA_SHORT_VERSION) \

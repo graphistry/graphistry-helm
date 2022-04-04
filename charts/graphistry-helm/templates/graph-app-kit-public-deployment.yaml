@@ -19,7 +19,7 @@ spec:
 {{ if eq .Values.rollingUpdate true }}
     type: RollingUpdate
     rollingUpdate:
-      maxSurge: "25%"
+      maxSurge: {{ .Values.maxSurge }}
       maxUnavailable: "0%"
 {{ else }}
     type: Recreate

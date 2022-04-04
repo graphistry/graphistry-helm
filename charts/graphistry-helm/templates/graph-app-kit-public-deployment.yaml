@@ -50,7 +50,7 @@ spec:
         - cp -r /apps/views/* /views/
         volumeMounts:
         - name: data-mount
-          mountPath: /apps/views
+          mountPath: /views
       containers:
         - env:
    {{- range .Values.stENV }}

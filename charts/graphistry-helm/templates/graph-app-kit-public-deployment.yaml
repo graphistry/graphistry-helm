@@ -42,15 +42,23 @@ spec:
         args: 
         - "job"
         - "nexus-migration-job-{{ .Release.Revision}}"
+      - name: graph-app-kit-init
+        image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
+        command: 
+        - sh 
+        - -c 
+        - cp -r /apps/views/* /views/
+        volumeMounts:
+        - name: data-mount
+          mountPath: /apps/views
       containers:
         - env:
    {{- range .Values.stENV }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          securityContext:
-              privileged: true
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}
+          image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
+          #image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}
           imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:
             exec:
@@ -64,21 +72,15 @@ spec:
             - containerPort: 8501
           resources: {}
           volumeMounts:
-            - mountPath: /apps/public-src-views
+            - mountPath: /apps/views
               name: data-mount
-            - name: app-volume
-              mountPropagation: "Bidirectional"
-              mountPath: /apps
-              subPath: entrypoint.py
+              subPath: views
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
-        - name: app-volume
-          hostPath:
-            path: /home/webcoderz/Documents/GitHub/graphistry-helm/graph-app-kit
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}    
 {{ if eq .Values.multiNode false }}

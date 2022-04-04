@@ -76,13 +76,9 @@ spec:
             - mountPath: /opt/graphistry/data
               subPath: data
               name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit/public-src-views
-              subPath: public-src-views
+            - mountPath: /apps/views
+              subPath: views
               name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit/private-src-views
-              subPath: private-src-views
-              name: data-mount
-
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:

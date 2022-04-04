@@ -288,6 +288,8 @@ stENV:
    value: "dashboard/"
  - name: BASE_URL
    value: "http://localhost:8501/dashboard"
+ - name: ST_PUBLIC_PORT
+   value: 8501
  - name: GRAPH_VIEWS
    value: "../python/views"
  - name: GRAPHISTRY_USERNAME

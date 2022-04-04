@@ -13,6 +13,7 @@ ingress:
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
+maxSurge : "10%"
 
 # graph app kit public - determines if public dashboard is going to be deployed
 graphAppKitPublic: true

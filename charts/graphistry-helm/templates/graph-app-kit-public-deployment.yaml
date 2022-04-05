@@ -47,7 +47,7 @@ spec:
         command: 
         - sh 
         - -c 
-        - cp -r /apps/views/ /views/ && chown -R graphistry:graphistry /views
+        - cp -r /apps/views/ /views/
         volumeMounts:
         - name: data-mount
           mountPath: /views

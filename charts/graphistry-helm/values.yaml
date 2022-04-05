@@ -291,7 +291,7 @@ stENV:
  - name: ST_PUBLIC_PORT
    value: 8501
  - name: GRAPH_VIEWS
-   value: "../python/views"
+   value: "/apps/views"
  - name: GRAPHISTRY_USERNAME
    value: ""
  - name: GRAPHISTRY_PASSWORD

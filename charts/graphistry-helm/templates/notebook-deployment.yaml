@@ -79,6 +79,9 @@ spec:
             - mountPath: /home/graphistry/graph-app-kit-public/views
               subPath: views
               name: data-mount
+            - mountPath: /home/graphistry/graph-app-kit-public/css
+              subPath: css
+              name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:

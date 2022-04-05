@@ -47,10 +47,12 @@ spec:
         command: 
         - sh 
         - -c 
-        - cp -r /apps/views/ /views/
+        - cp -r /apps/views/ /views/ && cp -r /apps/css/ /css/  
         volumeMounts:
         - name: data-mount
           mountPath: /views
+        - name: data-mount
+          mountPath: /css
       containers:
         - env:
    {{- range .Values.stENV }}
@@ -74,6 +76,9 @@ spec:
           volumeMounts:
             - mountPath: /apps/views
               subPath: views
+              name: data-mount
+            - mountPath: /apps/css
+              subPath: css
               name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot

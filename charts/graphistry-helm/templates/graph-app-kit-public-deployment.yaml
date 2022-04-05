@@ -47,10 +47,10 @@ spec:
         command: 
         - sh 
         - -c 
-        - rsync -a --delete /apps/views/ /apps/views/ && chown -R graphistry /apps/views
+        - cp -r /apps/views/ /views/ && chown -R graphistry:graphistry /views
         volumeMounts:
         - name: data-mount
-          mountPath: /apps/views
+          mountPath: /views
       containers:
         - env:
    {{- range .Values.stENV }}
@@ -73,6 +73,7 @@ spec:
           resources: {}
           volumeMounts:
             - mountPath: /apps/views
+              subPath: views
               name: data-mount
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot

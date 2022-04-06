@@ -48,7 +48,7 @@ spec:
         - sh 
         - -c 
         - cp -r /apps/views /opt/public/views && cp -r /apps/css /opt/public/css && cp -r /apps/util /opt/public/util && cp -r /opt/public /opt/private
-
+        - cp -r /apps/views /opt/private/views && cp -r /apps/css /opt/private/css && cp -r /apps/util /opt/private/util 
  
         volumeMounts:
         - name: data-mount

@@ -68,23 +68,19 @@ spec:
             - mountPath: /home/graphistry/notebooks
               subPath: notebooks
               name: data-mount
-            - mountPath: /dask-shared
-              name: data-mount
             - mountPath: /home/graphistry/dask-shared
               subPath: dask-shared
               name: data-mount
             - mountPath: /opt/graphistry/data
               subPath: data
               name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-public/views
-              subPath: views
+            - mountPath: /home/graphistry/graph-app-kit-public/
+              subPath: public
               name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-public/css
-              subPath: css
+            - mountPath: /home/graphistry/graph-app-kit-private/
+              subPath: private
               name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-public/util
-              subPath: util
-              name: data-mount
+            
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:

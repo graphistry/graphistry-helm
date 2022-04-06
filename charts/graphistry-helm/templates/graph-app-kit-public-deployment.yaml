@@ -47,17 +47,15 @@ spec:
         command: 
         - sh 
         - -c 
-        - cp -r /apps/views/ /views/ && cp -r /apps/css/ /css/ && cp -r /apps/util/ /util/ 
+        - cp -r /apps/views /opt/public/views && cp -r /apps/css /opt/public/css && cp -r /apps/util /opt/public/util && cp -r /opt/public /opt/private
+
+ 
         volumeMounts:
         - name: data-mount
-          mountPath: /views
-        - name: data-mount
-          mountPath: /css
-        - name: data-mount
-          mountPath: /util
+          mountPath: /opt/
       containers:
         - env:
-   {{- range .Values.stENV }}
+   {{- range .Values.stENVPublic }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
@@ -76,15 +74,36 @@ spec:
             - containerPort: 8501
           resources: {}
           volumeMounts:
-            - mountPath: /apps/views
-              subPath: views
+            - mountPath: /apps/public/
+              subPath: public
               name: data-mount
-            - mountPath: /apps/css
-              subPath: css
+
+#graph-app-kit-private
+        - env:
+   {{- range .Values.stENVPrivate }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
+          #image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}
+          imagePullPolicy: {{.Values.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command:
+                - sh 
+                - -c 
+                - 'curl -Lf http://localhost:8502/dashboard/healthz'
+
+          name: graph-app-kit-private
+          ports:
+            - containerPort: 8502
+          resources: {}
+          volumeMounts:
+            - mountPath: /apps/private/
+              subPath: private
               name: data-mount
-            - mountPath: /apps/util
-              subPath: util
-              name: data-mount
+              
+####
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
@@ -118,6 +137,24 @@ spec:
       targetPort: 8501
   selector:
     io.kompose.service: graph-app-kit-public
-
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  labels:
+    io.kompose.service: graph-app-kit-private
+  name: graph-app-kit-private
+spec:
+  ports:
+    - name: "8502"
+      port: 8502
+      targetPort: 8502
+  selector:
+    io.kompose.service: graph-app-kit-public
 
 {{- end }}

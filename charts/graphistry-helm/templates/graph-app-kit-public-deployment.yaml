@@ -74,14 +74,14 @@ spec:
             - containerPort: 8501
           resources: {}
           volumeMounts:
-            - mountPath: /apps/css
-              subPath: css/css
+            - mountPath: /apps/public/css
+              subPath: css
               name: data-mount
-            - mountPath: /apps/util
-              subPath: util/util
+            - mountPath: /apps/public/util
+              subPath: util
               name: data-mount
-            - mountPath: /apps/views
-              subPath: views/views
+            - mountPath: /apps/public/views
+              subPath: views
               name: data-mount
 {{ if eq .Values.graphAppKitPrivate true }}
 #graph-app-kit-private
@@ -105,14 +105,14 @@ spec:
             - containerPort: 8502
           resources: {}
           volumeMounts:
-            - mountPath: /apps/css
-              subPath: public/css
+            - mountPath: /apps/private
+              subPath: css
               name: data-mount
-            - mountPath: /apps/util
-              subPath: util/util
+            - mountPath: /apps/private
+              subPath: util
               name: data-mount
-            - mountPath: /apps/views
-              subPath: views/views
+            - mountPath: /apps/private
+              subPath: views
               name: data-mount
 {{- end }}           
 ####

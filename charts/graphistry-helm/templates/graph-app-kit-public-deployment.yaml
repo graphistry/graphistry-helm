@@ -1,4 +1,5 @@
 {{ if eq .Values.graphAppKitPublic true }}
+
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -44,15 +45,14 @@ spec:
         - "nexus-migration-job-{{ .Release.Revision}}"
       - name: graph-app-kit-init
         image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
-        command: 
-        - sh 
-        - -c 
-        - cp -r /apps/views /opt/public/views && cp -r /apps/css /opt/public/css && cp -r /apps/util /opt/public/util && cp -r /opt/public /opt/private
-        - cp -r /apps/views /opt/private/views && cp -r /apps/css /opt/private/css && cp -r /apps/util /opt/private/util 
- 
+        command: ["/bin/sh","-c"]
+        args: ["cp -r /apps/views /opt/public/views && cp -r /apps/css /opt/public/css && cp -r /apps/util /opt/public/util {{ if eq .Values.graphAppKitPrivate true }} && cp -r /apps/views /opt/private/views && cp -r /apps/css /opt/private/css && cp -r /apps/util /opt/private/util {{- end }}"]
         volumeMounts:
         - name: data-mount
-          mountPath: /opt/
+          mountPath: /opt/public/
+        - name: data-mount
+          mountPath: /opt/private/        
+
       containers:
         - env:
    {{- range .Values.stENVPublic }}
@@ -74,10 +74,16 @@ spec:
             - containerPort: 8501
           resources: {}
           volumeMounts:
-            - mountPath: /apps/public/
-              subPath: public
+            - mountPath: /apps/css
+              subPath: css/css
               name: data-mount
-
+            - mountPath: /apps/util
+              subPath: util/util
+              name: data-mount
+            - mountPath: /apps/views
+              subPath: views/views
+              name: data-mount
+{{ if eq .Values.graphAppKitPrivate true }}
 #graph-app-kit-private
         - env:
    {{- range .Values.stENVPrivate }}
@@ -99,10 +105,16 @@ spec:
             - containerPort: 8502
           resources: {}
           volumeMounts:
-            - mountPath: /apps/private/
-              subPath: private
+            - mountPath: /apps/css
+              subPath: public/css
               name: data-mount
-              
+            - mountPath: /apps/util
+              subPath: util/util
+              name: data-mount
+            - mountPath: /apps/views
+              subPath: views/views
+              name: data-mount
+{{- end }}           
 ####
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
@@ -137,8 +149,10 @@ spec:
       targetPort: 8501
   selector:
     io.kompose.service: graph-app-kit-public
+{{- end }}
 ---
 #service
+{{ if eq .Values.graphAppKitPrivate true }}
 apiVersion: v1
 kind: Service
 metadata:
@@ -156,5 +170,4 @@ spec:
       targetPort: 8502
   selector:
     io.kompose.service: graph-app-kit-public
-
 {{- end }}

@@ -18,6 +18,9 @@ maxSurge : "10%"
 # graph app kit public - determines if public dashboard is going to be deployed
 graphAppKitPublic: true
 
+# graph app kit private - determines if private dashboard is going to be deployed
+graphAppKitPrivate: true
+
 # multinode selector switch to determine if going multi/single node
 multiNode: false
 

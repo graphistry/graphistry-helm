@@ -75,22 +75,22 @@ spec:
               subPath: data
               name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-public/css/
-              subPath: css
+              subPath: public/css/css
               name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-public/util/
-              subPath: util
+              subPath: public/util/util
               name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-public/views/
-              subPath: views
+              subPath: public/views/views
               name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-private/css/
-              subPath: css
+              subPath: private/css/css
               name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-private/util/
-              subPath: util
+              subPath: private/util/util
               name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-private/views/
-              subPath: views
+              subPath: private/views/views
               name: data-mount
             
       restartPolicy: {{ .Values.restartPolicy }}

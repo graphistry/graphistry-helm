@@ -62,8 +62,10 @@ spec:
             timeoutSeconds: 30
           name: nexus
           ports:
-            - containerPort: 8080
-            - containerPort: 8000
+            - containerPort: {{.Values.nexusPort.portOne}}
+            - containerPort: {{.Values.nexusPort.portTwo}}
+              name: nexus
+              protocol: TCP
           resources: {} 
           volumeMounts:
             - mountPath: /opt/graphistry/apps/core/nexus/staticfiles
@@ -103,13 +105,14 @@ metadata:
   name: nexus
 spec:
   ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
-    - name: "8000"
-      port: 8000
-      targetPort: 8000
+    - name: "{{.Values.nexusPort.portOne}}"
+      port: {{.Values.nexusPort.portOne}}
+      targetPort: {{.Values.nexusPort.portOne}}
       protocol: TCP
+    - name: "{{.Values.nexusPort.portTwo}}"
+      port: {{.Values.nexusPort.portTwo}}
+      targetPort: {{.Values.nexusPort.portTwo}}
+
   selector:
     io.kompose.service: nexus
 status:

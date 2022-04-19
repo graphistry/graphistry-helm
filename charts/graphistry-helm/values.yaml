@@ -13,7 +13,23 @@ ingress:
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
+#max surge of pods in rolling updates
 maxSurge : "10%"
+
+#dev mode for debugging with nexus, postgres and nginx
+devMode: false
+
+nginxPorts:
+  #port for nginx service to listen on
+  portOne: 80
+  portTwo: 443
+
+#port for postgres service to listen on
+postgresPort: 5432
+
+nexusPort: 
+  portOne: 8000
+  portTwo: 8080
 
 # graph app kit public - determines if public dashboard is going to be deployed
 graphAppKitPublic: true
@@ -148,6 +164,8 @@ daskcudaworker:
  # can be set like helm install chart_name --name release_name \
  #--set env.DBUser="FOO" --set env.DBPassword="BAR"
 env:
+ - name: POSTGRES_PORT
+   value: "5432"
  - name: HOST
    value: 0.0.0.0
  - name: AUTH_LDAP_BIND_PASSWORD
@@ -236,8 +254,6 @@ env:
    value: postgres
  - name : POSTGRES_PASSWORD
    value: password
- - name: POSTGRES_PORT
-   value: "5432"
  - name: POSTGRES_USER
    value: graphistry
  - name: CLEAR_LOCAL_DATASET_CACHE_ON_STARTUP

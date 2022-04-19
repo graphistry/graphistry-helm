@@ -89,8 +89,10 @@ spec:
             timeoutSeconds: 30
           name: nginx
           ports:
-            - containerPort: 80
-            - containerPort: 443
+            - containerPort: {{.Values.nginxPorts.portOne}}
+              name: http
+              protocol: TCP
+            - containerPort: {{.Values.nginxPorts.portTwo}}
           resources: {}
           volumeMounts:
             - mountPath: /etc/nginx/conf.d/default.conf
@@ -173,12 +175,12 @@ metadata:
   name: nginx
 spec:
   ports:
-    - name: "80"
-      port: 80
-      targetPort: 80
-    - name: "443"
-      port: 443
-      targetPort: 443
+    - name: "{{.Values.nginxPorts.portOne}}"
+      port: {{.Values.nginxPorts.portOne}}
+      targetPort: {{.Values.nginxPorts.portOne}}
+    - name: "{{.Values.nginxPorts.portTwo}}"
+      port: {{.Values.nginxPorts.portTwo}}
+      targetPort: {{.Values.nginxPorts.portTwo}}
   selector:
     io.kompose.service: nginx
 

@@ -74,24 +74,10 @@ spec:
             - mountPath: /opt/graphistry/data
               subPath: data
               name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-public/css/
-              subPath: public/css/css
-              name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-public/util/
-              subPath: public/util/util
-              name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-public/views/
-              subPath: public/views/views
-              name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-private/css/
-              subPath: private/css/css
-              name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-private/util/
-              subPath: private/util/util
-              name: data-mount
-            - mountPath: /home/graphistry/graph-app-kit-private/views/
-              subPath: private/views/views
-              name: data-mount
+            - mountPath: /home/graphistry/graph-app-kit-public
+              name: gak-public
+            - mountPath: /home/graphistry/graph-app-kit-private
+              name: gak-private
             
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
@@ -99,6 +85,12 @@ spec:
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
+        - name: gak-public
+          persistentVolumeClaim:
+            claimName: gak-public
+        - name: gak-private
+          persistentVolumeClaim:
+            claimName: gak-private
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
 {{ if eq .Values.multiNode false }}

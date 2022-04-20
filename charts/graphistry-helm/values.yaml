@@ -41,7 +41,7 @@ graphAppKitPrivate: true
 multiNode: false
 
 # rolling update deployment strategy switch (postgres and nexus are exempt)
-rollingUpdate: true
+rollingUpdate: false
 
 #restart policy
 restartPolicy: Always
@@ -357,7 +357,7 @@ stENVPrivate:
  - name: BASE_PATH
    value: "dashboard/"
  - name: BASE_URL
-   value: "http://localhost:8501/dashboard"
+   value: "http://localhost:8502/dashboard"
  - name: ST_PUBLIC_PORT
    value: 8502
  - name: GRAPH_VIEWS

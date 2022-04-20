@@ -74,8 +74,8 @@ spec:
             value: "1"
           - name: NGINX_RESOLVER
             value: kube-dns.kube-system.svc.cluster.local
-          #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:dev
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
+          image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
+          #image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
           imagePullPolicy: {{.Values.imagePullPolicy }}          
           livenessProbe:
             exec:
@@ -95,15 +95,15 @@ spec:
             - containerPort: {{.Values.nginxPorts.portTwo}}
           resources: {}
           volumeMounts:
-            - mountPath: /etc/nginx/conf.d/default.conf
-              name: nginx-config
-              subPath: default.conf
-            - mountPath: /etc/nginx/conf.d/templates/src/upload_web.conf
-              name: nginx-upload-web-config
-              subPath: upload_web.conf
-            - mountPath: /etc/nginx/conf.d/templates/src/upload.conf
-              name: nginx-upload-config
-              subPath: upload.conf
+            #- mountPath: /etc/nginx/conf.d/default.conf
+            #  name: nginx-config
+            #  subPath: default.conf
+            #- mountPath: /etc/nginx/conf.d/templates/src/upload_web.conf
+            #  name: nginx-upload-web-config
+            #  subPath: upload_web.conf
+            #- mountPath: /etc/nginx/conf.d/templates/src/upload.conf
+            #  name: nginx-upload-config
+            #  subPath: upload.conf
 
             - mountPath: /opt/graphistry/apps/core/viz/build
               name: viz-static
@@ -118,27 +118,27 @@ spec:
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
-        - name: nginx-config
-          configMap:
-            name: nginx-config
-            items:
-              - key: default.conf
-                path: default.conf
-                mode: 0644
-        - name: nginx-upload-web-config
-          configMap:
-            name: nginx-upload-web-config
-            items:
-              - key: upload_web.conf
-                path: upload_web.conf
-                mode: 0644
-        - name: nginx-upload-config
-          configMap:
-            name: nginx-upload-config
-            items:
-              - key: upload.conf
-                path: upload.conf
-                mode: 0644
+        #- name: nginx-config
+        #  configMap:
+        #    name: nginx-config
+        #    items:
+        #      - key: default.conf
+        #        path: default.conf
+        #        mode: 0644
+        #- name: nginx-upload-web-config
+        #  configMap:
+        #    name: nginx-upload-web-config
+        #    items:
+        #      - key: upload_web.conf
+        #        path: upload_web.conf
+        #        mode: 0644
+        #- name: nginx-upload-config
+        #  configMap:
+        #    name: nginx-upload-config
+        #    items:
+        #      - key: upload.conf
+        #        path: upload.conf
+        #        mode: 0644
 
         - name: viz-static
           emptyDir: {}

@@ -48,9 +48,9 @@ spec:
         command: ["/bin/sh","-c"]
         args: ["cp -r /apps/views /opt/public/views && cp -r /apps/css /opt/public/css && cp -r /apps/util /opt/public/util {{ if eq .Values.graphAppKitPrivate true }} && cp -r /apps/views /opt/private/views && cp -r /apps/css /opt/private/css && cp -r /apps/util /opt/private/util {{- end }}"]
         volumeMounts:
-        - name: data-mount
+        - name: gak-public
           mountPath: /opt/public/
-        - name: data-mount
+        - name: gak-private
           mountPath: /opt/private/        
 
       containers:
@@ -74,15 +74,15 @@ spec:
             - containerPort: 8501
           resources: {}
           volumeMounts:
-            - mountPath: /apps/public/css
+            - mountPath: /apps/css
               subPath: css
-              name: data-mount
-            - mountPath: /apps/public/util
+              name: gak-public
+            - mountPath: /apps/util
               subPath: util
-              name: data-mount
-            - mountPath: /apps/public/views
+              name: gak-public
+            - mountPath: /apps/views
               subPath: views
-              name: data-mount
+              name: gak-public
 {{ if eq .Values.graphAppKitPrivate true }}
 #graph-app-kit-private
         - env:
@@ -105,23 +105,26 @@ spec:
             - containerPort: 8502
           resources: {}
           volumeMounts:
-            - mountPath: /apps/private
+            - mountPath: /apps/css
               subPath: css
-              name: data-mount
-            - mountPath: /apps/private
+              name: gak-private
+            - mountPath: /apps/util
               subPath: util
-              name: data-mount
-            - mountPath: /apps/private
+              name: gak-private
+            - mountPath: /apps/views
               subPath: views
-              name: data-mount
+              name: gak-private
 {{- end }}           
 ####
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
-        - name: data-mount
+        - name: gak-public
           persistentVolumeClaim:
-            claimName: data-mount
+            claimName: gak-public
+        - name: gak-private
+          persistentVolumeClaim:
+            claimName: gak-private
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}    
 {{ if eq .Values.multiNode false }}

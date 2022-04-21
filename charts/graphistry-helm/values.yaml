@@ -311,10 +311,10 @@ stENVPublic:
    value: 8501
  - name: GRAPH_VIEWS
    value: "/apps/views"
- - name: GRAPHISTRY_USERNAME
-   value: 
- - name: GRAPHISTRY_PASSWORD
-   value:
+ #- name: GRAPHISTRY_USERNAME
+ #  value: 
+ #- name: GRAPHISTRY_PASSWORD
+ #  value:
  - name: COMPOSE_PROJECT_NAME
    value: 
  - name: VERSION_BASE
@@ -362,10 +362,10 @@ stENVPrivate:
    value: 8501
  - name: GRAPH_VIEWS
    value: "/apps/views"
- - name: GRAPHISTRY_USERNAME
-   value: 
- - name: GRAPHISTRY_PASSWORD
-   value:  
+ #- name: GRAPHISTRY_USERNAME
+ #  value: 
+ #- name: GRAPHISTRY_PASSWORD
+ #  value:  
  - name: COMPOSE_PROJECT_NAME
    value: 
  - name: VERSION_BASE

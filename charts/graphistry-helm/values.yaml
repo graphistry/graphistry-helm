@@ -314,7 +314,7 @@ stENVPublic:
  - name: GRAPHISTRY_USERNAME
    value: 
  - name: GRAPHISTRY_PASSWORD
-   value: 
+   value:
  - name: COMPOSE_PROJECT_NAME
    value: 
  - name: VERSION_BASE
@@ -357,9 +357,9 @@ stENVPrivate:
  - name: BASE_PATH
    value: "dashboard/"
  - name: BASE_URL
-   value: "http://localhost:8502/dashboard"
+   value: "http://localhost:8501/dashboard"
  - name: ST_PUBLIC_PORT
-   value: 8502
+   value: 8501
  - name: GRAPH_VIEWS
    value: "/apps/views"
  - name: GRAPHISTRY_USERNAME

@@ -98,11 +98,11 @@ spec:
               command:
                 - sh 
                 - -c 
-                - 'curl -Lf http://localhost:8502/dashboard/healthz'
+                - 'curl -Lf http://localhost:8501/dashboard/healthz'
 
           name: graph-app-kit-private
           ports:
-            - containerPort: 8502
+            - containerPort: 8501
           resources: {}
           volumeMounts:
             - mountPath: /apps/css
@@ -168,9 +168,9 @@ metadata:
   name: graph-app-kit-private
 spec:
   ports:
-    - name: "8502"
-      port: 8502
-      targetPort: 8502
+    - name: "8501"
+      port: 8501
+      targetPort: 8501
   selector:
     io.kompose.service: graph-app-kit-public
 {{- end }}

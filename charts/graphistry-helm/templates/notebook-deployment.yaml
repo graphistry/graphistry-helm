@@ -75,8 +75,10 @@ spec:
               subPath: data
               name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-public
+              subPath: graph-app-kit-public
               name: gak-public
             - mountPath: /home/graphistry/graph-app-kit-private
+              subPath: graph-app-kit-private
               name: gak-private
             
       restartPolicy: {{ .Values.restartPolicy }}

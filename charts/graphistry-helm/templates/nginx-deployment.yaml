@@ -74,8 +74,8 @@ spec:
             value: "1"
           - name: NGINX_RESOLVER
             value: kube-dns.kube-system.svc.cluster.local
-          image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
-          #image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
+          #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
           imagePullPolicy: {{.Values.imagePullPolicy }}          
           livenessProbe:
             exec:

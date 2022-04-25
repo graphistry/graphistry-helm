@@ -29,6 +29,8 @@ echo "IMAGE_PULL_SECRETS: $IMAGE_PULL_SECRETS"
 echo "APP_TAG": $APP_TAG
 
 echo "MULTINODE": $MULTINODE
+
+echo "TLS": $TLS
     
 [[ ! -z "${SERVICE_PRINCIPAL_USERNAME}" ]] \
     || { echo "Set SERVICE_PRINCIPAL_USERNAME (ex: myserviceprincipalusername )" && exit 1; }
@@ -60,6 +62,9 @@ echo "MULTINODE": $MULTINODE
 [[ ! -z "${MULTINODE}" ]] \
     || { echo "Set MULTINODE (ex: TRUE/FALSE  )" && exit 1; }
 
+[[ ! -z "${TLS}" ]] \
+    || { echo "Set TLS (ex: TRUE/FALSE )" && exit 1; }
+
 echo "logging into az..."
 az login --service-principal --username $SERVICE_PRINCIPAL_USERNAME --password $SERVICE_PRINCIPAL_PASSWORD --tenant $TENANT_ID
 az aks get-credentials --resource-group $RESOURCE_GROUP --name $CLUSTER_NAME –admin
@@ -74,7 +79,7 @@ then
   echo "NVIDIA Device Plugin repo already exists upgrading..."
   helm repo update nvdp
 else
-    echo "Longhorn Helm Repo does not exist adding..."
+    echo "NVIDIA Device Plugin does not exist adding..."
     helm repo add nvdp https://nvidia.github.io/k8s-device-plugin
 fi
 helm install \
@@ -83,7 +88,7 @@ helm install \
     --set nodeSelector."accelerator"=nvidia \
     nvdp/nvidia-device-plugin
 
-
+certmanager () {
 echo "installing cert-manager"
 helm upgrade --install cert-manager cert-manager \
   --repo https://charts.jetstack.io \
@@ -93,6 +98,8 @@ helm upgrade --install cert-manager cert-manager \
   --set installCRDs=true \
   --set createCustomResource=true
 
+
+}
 
 
 longhorn () {
@@ -119,6 +126,13 @@ else
 :
 fi
 
+if [[ $TLS=TRUE ]]
+then
+echo "installing Longhorn NFS "
+certmanager()
+else
+:
+fi
 
 echo "deploying graphistry cluster"
 
@@ -141,5 +155,7 @@ helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
 helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --namespace ingress-nginx --create-namespace \
+if [[ $MULTINODE=TRUE ]]
+then
   --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
-
+fi

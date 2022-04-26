@@ -1,3 +1,8 @@
+
+{{ if eq .Values.devMode false }} 
+
+{{ if eq .Values.graphAppKitPublic true }}
+
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -20,6 +25,9 @@ spec:
 status: {}
 {{- end }}
 
+{{- end }}
+
+{{ if eq .Values.graphAppKitPrivate true }}
 ---
 
 apiVersion: v1
@@ -42,4 +50,8 @@ spec:
     requests:
       storage: 1Gi
 status: {}
+{{- end }}
+
+{{- end }}
+
 {{- end }}

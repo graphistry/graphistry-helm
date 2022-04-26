@@ -40,7 +40,11 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+      {{ if eq .Values.devMode false }}
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.postgres.repository}}-{{.Values.tag}}-universal
+      {{ else }}  
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.postgres.repository}}:{{.Values.tag}}-universal-dev
+      {{ end }}    
           imagePullPolicy: {{.Values.imagePullPolicy }}         
           livenessProbe:
             exec:

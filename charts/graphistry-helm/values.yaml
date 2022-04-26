@@ -101,15 +101,22 @@ postgres:
   repository: graphistry-postgres
 
 
+
 #streamgl-viz repository name 
 streamglviz:
   repository: streamgl-viz
 
+#streamgl-viz repository name 
+streamglvizDev:
+  repository: graphistry-viz-dev
 
 #nginx repository name 
 nginx:
   repository: streamgl-nginx
 
+#nginx repository name 
+nginxDev:
+  repository: graphistry-nginx-dev
 
 #streamgl-vgraph-etl repository name 
 streamglvgraph:
@@ -130,6 +137,10 @@ streamglsessions:
 pivot:
   repository: graphistry-pivot
 
+#graphistry pivot dev repository
+pivotDev:
+  repository: graphistry-pivot-dev
+
 
 #jupyter notebook repository name 
 notebook:
@@ -145,6 +156,9 @@ nexus:
 forgeetlpython:
   repository: etl-server-python
 
+#forge-etl-python dev repository name
+forgeetlpythonDev:
+  repository: graphistry-forge-python-dev
 
 #forge-etl repository name 
 forgeetl:

@@ -14,4 +14,5 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube/config:/root/.kube/config
-    command: helm install g-chart graphistry-helm/Graphistry-Helm-Chart --version 0.1.0 --set tag=v2.39.11  --set cuda.version=11.4  --set redis.tag=6.2.6  --set domain=eks-dev2.grph.xyz  --set  tlsEmail="cody@graphistry.com" --namespace graphistry  --set rollingUpdate=true --set tls=true --create-namespace  --dry-run
+    #command: helm install g-chart graphistry-helm/Graphistry-Helm-Chart --version 0.1.0 --set tag=v2.39.11  --set cuda.version=11.4  --set redis.tag=6.2.6  --set domain=eks-dev2.grph.xyz  --set  tlsEmail="cody@graphistry.com" --namespace graphistry  --set rollingUpdate=true --set tls=true --create-namespace  --dry-run
+    command: helm install g-chart ./charts/graphistry-helm --set tag=v2.39.12 --set domain=eks-dev2.grph.xyz --namespace graphistry  --set tls=false --set devMode=true  --create-namespace  --dry-run

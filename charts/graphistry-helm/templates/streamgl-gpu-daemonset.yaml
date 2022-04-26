@@ -1,3 +1,5 @@
+{{ if eq .Values.devMode false }}
+
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -93,3 +95,5 @@ spec:
     io.kompose.service: streamgl-gpu
 status:
   loadBalancer: {}
+
+{{- end }}

@@ -1,3 +1,4 @@
+{{ if eq .Values.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -97,3 +98,5 @@ spec:
     io.kompose.service: streamgl-sessions
 status:
   loadBalancer: {}
+
+{{- end }}

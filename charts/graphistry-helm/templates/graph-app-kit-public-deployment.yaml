@@ -1,3 +1,6 @@
+{{- if eq .Values.devMode false }}
+
+
 {{ if eq .Values.graphAppKitPublic true }}
 
 apiVersion: apps/v1
@@ -174,4 +177,6 @@ spec:
       targetPort: 8501
   selector:
     io.kompose.service: graph-app-kit-public
+{{- end }}
+
 {{- end }}

@@ -47,7 +47,11 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+     {{ if eq .Values.devMode false }}
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+      {{ else }}  
+          image: {{.Values.azurecontainerregistry.name}}/{{.Values.nexusDev.repository}}:{{.Values.tag}}-universal-dev
+    {{ end }}        
           imagePullPolicy: {{.Values.imagePullPolicy }}      
           livenessProbe:
             exec:

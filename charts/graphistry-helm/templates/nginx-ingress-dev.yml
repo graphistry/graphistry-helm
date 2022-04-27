@@ -33,7 +33,7 @@ spec:
               service:
                 name: nginx
                 port:
-                  number: 80
+                  number: {{.Values.nginxPorts.portOne}}
             path: /
             pathType: Prefix
 {{- if eq .Values.tls true  }}

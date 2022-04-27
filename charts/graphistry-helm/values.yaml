@@ -152,6 +152,10 @@ nexus:
   repository: graphistry-nexus
 
 
+#graphistry nexus repository name 
+nexusDev:
+  repository: graphistry-nexus-dev
+
 #forge-etl-python repository name 
 forgeetlpython:
   repository: etl-server-python

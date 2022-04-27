@@ -13,7 +13,11 @@ spec:
     spec:
       containers:
       - name: nexus-migration-job
+     {{ if eq .Values.devMode false }}
         image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+      {{ else }}  
+        image: {{.Values.azurecontainerregistry.name}}/{{.Values.nexusDev.repository}}:{{.Values.tag}}-universal-dev
+    {{ end }}         
         imagePullPolicy: {{.Values.imagePullPolicy }}    
         args: ["python", "manage.py" , "migrate"]
 

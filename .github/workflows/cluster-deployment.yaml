@@ -1,0 +1,31 @@
+
+name: helm setup and deployment
+on: push
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+
+      - name: version and azure envvars
+        #TODO PR_NUMBER: wat - https://github.com/actions/checkout/issues/58
+        run: |
+          az --version && echo "has az"
+          echo "SERVICE_PRINCIPAL_NAME =${{ secrets.SERVICE_PRINCIPAL_NAME  }}" >> $GITHUB_ENV
+          echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> $GITHUB_ENV
+          echo "TENANT_ID=${{ secrets.TENANT_ID }}" >> $GITHUB_ENV
+          echo "ACR_NAME=${{ secrets.ACR_NAME }}" >> $GITHUB_ENV
+          echo "AZSUBSCRIPTION=${{ secrets.AZSUBSCRIPTION }}" >> $GITHUB_ENV
+          echo "CONTAINER_REGISTRY_NAME=${{ secrets.CONTAINER_REGISTRY_NAME }}" >> $GITHUB_ENV
+          echo "MULTINODE=${{ secrets.MULTINODE }}" >> $GITHUB_ENV
+          echo "TLS=${{ secrets.TLS }}" >> $GITHUB_ENV
+          echo "APP_TAG=${{ secrets.APP_TAG }}" >> $GITHUB_ENV
+
+## docker compose build
+      - name: Build the cluster
+        run: cd ../dev-compose && DOCKER_BUILDKIT=1 docker-compose build
+
+## docker compose deploy
+      - name: Deploy the cluster
+        run: cd ../dev-compose && docker-compose up -d

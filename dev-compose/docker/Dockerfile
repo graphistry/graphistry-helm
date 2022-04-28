@@ -1,7 +1,20 @@
 FROM ubuntu:18.04
 
+COPY ../acr-bootstrap/helm-dev-deploy.sh entrypoint.sh
+
 RUN apt-get update -y && \ 
-    apt-get install -y  wget apt-utils curl unzip
+    apt-get install -y  wget apt-utils curl unzip \
+    ca-certificates apt-transport-https lsb-release gnupg
+
+
+RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/azure-cli.list
+
+RUN curl -sL https://packages.microsoft.com/keys/microsoft.asc | \ 
+    gpg --dearmor | \
+    tee /etc/apt/trusted.gpg.d/microsoft.gpg > /dev/null
+ARG DEBIAN_FRONTEND=noninteractive
+RUN apt-get update && apt-get install azure-cli
+RUN az version
 
 RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" &&\
     unzip awscliv2.zip && \ 
@@ -20,3 +33,5 @@ RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | t
     helm version
 
 RUN helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+
+CMD tail -f /dev/null

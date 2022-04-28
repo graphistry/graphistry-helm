@@ -329,20 +329,20 @@ stENVPublic:
    value: 8501
  - name: GRAPH_VIEWS
    value: "/apps/views"
- #- name: GRAPHISTRY_USERNAME
- #  value: 
- #- name: GRAPHISTRY_PASSWORD
- #  value:
+ - name: GRAPHISTRY_USERNAME
+   value:
+ - name: GRAPHISTRY_PASSWORD
+   value:
  - name: COMPOSE_PROJECT_NAME
    value: 
  - name: VERSION_BASE
    value: "v2.32.4"
  - name: GRAPHISTRY_PROTOCOL
-   value: 
+   value: "http"
  - name: GRAPHISTRY_SERVER
-   value: 
+   value: "nginx"
  - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
-   value: 
+   value: "https://eks-dev2.grph.xyz"
  - name: NEPTUNE_READER_PROTOCOL
    value: 
  - name: NEPTUNE_READER_HOST

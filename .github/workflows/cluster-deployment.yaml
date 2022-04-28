@@ -4,10 +4,10 @@ on: push
 jobs:
   test:
     runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
     steps:
       - uses: actions/checkout@v2
-
-
       - name: version and azure envvars
         #TODO PR_NUMBER: wat - https://github.com/actions/checkout/issues/58
         run: |
@@ -24,8 +24,8 @@ jobs:
 
 ## docker compose build
       - name: Build the cluster
-        run: cd ../dev-compose && DOCKER_BUILDKIT=1 docker-compose build
+        run: docker-compose -f dev-compose/docker-compose.yml build
 
 ## docker compose deploy
-      - name: Deploy the cluster
-        run: cd ../dev-compose && docker-compose up -d
+      - name: setup the cluster
+        run:  docker-compose -f dev-compose/docker-compose.yml  entrypoint2 up 

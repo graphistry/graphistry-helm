@@ -46,7 +46,7 @@ echo "Creating kubernetes image pull secret named acr-secret"
 
 #assumes default namespace
 kubectl create secret docker-registry acr-secret \
-    --namespace default \
+    --namespace graphistry \
     --docker-server=$CONTAINER_REGISTRY_NAME.azurecr.io \
     --docker-username=$USER_NAME \
     --docker-password=$PASSWORD

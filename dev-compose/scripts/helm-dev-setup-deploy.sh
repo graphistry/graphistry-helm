@@ -4,6 +4,26 @@ set -ex
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
+
+
+echo "APP_TAG": $APP_TAG
+
+echo "MULTINODE": $MULTINODE
+
+echo "TLS": $TLS
+
+[[ ! -z "${MULTINODE}" ]] \
+    || { echo "Set MULTINODE (ex: TRUE/FALSE  )" && exit 1; }
+
+[[ ! -z "${TLS}" ]] \
+    || { echo "Set TLS (ex: TRUE/FALSE )" && exit 1; }
+
+[[ ! -z "${APP_TAG}" ]] \
+    || { echo "Set APP_TAG (ex: v2.39.4-org_sso_k8s )" && exit 1; }
+
+
+
+
 certmanager () {
 echo "installing cert-manager"
 helm upgrade --install cert-manager cert-manager \
@@ -50,6 +70,20 @@ else
 :
 fi
 
+
+if [[ $TLS=TRUE ]]
+then
+helm upgrade -i --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace \
+  --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+else
+helm upgrade -i --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace 
+fi
+
+
 echo "deploying graphistry cluster"
 
 if [[ $(helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/ | grep "exists")  ]]; 
@@ -61,20 +95,16 @@ else
     helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
 fi
 
-helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
- --set azurecontainerregistry.name=$CONTAINER_REGISTRY_NAME.azurecr.io  \
- if [[ $NODE_NAME ]]
-then
- --set nodeSelector."kubernetes\\.io/hostname"=$NODE_NAME \
-fi
- --set tag=$APP_TAG \ 
- --set imagePullSecrets=$IMAGE_PULL_SECRETS
 
-
-helm upgrade -i --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace \
-if [[ $MULTINODE=TRUE ]]
+if [[ $TLS=TRUE ]]
 then
-  --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+helm install g-chart ../charts/graphistry-helm \
+  --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz \
+  --namespace graphistry  --set tls=true --set devMode=true \
+  --create-namespace 
+else
+helm install g-chart ../charts/graphistry-helm \
+  --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz \
+  --namespace graphistry  --set tls=false --set devMode=true \
+  --create-namespace 
 fi

@@ -1,6 +1,7 @@
 FROM ubuntu:18.04
 
-COPY ../acr-bootstrap/helm-dev-deploy.sh entrypoint.sh
+COPY ./scripts/helm-dev-setup-deploy.sh setup_deploy.sh
+COPY ./scripts/make_acr_principal_and_create_secret.sh make_secret.sh
 
 RUN apt-get update -y && \ 
     apt-get install -y  wget apt-utils curl unzip \
@@ -35,3 +36,5 @@ RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | t
 RUN helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
 
 CMD tail -f /dev/null
+
+#ENTRYPOINT ["/entrypoint.sh"]

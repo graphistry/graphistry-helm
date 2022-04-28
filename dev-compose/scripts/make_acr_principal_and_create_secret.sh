@@ -24,7 +24,7 @@ echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
 [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
     || { echo "Set CONTAINER_REGISTRY_NAME (ex: myacrk8sregistry )" && exit 1; }
 
-az login
+az login --service-principal --username="${SERVICE_PRINCIPAL_NAME}" --password="${CLIENT_SECRET}" --tenant="${TENANT_ID}"
 az account set --subscription $AZSUBSCRIPTION
 
 # Obtain the full registry ID for subsequent command args   
@@ -40,7 +40,8 @@ USER_NAME=$(az ad sp list --display-name $SERVICE_PRINCIPAL_NAME --query "[].app
 # Output the service principal's credentials; use these in your services and                                                                                                                          
 # applications to authenticate to the container registry.
 echo "Service principal ID: $USER_NAME"
-echo "Service principal password: $PASSWORD" 
+#echo "Service principal password: $PASSWORD" 
+
 
 echo "Creating kubernetes image pull secret named acr-secret"
 

@@ -145,6 +145,7 @@ else
     helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
 fi
 
+
 helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
  --set azurecontainerregistry.name=$CONTAINER_REGISTRY_NAME.azurecr.io  \
  --set nodeSelector."kubernetes\\.io/hostname"=$NODE_NAME \
@@ -152,10 +153,14 @@ helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
  --set imagePullSecrets=$IMAGE_PULL_SECRETS
 
 
+if [[ $TLS=TRUE ]]
+then
 helm upgrade --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
   --namespace ingress-nginx --create-namespace \
-if [[ $MULTINODE=TRUE ]]
-then
   --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+else
+helm upgrade --install ingress-nginx ingress-nginx \
+  --repo https://kubernetes.github.io/ingress-nginx \
+  --namespace ingress-nginx --create-namespace
 fi

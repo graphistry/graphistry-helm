@@ -6,6 +6,8 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
 
 
+
+
 echo "APP_TAG": $APP_TAG
 
 echo "MULTINODE": $MULTINODE
@@ -98,13 +100,16 @@ fi
 
 if [[ $TLS=TRUE ]]
 then
-helm install g-chart ../charts/graphistry-helm \
+helm upgrade -i g-chart ../charts/graphistry-helm \
   --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz \
   --namespace graphistry  --set tls=true --set devMode=true \
   --create-namespace 
 else
-helm install g-chart ../charts/graphistry-helm \
+helm upgrade -i g-chart ../charts/graphistry-helm \
   --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz \
   --namespace graphistry  --set tls=false --set devMode=true \
   --create-namespace 
 fi
+
+
+exit 1

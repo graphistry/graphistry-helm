@@ -2,6 +2,7 @@ FROM ubuntu:18.04
 
 COPY ./helm-dev-setup-deploy.sh setup_deploy.sh
 COPY ./make_acr_principal_and_create_secret.sh make_secret.sh
+COPY ./check-secret.sh check-secret.sh
 
 RUN apt-get update -y && \ 
     apt-get install -y  wget apt-utils curl unzip \

@@ -25,14 +25,16 @@ jobs:
       - name: Build the cluster
         run: docker-compose -f dev-compose/docker-compose.yml build
 
-## docker compose deploy
+
       - name: setup the cluster
         run:  docker-compose -f dev-compose/docker-compose.yml up cluster-setup
 ##needs to run only once 
 
-## docker compose deploy
+
       - name: create cluster secrets
         run:  docker-compose -f dev-compose/docker-compose.yml up make-cluster-secrets  
 # needs to only run once
+
+# deploy cluster
       - name: deploy the cluster
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker 

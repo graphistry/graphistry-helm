@@ -29,7 +29,7 @@ services:
 
   make-cluster-secrets:
     image: helm-docker
-    command: bash -c 'if [[ $(kubectl get secrets -n graphistry  | grep "acr-secret") ]]; then echo "secret exist" && exit 0; else  ./make_secret.sh; fi'
+    command: if [[ $(kubectl get secrets -n graphistry  | grep "acr-secret") ]]; then echo "secret exist" && exit 0; else  ./make_secret.sh; fi
     environment:
       - SERVICE_PRINCIPAL_NAME=${SERVICE_PRINCIPAL_NAME}
       - CLIENT_SECRET=${CLIENT_SECRET}

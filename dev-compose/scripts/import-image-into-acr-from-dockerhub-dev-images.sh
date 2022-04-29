@@ -70,3 +70,6 @@ import_if_missing "graphistry-postgres:${APP_BUILD_TAG:-latest}-universal-dev"
 import_if_missing "graphistry-nexus-dev:${APP_BUILD_TAG:-latest}-universal-dev"
 
 
+
+
+exit 1

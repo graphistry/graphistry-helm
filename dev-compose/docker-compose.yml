@@ -17,7 +17,7 @@ services:
       - ~/.kube/config:/root/.kube/dev-cluster:ro
     command: helm install g-chart graphistry-helm/Graphistry-Helm-Chart  --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz --namespace graphistry  --set tls=false --set devMode=true  --create-namespace  --dry-run
     environment:
-      - APP_TAG=${{APP_TAG }}
+      - APP_TAG=${{ APP_TAG }}
   cluster-setup:
     image: helm-docker
     command: bash ./setup_deploy.sh

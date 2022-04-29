@@ -28,4 +28,12 @@ jobs:
 
 ## docker compose deploy
       - name: setup the cluster
-        run:  docker-compose -f dev-compose/docker-compose.yml  entrypoint2 up 
+        run:  docker-compose -f dev-compose/docker-compose.yml  cluster-setup up 
+##needs to run only once 
+
+## docker compose deploy
+      - name: create cluster secrets
+        run:  docker-compose -f dev-compose/docker-compose.yml  make-cluster-secrets up 
+# needs to only run once
+      - name: deploy the cluster
+        run: docker-compose -f dev-compose/docker-compose.yml helm-docker up

@@ -12,6 +12,8 @@ echo "AZSUBSCRIPTION: $AZSUBSCRIPTION"
 echo "SERVICE_PRINCIPAL_NAME: $SERVICE_PRINCIPAL_NAME"
 echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
 
+
+
 [[ ! -z "${ACR_NAME}" ]] \
     || { echo "Set ACR_NAME (ex: acrk8s )" && exit 1; }
 
@@ -51,3 +53,5 @@ kubectl create secret docker-registry acr-secret \
     --docker-server=$CONTAINER_REGISTRY_NAME.azurecr.io \
     --docker-username=$USER_NAME \
     --docker-password=$PASSWORD
+
+exit 1

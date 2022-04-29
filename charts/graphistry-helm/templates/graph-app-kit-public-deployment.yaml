@@ -63,6 +63,12 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
+            value: "https://{{ .Values.domain }}"
+          - name: GRAPHISTRY_USERNAME
+            value: "{{ .Values.graphAppKitusername }}"
+          - name:  GRAPHISTRY_PASSWORD
+            value: "{{ .Values.graphAppKitpassword }}"
           #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}
@@ -94,6 +100,12 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
+            value: "https://{{ .Values.domain }}"
+          - name: GRAPHISTRY_USERNAME
+            value: "{{ .Values.graphAppKitusername }}"
+          - name:  GRAPHISTRY_PASSWORD
+            value: "{{ .Values.graphAppKitpassword }}"
           #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
           image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}

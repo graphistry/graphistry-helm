@@ -11,7 +11,6 @@ jobs:
       - name: version and azure envvars
         #TODO PR_NUMBER: wat - https://github.com/actions/checkout/issues/58
         run: |
-          az --version && echo "has az"
           echo "SERVICE_PRINCIPAL_NAME =${{ secrets.SERVICE_PRINCIPAL_NAME  }}" >> $GITHUB_ENV
           echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> $GITHUB_ENV
           echo "TENANT_ID=${{ secrets.TENANT_ID }}" >> $GITHUB_ENV
@@ -28,12 +27,12 @@ jobs:
 
 ## docker compose deploy
       - name: setup the cluster
-        run:  docker-compose -f dev-compose/docker-compose.yml  cluster-setup up 
+        run:  docker-compose -f dev-compose/docker-compose.yml up cluster-setup
 ##needs to run only once 
 
 ## docker compose deploy
       - name: create cluster secrets
-        run:  docker-compose -f dev-compose/docker-compose.yml  make-cluster-secrets up 
+        run:  docker-compose -f dev-compose/docker-compose.yml up make-cluster-secrets  
 # needs to only run once
       - name: deploy the cluster
-        run: docker-compose -f dev-compose/docker-compose.yml helm-docker up
+        run: docker-compose -f dev-compose/docker-compose.yml up helm-docker 

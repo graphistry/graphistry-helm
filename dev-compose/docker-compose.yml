@@ -17,22 +17,22 @@ services:
       - ~/.kube/config:/root/.kube/dev-cluster:ro
     command: helm install g-chart graphistry-helm/Graphistry-Helm-Chart  --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz --namespace graphistry  --set tls=false --set devMode=true  --create-namespace  --dry-run
     environment:
-      - APP_TAG=${{ APP_TAG }}
+      - APP_TAG=${APP_TAG }
   cluster-setup:
     image: helm-docker
     command: bash ./setup_deploy.sh
     environment:
-      - MULTINODE=${{ MULTINODE }}
-      - TLS=${{ TLS }}
-      - APP_TAG=${{ APP_TAG }}
+      - MULTINODE=${MULTINODE}
+      - TLS=${TLS}
+      - APP_TAG=${APP_TAG}
 
   make-cluster-secrets:
     image: helm-docker
     command: bash ./make_secret.sh
     environment:
-      - SERVICE_PRINCIPAL_NAME =${{ SERVICE_PRINCIPAL_NAME  }}
-      - CLIENT_SECRET=${{ CLIENT_SECRET }}
-      - TENANT_ID=${{ TENANT_ID }}
-      - ACR_NAME=${{ ACR_NAME }}
-      - AZSUBSCRIPTION=${{ AZSUBSCRIPTION }}
-      - CONTAINER_REGISTRY_NAME=${{ CONTAINER_REGISTRY_NAME }}
+      - SERVICE_PRINCIPAL_NAME =${SERVICE_PRINCIPAL_NAME}
+      - CLIENT_SECRET=${CLIENT_SECRET}
+      - TENANT_ID=${TENANT_ID}
+      - ACR_NAME=${ACR_NAME}
+      - AZSUBSCRIPTION=${AZSUBSCRIPTION}
+      - CONTAINER_REGISTRY_NAME=${CONTAINER_REGISTRY_NAME}

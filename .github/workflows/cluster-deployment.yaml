@@ -15,7 +15,7 @@ jobs:
       DOCKER_BUILDKIT: 1
     steps:
       - uses: actions/checkout@v2
-      - name: version and azure envvars
+      - name: envvars
         #TODO PR_NUMBER: wat - https://github.com/actions/checkout/issues/58
         run: |
           echo "SERVICE_PRINCIPAL_NAME=${{ secrets.SERVICE_PRINCIPAL_NAME  }}" >> $GITHUB_ENV

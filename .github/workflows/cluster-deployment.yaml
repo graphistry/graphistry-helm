@@ -11,7 +11,7 @@ jobs:
       - name: version and azure envvars
         #TODO PR_NUMBER: wat - https://github.com/actions/checkout/issues/58
         run: |
-          echo "SERVICE_PRINCIPAL_NAME =${{ secrets.SERVICE_PRINCIPAL_NAME  }}" >> $GITHUB_ENV
+          echo "SERVICE_PRINCIPAL_NAME=${{ secrets.SERVICE_PRINCIPAL_NAME  }}" >> $GITHUB_ENV
           echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> $GITHUB_ENV
           echo "TENANT_ID=${{ secrets.TENANT_ID }}" >> $GITHUB_ENV
           echo "ACR_NAME=${{ secrets.ACR_NAME }}" >> $GITHUB_ENV

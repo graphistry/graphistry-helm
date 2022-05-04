@@ -42,7 +42,11 @@ spec:
         - "job"
         - "nexus-migration-job-{{ .Release.Revision}}"
       - name: nginx-init-streamgl-viz
+      {{ if eq .Values.devMode false }}
         image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+      {{ else }}  
+        image: {{.Values.azurecontainerregistry.name}}/{{.Values.streamglvizDev.repository}}:{{.Values.tag}}-universal-dev
+      {{ end }} 
         command: 
         - sh 
         - -c 
@@ -51,7 +55,11 @@ spec:
         - name: viz-static
           mountPath: /tmp/build
       - name: nginx-init-pivot
+        {{ if eq .Values.devMode false }}
         image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+      {{ else }}
+        image: {{.Values.azurecontainerregistry.name}}/{{.Values.pivotDev.repository}}:{{.Values.tag}}-dev
+    {{ end }}   
         command: 
         - sh 
         - -c

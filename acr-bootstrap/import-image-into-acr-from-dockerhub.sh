@@ -68,7 +68,7 @@ import_if_missing "graphistry:streamgl-gpu-${APP_BUILD_TAG:-latest}-${CUDA_SHORT
 import_if_missing "graphistry:streamgl-sessions-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:streamgl-vgraph-etl-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:streamgl-viz-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
-import_if_missing "graph-app-kit-st:${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
+import_if_missing "graph-app-kit-st:latest"
 # universal
 import_if_missing "graphistry:streamgl-nginx-${APP_BUILD_TAG:-latest}-universal"
 import_if_missing "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-universal"

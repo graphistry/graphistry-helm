@@ -25,14 +25,13 @@ echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
 delete_if_present ()
 {
   IMAGE=$1
-  OWNER=$2
-  OWNER=${OWNER:-graphistry}
+
+
   echo "deleting image if present: image $IMAGE from $ACR_NAME"
   ( az acr repository show --name $ACR_NAME --image "$IMAGE" &> /dev/null ) \
     && echo "Image \"$IMAGE\" found in ACR, deleting.." \
     && { \
-      echo "Image \"$IMAGE\" not found in ACR, importing..." \
-      && az acr repository delete \
+       az acr repository delete \
         --name ${ACR_NAME} \
         --image $IMAGE \
       ; \

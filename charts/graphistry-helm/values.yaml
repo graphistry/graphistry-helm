@@ -28,6 +28,8 @@ appEnvironment: production
 #set to config.settings.dev in dev mode
 djangoSettingsModule: "config.settings.production"
 
+graphistryCPUMode: "0"
+
 #set to true in dev mode
 djangoDebug: "False"
 
@@ -222,8 +224,6 @@ env:
    value: 64 MiB
  - name: FORGE_NUM_WORKERS
    value: "4"
- - name: GRAPHISTRY_CPU_MODE
-   value: "0"
  - name: REMOTE_DASK
    value: dask-scheduler:8786
  - name: REMOTE_DASK_DIAGNOSTICS

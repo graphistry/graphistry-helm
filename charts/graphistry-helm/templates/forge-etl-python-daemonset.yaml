@@ -37,6 +37,8 @@ spec:
         - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - env:
+          - name: GRAPHISTRY_CPU_MODE
+            value: {{.Values.graphistryCPUMode | quote }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

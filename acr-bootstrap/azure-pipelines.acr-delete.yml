@@ -47,4 +47,5 @@ stages:
           ACR_NAME=$(ACR_NAME) 
             CUDA_SHORT_VERSION=$(CUDA_SHORT_VERSION) \
             APP_BUILD_TAG=$(GRAPHISTRY_VERSION) \
+            REDIS_BUILD_TAG=$(REDIS_BUILD_TAG) \
             ./acr-bootstrap/delete-from-acr.sh

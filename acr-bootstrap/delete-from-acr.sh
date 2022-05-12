@@ -11,6 +11,7 @@ echo "ACR_NAME: $ACR_NAME"
 echo "DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME"
 echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
 
+
 [[ ! -z "${ACR_NAME}" ]] \
     || { echo "Set ACR_NAME (ex: myacr )" && exit 1; }
 
@@ -61,4 +62,4 @@ delete_if_present "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-unive
 delete_if_present "caddy:${APP_BUILD_TAG:-latest}-universal"
 
 # third-party
-delete_if_present "redis:6.2.6" "library"
+delete_if_present "redis:${REDIS_BUILD_TAG:-6.2.6}" "library"

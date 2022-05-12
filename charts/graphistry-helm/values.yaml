@@ -19,6 +19,18 @@ maxSurge : "10%"
 #dev mode for debugging with nexus, postgres and nginx
 devMode: false
 
+#set to development in dev mode
+nodeEnv: production
+
+#set to developmet in dev mode
+appEnvironment: production
+
+#set to config.settings.dev in dev mode
+djangoSettingsModule: "config.settings.production"
+
+#set to true in dev mode
+djangoDebug: "False"
+
 nginxPorts:
   #port for nginx service to listen on
   portOne: 80
@@ -218,14 +230,10 @@ env:
    value: dask-scheduler:8787
  - name: AIR_GAPPED
    value: "0"
- - name: APP_ENVIRONMENT
-   value: production
  - name: GRAPHISTRY_LOG_LEVEL
    value: INFO
  - name: LOG_LEVEL
    value: INFO
- - name: NODE_ENV
-   value: production
  - name: PIVOT_PORT 
    value: "8080"
  - name: PORT
@@ -248,12 +256,8 @@ env:
    value: admin/
  - name: DJANGO_ALLOWED_HOSTS
    value: '*'
- - name: DJANGO_DEBUG
-   value: "False"
  - name: DJANGO_SECURE_SSL_REDIRECT
    value: "False"
- - name: DJANGO_SETTINGS_MODULE
-   value: config.settings.production
  - name: GOOGLE_ANALYTICS_ID
    value: UA-59712214-2
  - name: IS_SIGNUPS_OPEN_AFTER_FIRST_DEFAULT

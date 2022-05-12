@@ -43,6 +43,14 @@ spec:
         - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - env:
+          - name : NODE_ENV
+            value: {{ .Values.nodeEnv | quote }}
+          - name : APP_ENVIRONMENT
+            value: {{ .Values.appEnvironment | quote }}
+          - name : DJANGO_SETTINGS_MODULE
+            value: {{ .Values.djangoSettingsModule | quote }}
+          - name : DJANGO_DEBUG
+            value: {{ .Values.djangoDebug | quote }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

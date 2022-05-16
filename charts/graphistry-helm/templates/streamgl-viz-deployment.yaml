@@ -45,6 +45,11 @@ spec:
         - env:
           - name : NODE_ENV
             value: {{ .Values.nodeEnv | quote }}
+      {{ if eq .Values.devMode true }}
+          - name: SKIP_ACTIVATE
+            value: "true"
+
+      {{- end }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

@@ -62,4 +62,4 @@ delete_if_present "graphistry:graphistry-postgres-${APP_BUILD_TAG:-latest}-unive
 delete_if_present "caddy:${APP_BUILD_TAG:-latest}-universal"
 
 # third-party
-delete_if_present "redis:${REDIS_BUILD_TAG:-6.2.6}" "library"
+#delete_if_present "redis:${REDIS_BUILD_TAG:-6.2.6}" "library"

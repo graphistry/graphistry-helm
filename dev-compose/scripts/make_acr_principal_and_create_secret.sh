@@ -24,7 +24,7 @@ echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
     || { echo "Set SERVICE_PRINCIPAL_NAME (ex: acrk8sprincipal )" && exit 1; }
 
 [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
-    || { echo "Set CONTAINER_REGISTRY_NAME (ex: myacrk8sregistry )" && exit 1; }
+    || { echo "Set CONTAINER_REGISTRY_NAME (ex: myacrk8sregistry.azurecr.io )" && exit 1; }
 
 az login --service-principal --username="${SERVICE_PRINCIPAL_NAME}" --password="${CLIENT_SECRET}" --tenant="${TENANT_ID}"
 az account set --subscription $AZSUBSCRIPTION
@@ -50,7 +50,7 @@ echo "Creating kubernetes image pull secret named acr-secret"
 #assumes default namespace
 kubectl create secret docker-registry acr-secret \
     --namespace graphistry \
-    --docker-server=$CONTAINER_REGISTRY_NAME.azurecr.io \
+    --docker-server=$CONTAINER_REGISTRY_NAME \
     --docker-username=$USER_NAME \
     --docker-password=$PASSWORD
 

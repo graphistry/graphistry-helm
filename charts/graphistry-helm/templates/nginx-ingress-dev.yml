@@ -26,7 +26,7 @@ metadata:
   name: nginx-ingress-dev
 spec:
   rules:
-    - host: {{.Values.Domain}}
+    - host: {{.Values.domain}}
       http:
         paths:
           - backend:

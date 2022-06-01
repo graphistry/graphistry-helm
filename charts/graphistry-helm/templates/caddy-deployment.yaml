@@ -49,7 +49,7 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.caddy.repository}}:{{.Values.tag}}-universal
+          image: {{.Values.containerregistry.name}}/{{.Values.caddy.repository}}:{{.Values.tag}}-universal
           imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:
             exec:

@@ -27,7 +27,7 @@ jobs:
           echo "MULTINODE=${{ secrets.MULTINODE }}" >> $GITHUB_ENV
           echo "TLS=${{ secrets.TLS }}" >> $GITHUB_ENV
           echo "APP_TAG=${{ secrets.APP_TAG }}" >> $GITHUB_ENV
-
+          echo "GRAPHISTRY_KEY=${{ secrets.GRAPHISTRY_KEY }}" >> $GITHUB_ENV
 ## docker compose build
       - name: Build the cluster
         run: docker-compose -f dev-compose/docker-compose.yml build

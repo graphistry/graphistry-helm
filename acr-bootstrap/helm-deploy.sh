@@ -48,7 +48,7 @@ echo "TLS": $TLS
     || { echo "Set CLUSTER_NAME (ex: myclustername )" && exit 1; }
 
 [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
-    || { echo "Set CONTAINER_REGISTRY_NAME (ex: myacrk8sregistry )" && exit 1; }
+    || { echo "Set CONTAINER_REGISTRY_NAME (ex: myacrk8sregistry.azurecr.io )" && exit 1; }
 
 [[ ! -z "${NODE_NAME}" ]] \
     || { echo "Set NODE_NAME (ex: acrk8s )" && exit 1; }
@@ -147,7 +147,7 @@ fi
 
 
 helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
- --set azurecontainerregistry.name=$CONTAINER_REGISTRY_NAME.azurecr.io  \
+ --set containerregistry.name=$CONTAINER_REGISTRY_NAME  \
  --set nodeSelector."kubernetes\\.io/hostname"=$NODE_NAME \
  --set tag=$APP_TAG \ 
  --set imagePullSecrets=$IMAGE_PULL_SECRETS

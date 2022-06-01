@@ -18,7 +18,7 @@ echo "TLS": $TLS
     || { echo "Set MULTINODE (ex: TRUE/FALSE  )" && exit 1; }
 
 [[ ! -z "${TLS}" ]] \
-    || { echo "Set TLS (ex: TRUE/FALSE )" && exit 1; }
+    || { echo "Set TLS (ex: true/false )" && exit 1; }
 
 [[ ! -z "${APP_TAG}" ]] \
     || { echo "Set APP_TAG (ex: v2.39.4-org_sso_k8s )" && exit 1; }
@@ -64,7 +64,7 @@ else
 :
 fi
 
-if [[ $TLS=TRUE ]]
+if [[ $TLS=true ]]
 then
 echo "installing Longhorn NFS "
 certmanager()
@@ -73,7 +73,7 @@ else
 fi
 
 
-if [[ $TLS=TRUE ]]
+if [[ $TLS=true ]]
 then
 helm upgrade -i --install ingress-nginx ingress-nginx \
   --repo https://kubernetes.github.io/ingress-nginx \
@@ -86,7 +86,7 @@ helm upgrade -i --install ingress-nginx ingress-nginx \
 fi
 
 
-echo "deploying graphistry cluster"
+echo "getting Graphistry Helm Chart from helm repo"
 
 if [[ $(helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/ | grep "exists")  ]]; 
 then
@@ -98,18 +98,7 @@ else
 fi
 
 
-if [[ $TLS=TRUE ]]
-then
-helm upgrade -i g-chart ../charts/graphistry-helm \
-  --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz \
-  --namespace graphistry  --set tls=true --set devMode=true \
-  --create-namespace 
-else
-helm upgrade -i g-chart ../charts/graphistry-helm \
-  --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz \
-  --namespace graphistry  --set tls=false --set devMode=true \
-  --create-namespace 
-fi
+
 
 
 exit 1

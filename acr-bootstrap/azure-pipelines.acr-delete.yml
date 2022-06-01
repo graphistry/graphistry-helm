@@ -1,0 +1,51 @@
+# Mirror official Graphistry images from Graphistry DockerHub to a private Azure ACR 
+
+# Configuration:
+#   In your Azure pipeline, add variables:
+#     ACR_SERVICE_CONNECTION_NAME (public; Project settings -> Pipelines -> Service connections)
+#     ACR_NAME (public; your ACR short name)
+#     DOCKERHUB_USERNAME (public; your DockerHub service account ID with read access to Graphistry repos)
+#     DOCKERHUB_TOKEN (private; your DockerHub service account token with read access to Graphistry repos)
+#     GRAPHISTRY_VERSION (public; latest or value like v2.38.10)
+
+trigger:
+- none
+
+
+resources:
+- repo: self
+
+
+pool:
+  vmImage: ubuntu-latest
+
+stages:
+
+- stage: Delete
+  displayName: delete Graphistry DockerHub containers to private ACR
+  jobs:
+  - job: Delete from ACR
+    steps:
+    - task: bash@3
+      displayName: Bash CLI test
+      inputs:
+        targetType: 'inline'
+        failOnStderr: true
+        script: |
+          echo "howdy neighbor"
+          echo "I am here: `pwd`"
+          ls -alh
+    - task: AzureCLI@2
+      displayName: Azure CLI
+      inputs:
+        azureSubscription: $(ACR_SERVICE_CONNECTION_NAME)
+        scriptType: bash
+        scriptLocation: inlineScript
+        inlineScript: |
+          az --version
+          az account show
+          ACR_NAME=$(ACR_NAME) 
+            CUDA_SHORT_VERSION=$(CUDA_SHORT_VERSION) \
+            APP_BUILD_TAG=$(GRAPHISTRY_VERSION) \
+            REDIS_BUILD_TAG=$(REDIS_BUILD_TAG) \
+            ./acr-bootstrap/delete-from-acr.sh

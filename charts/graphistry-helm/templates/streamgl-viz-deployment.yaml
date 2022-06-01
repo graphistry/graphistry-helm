@@ -1,3 +1,4 @@
+{{ if eq .Values.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -45,20 +46,16 @@ spec:
         - env:
           - name : NODE_ENV
             value: {{ .Values.nodeEnv | quote }}
-      {{ if eq .Values.devMode true }}
-          - name: SKIP_ACTIVATE
-            value: "true"
+      #{{ if eq .Values.devMode true }}
+          #- name: SKIP_ACTIVATE
+          #  value: "true"
 
-      {{- end }}
+      #{{- end }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-      {{ if eq .Values.devMode false }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
-      {{ else }}  
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.streamglvizDev.repository}}:{{.Values.tag}}-universal-dev
-      {{ end }}    
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}   
           livenessProbe:
             exec:
@@ -113,3 +110,5 @@ spec:
     io.kompose.service: streamgl-viz
 status:
   loadBalancer: {}
+
+{{- end }}    

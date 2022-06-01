@@ -15,9 +15,10 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws:ro
       - ~/.kube/config:/root/.kube/dev-cluster:ro
-    command: helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart  --set tag=$APP_TAG --set domain=eks-skinny.grph.xyz --namespace graphistry  --set tls=false --set devMode=true --set nodeEnv=development --set appEnvironment=development --set djangoSettingsModule=config.settings.dev --set djangoDebug=True --set graphistryCPUMode=1   --create-namespace  --dry-run
+    command: helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --set tls=${{ env.TLS }} --set tlsEmail="cody@graphistry.com"  --set tag=${{ env.APP_TAG }} --set domain=eks-skinny.grph.xyz --namespace graphistry  --set devMode=true --set nodeEnv=development --set appEnvironment=development --set djangoSettingsModule=config.settings.dev --set djangoDebug=True --set graphistryCPUMode=1 --set graphistryKey =${{ env.GRAPHISTRY_KEY }} --set imagePullSecrets=dockerhub-secret --create-namespace  --dry-run
     environment:
       - APP_TAG=${APP_TAG}
+      - TLS=${TLS}
 
   cluster-setup:
     image: helm-docker
@@ -27,16 +28,16 @@ services:
       - TLS=${TLS}
       - APP_TAG=${APP_TAG}
 
+
   make-cluster-secrets:
     image: helm-docker
     command: bash ./check-secret.sh
     environment:
-      - SERVICE_PRINCIPAL_NAME=${SERVICE_PRINCIPAL_NAME}
-      - CLIENT_SECRET=${CLIENT_SECRET}
-      - TENANT_ID=${TENANT_ID}
-      - ACR_NAME=${ACR_NAME}
-      - AZSUBSCRIPTION=${AZSUBSCRIPTION}
       - CONTAINER_REGISTRY_NAME=${CONTAINER_REGISTRY_NAME}
+      - DOCKER_USER_NAME=${DOCKER_USER_NAME}
+      - DOCKER_PASSWORD=${DOCKER_PASSWORD}
+      - DOCKER_EMAIL=${DOCKER_EMAIL}
+
 
 
   scale-to-zero:

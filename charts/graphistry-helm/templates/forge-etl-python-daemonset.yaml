@@ -1,3 +1,4 @@
+{{ if eq .Values.devMode false }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -43,11 +44,9 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-   {{ if eq .Values.devMode false }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetlpython.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
-    {{ else }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.forgeetlpythonDev.repository}}:{{.Values.tag}}-dev
-    {{ end }}
+
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetlpython.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+
           imagePullPolicy: {{.Values.imagePullPolicy }}    
           livenessProbe:
             exec:
@@ -105,6 +104,6 @@ spec:
     io.kompose.service: forge-etl-python
 status:
   loadBalancer: {}
-
+{{ end }}
 ---
 

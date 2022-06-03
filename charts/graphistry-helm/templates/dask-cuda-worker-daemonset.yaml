@@ -55,7 +55,7 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
 
-           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
 
           imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:

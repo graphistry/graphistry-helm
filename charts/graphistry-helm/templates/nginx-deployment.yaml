@@ -43,7 +43,6 @@ spec:
         - "nexus-migration-job-{{ .Release.Revision}}"
       {{ if eq .Values.devMode false }}        
       - name: nginx-init-streamgl-viz
-
         image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
         command: 
         - sh 
@@ -118,8 +117,7 @@ spec:
         {{ if eq .Values.devMode true }}
             - mountPath: /opt/graphistry/apps/core/viz/www/public
               name: viz-empty
-        {{- end }}
-        {{ if eq .Values.devMode false }}
+        {{ else }}
             - mountPath: /opt/graphistry/apps/core/viz/build
               name: viz-static
         {{- end }}
@@ -155,9 +153,10 @@ spec:
         #      - key: upload.conf
         #        path: upload.conf
         #        mode: 0644
+        {{ if eq .Values.devMode true }}
         - name: viz-empty
           emptyDir: {}
-        {{ if eq .Values.devMode true }}
+        {{ else }}
         - name: viz-static
           emptyDir: {}
         {{- end }}

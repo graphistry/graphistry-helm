@@ -335,9 +335,9 @@ stENVPublic:
  - name: LOG_LEVEL
    value: DEBUG
  - name: BASE_PATH
-   value: "dashboard/"
+   value: 
  - name: BASE_URL
-   value: "http://localhost:8501/dashboard"
+   value: "http://localhost:8501"
  - name: ST_PUBLIC_PORT
    value: 8501
  - name: GRAPH_VIEWS
@@ -346,10 +346,6 @@ stENVPublic:
    value: 
  - name: VERSION_BASE
    value: "v2.32.4"
- - name: GRAPHISTRY_PROTOCOL
-   value: "http"
- - name: GRAPHISTRY_SERVER
-   value: "nginx"
  - name: NEPTUNE_READER_PROTOCOL
    value: 
  - name: NEPTUNE_READER_HOST
@@ -380,21 +376,17 @@ stENVPrivate:
  - name: LOG_LEVEL
    value: DEBUG
  - name: BASE_PATH
-   value: "dashboard/"
+   value: 
  - name: BASE_URL
-   value: "http://localhost:8501/dashboard"
+   value: "http://localhost:8502"
  - name: ST_PUBLIC_PORT
-   value: 8501
+   value: 8502
  - name: GRAPH_VIEWS
    value: "/apps/views"
  - name: COMPOSE_PROJECT_NAME
    value: 
  - name: VERSION_BASE
    value: "v2.32.4"
- - name: GRAPHISTRY_PROTOCOL
-   value: "http"
- - name: GRAPHISTRY_SERVER
-   value: "nginx"
  - name: NEPTUNE_READER_PROTOCOL
    value: 
  - name: NEPTUNE_READER_HOST

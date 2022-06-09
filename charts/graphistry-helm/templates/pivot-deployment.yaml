@@ -1,3 +1,4 @@
+{{ if eq .Values.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -43,15 +44,21 @@ spec:
         - "nexus-migration-job-{{ .Release.Revision}}"
       containers:
         - env:
+          - name : NODE_ENV
+            value: {{ .Values.nodeEnv | quote }}
+      #{{ if eq .Values.devMode true }}
+      #    - name: SKIP_ACTIVATE
+      #      value: "true"
+      #    - name: GRAPHISTRY_HOST
+      #      value: https://hub.graphistry.com
+      #    - name: GRAPHISTRY_KEY
+      #      value: {{ .Values.graphistryKey | quote }}
+      #{{- end }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-     {{ if eq .Values.devMode false }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
-      {{ else }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.pivotDev.repository}}:{{.Values.tag}}-dev
-    {{ end }}              
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}       
           livenessProbe:
             exec:
@@ -118,3 +125,4 @@ spec:
 status:
   loadBalancer: {}
 ---
+{{ end }}

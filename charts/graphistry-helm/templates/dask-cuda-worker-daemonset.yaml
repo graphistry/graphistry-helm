@@ -1,5 +1,5 @@
-{{ if eq .Values.devMode false }}
 
+{{ if eq .Values.devMode false }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -48,11 +48,15 @@ spec:
           command:
             - /entrypoints/rapids-entrypoint.sh
           env:
+          - name: GRAPHISTRY_CPU_MODE
+            value: {{.Values.graphistryCPUMode | quote }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+
           imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:
             exec:
@@ -110,4 +114,4 @@ spec:
 status:
   loadBalancer: {}
 
-{{- end }}
+{{ end }}  

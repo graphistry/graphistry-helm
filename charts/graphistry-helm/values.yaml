@@ -19,6 +19,20 @@ maxSurge : "10%"
 #dev mode for debugging with nexus, postgres and nginx
 devMode: false
 
+#set to development in dev mode
+nodeEnv: production
+
+#set to developmet in dev mode
+appEnvironment: production
+
+#set to config.settings.dev in dev mode
+djangoSettingsModule: "config.settings.production"
+
+graphistryCPUMode: "0"
+
+#set to true in dev mode
+djangoDebug: "False"
+
 nginxPorts:
   #port for nginx service to listen on
   portOne: 80
@@ -62,8 +76,8 @@ tlsEmail: ""
 #enables longhorn dashboard
 longhornDashboard: false
 
-#azure container registry name
-azurecontainerregistry:
+#container registry name
+containerregistry:
   name: acrgraphistryk8s.azurecr.io
 
 #image pull secrets name
@@ -184,6 +198,9 @@ graphAppKitusername:
 #gak username password to be set to a user registered in graphistry
 graphAppKitpassword: 
 
+## graphistry key for dev mode in pivot deployment
+graphistryKey:
+
 #environment variables 
  # can be set like helm install chart_name --name release_name \
  #--set env.DBUser="FOO" --set env.DBPassword="BAR"
@@ -210,22 +227,16 @@ env:
    value: 64 MiB
  - name: FORGE_NUM_WORKERS
    value: "4"
- - name: GRAPHISTRY_CPU_MODE
-   value: "0"
  - name: REMOTE_DASK
    value: dask-scheduler:8786
  - name: REMOTE_DASK_DIAGNOSTICS
    value: dask-scheduler:8787
  - name: AIR_GAPPED
    value: "0"
- - name: APP_ENVIRONMENT
-   value: production
  - name: GRAPHISTRY_LOG_LEVEL
    value: INFO
  - name: LOG_LEVEL
    value: INFO
- - name: NODE_ENV
-   value: production
  - name: PIVOT_PORT 
    value: "8080"
  - name: PORT
@@ -248,12 +259,8 @@ env:
    value: admin/
  - name: DJANGO_ALLOWED_HOSTS
    value: '*'
- - name: DJANGO_DEBUG
-   value: "False"
  - name: DJANGO_SECURE_SSL_REDIRECT
    value: "False"
- - name: DJANGO_SETTINGS_MODULE
-   value: config.settings.production
  - name: GOOGLE_ANALYTICS_ID
    value: UA-59712214-2
  - name: IS_SIGNUPS_OPEN_AFTER_FIRST_DEFAULT
@@ -328,9 +335,9 @@ stENVPublic:
  - name: LOG_LEVEL
    value: DEBUG
  - name: BASE_PATH
-   value: "dashboard/"
+   value: 
  - name: BASE_URL
-   value: "http://localhost:8501/dashboard"
+   value: "http://localhost:8501"
  - name: ST_PUBLIC_PORT
    value: 8501
  - name: GRAPH_VIEWS
@@ -339,10 +346,6 @@ stENVPublic:
    value: 
  - name: VERSION_BASE
    value: "v2.32.4"
- - name: GRAPHISTRY_PROTOCOL
-   value: "http"
- - name: GRAPHISTRY_SERVER
-   value: "nginx"
  - name: NEPTUNE_READER_PROTOCOL
    value: 
  - name: NEPTUNE_READER_HOST
@@ -373,21 +376,17 @@ stENVPrivate:
  - name: LOG_LEVEL
    value: DEBUG
  - name: BASE_PATH
-   value: "dashboard/"
+   value: 
  - name: BASE_URL
-   value: "http://localhost:8501/dashboard"
+   value: "http://localhost:8502"
  - name: ST_PUBLIC_PORT
-   value: 8501
+   value: 8502
  - name: GRAPH_VIEWS
    value: "/apps/views"
  - name: COMPOSE_PROJECT_NAME
    value: 
  - name: VERSION_BASE
    value: "v2.32.4"
- - name: GRAPHISTRY_PROTOCOL
-   value: "http"
- - name: GRAPHISTRY_SERVER
-   value: "nginx"
  - name: NEPTUNE_READER_PROTOCOL
    value: 
  - name: NEPTUNE_READER_HOST

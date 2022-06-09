@@ -1,4 +1,4 @@
-
+#FOR DEV CLUSTER
 name: helm setup and deployment
 on:
   workflow_dispatch:
@@ -10,26 +10,29 @@ on:
         default: 1
 jobs:
   test:
-    runs-on: ubuntu-latest
     env:
+      DEV_TRUE: ${{secrets.DEV_TRUE}} 
       DOCKER_BUILDKIT: 1
+    if: ${{ env.DEV_TRUE }} == "TRUE"
+    runs-on: ubuntu-latest
+    
     steps:
       - uses: actions/checkout@v2
       - name: envvars
         #TODO PR_NUMBER: wat - https://github.com/actions/checkout/issues/58
         run: |
-          echo "SERVICE_PRINCIPAL_NAME=${{ secrets.SERVICE_PRINCIPAL_NAME  }}" >> $GITHUB_ENV
-          echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> $GITHUB_ENV
-          echo "TENANT_ID=${{ secrets.TENANT_ID }}" >> $GITHUB_ENV
-          echo "ACR_NAME=${{ secrets.ACR_NAME }}" >> $GITHUB_ENV
-          echo "AZSUBSCRIPTION=${{ secrets.AZSUBSCRIPTION }}" >> $GITHUB_ENV
-          echo "CONTAINER_REGISTRY_NAME=${{ secrets.CONTAINER_REGISTRY_NAME }}" >> $GITHUB_ENV
+          ## echo "SERVICE_PRINCIPAL_NAME=${{ secrets.SERVICE_PRINCIPAL_NAME  }}" >> $GITHUB_ENV
+          ## echo "CLIENT_SECRET=${{ secrets.CLIENT_SECRET }}" >> $GITHUB_ENV
+          ## echo "TENANT_ID=${{ secrets.TENANT_ID }}" >> $GITHUB_ENV
+          ## echo "ACR_NAME=${{ secrets.ACR_NAME }}" >> $GITHUB_ENV
+          ## echo "AZSUBSCRIPTION=${{ secrets.AZSUBSCRIPTION }}" >> $GITHUB_ENV
+          ## echo "CONTAINER_REGISTRY_NAME=${{ secrets.CONTAINER_REGISTRY_NAME }}" >> $GITHUB_ENV
           echo "MULTINODE=${{ secrets.MULTINODE }}" >> $GITHUB_ENV
           echo "TLS=${{ secrets.TLS }}" >> $GITHUB_ENV
           echo "APP_TAG=${{ secrets.APP_TAG }}" >> $GITHUB_ENV
-
+          echo "GRAPHISTRY_KEY=${{ secrets.GRAPHISTRY_KEY }}" >> $GITHUB_ENV
 ## docker compose build
-      - name: Build the cluster
+      - name: Build the cluster dockerfile
         run: docker-compose -f dev-compose/docker-compose.yml build
 
 

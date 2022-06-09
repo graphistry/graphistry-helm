@@ -11,8 +11,8 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: gp2-retain
+{{- end }}  
   resources:
     requests: 
       storage: 64Gi
 status: {}
-{{- end }}

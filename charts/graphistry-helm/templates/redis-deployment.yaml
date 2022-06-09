@@ -49,7 +49,7 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
+          image: {{.Values.containerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
           imagePullPolicy: {{.Values.imagePullPolicy }}         
           livenessProbe:
             exec:

@@ -41,9 +41,9 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
       {{ if eq .Values.devMode false }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.postgres.repository}}-{{.Values.tag}}-universal
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.postgres.repository}}-{{.Values.tag}}-universal
       {{ else }}  
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.postgres.repository}}:{{.Values.tag}}-universal-dev
+          image: graphistry/{{.Values.postgres.repository}}:{{.Values.tag}}-universal-dev
       {{ end }}    
           imagePullPolicy: {{.Values.imagePullPolicy }}         
           livenessProbe:

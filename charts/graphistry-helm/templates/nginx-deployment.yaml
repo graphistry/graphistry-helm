@@ -41,12 +41,9 @@ spec:
         args: 
         - "job"
         - "nexus-migration-job-{{ .Release.Revision}}"
+      {{ if eq .Values.devMode false }}        
       - name: nginx-init-streamgl-viz
-      {{ if eq .Values.devMode false }}
-        image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
-      {{ else }}  
-        image: {{.Values.azurecontainerregistry.name}}/{{.Values.streamglvizDev.repository}}:{{.Values.tag}}-universal-dev
-      {{ end }} 
+        image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
         command: 
         - sh 
         - -c 
@@ -54,11 +51,12 @@ spec:
         volumeMounts:
         - name: viz-static
           mountPath: /tmp/build
+      {{ end }}          
       - name: nginx-init-pivot
         {{ if eq .Values.devMode false }}
-        image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
       {{ else }}
-        image: {{.Values.azurecontainerregistry.name}}/{{.Values.pivotDev.repository}}:{{.Values.tag}}-dev
+        image: graphistry/{{.Values.pivotDev.repository}}:{{.Values.tag}}-dev
     {{ end }}   
         command: 
         - sh 
@@ -84,9 +82,9 @@ spec:
             value: kube-dns.kube-system.svc.cluster.local
    {{ if eq .Values.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
     {{ else }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.nginxDev.repository}}:{{.Values.tag}}-universal-dev
+          image: graphistry/{{.Values.nginxDev.repository}}:{{.Values.tag}}-universal-dev
     {{ end }}      
           imagePullPolicy: {{.Values.imagePullPolicy }}          
           livenessProbe:
@@ -116,9 +114,13 @@ spec:
             #- mountPath: /etc/nginx/conf.d/templates/src/upload.conf
             #  name: nginx-upload-config
             #  subPath: upload.conf
-
+        {{ if eq .Values.devMode true }}
+            - mountPath: /opt/graphistry/apps/core/viz/www/public
+              name: viz-empty
+        {{ else }}
             - mountPath: /opt/graphistry/apps/core/viz/build
               name: viz-static
+        {{- end }}
             - mountPath: /opt/graphistry/apps/core/pivot/www
               name: pivot-static
             - mountPath: /opt/graphistry/apps/core/nexus/staticfiles
@@ -151,9 +153,13 @@ spec:
         #      - key: upload.conf
         #        path: upload.conf
         #        mode: 0644
-
+        {{ if eq .Values.devMode true }}
+        - name: viz-empty
+          emptyDir: {}
+        {{ else }}
         - name: viz-static
           emptyDir: {}
+        {{- end }}
         - name: pivot-static
           emptyDir: {}           
         - name: local-media-mount

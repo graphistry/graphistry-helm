@@ -48,7 +48,7 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetl.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetl.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}           
           livenessProbe:
             exec:

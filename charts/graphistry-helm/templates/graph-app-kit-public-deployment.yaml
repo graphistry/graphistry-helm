@@ -48,7 +48,7 @@ spec:
         - "nexus-migration-job-{{ .Release.Revision}}"
       - name: graph-app-kit-init
         #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
-        image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}
+        image: {{.Values.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
         command: ["/bin/sh","-c"]
         args: ['if [ ! -d "/opt/public/views" ]; then cp -r /apps/views /opt/public/views; else echo "Error: Directory /opt/public/views exists."; fi && if [ ! -d "/opt/public/css" ]; then cp -r /apps/css /opt/public/css; else echo "Error: Directory /opt/public/css exists."; fi && if [ ! -d "/opt/public/util" ]; then cp -r /apps/util /opt/public/util; else echo "Error: Directory /opt/public/util exists."; fi && if [ ! -d "/opt/public/components" ]; then cp -r /apps/components /opt/public/components; else echo "Error: Directory /opt/public/components exists."; fi && chmod -R 777 /opt/public/ && rm -rf /opt/public/lost+found {{ if eq .Values.graphAppKitPrivate true }} && if [ ! -d "/opt/private/views" ]; then cp -r /apps/views /opt/private/views; else echo "Error: Directory /opt/private/views exists."; fi && if [ ! -d "/opt/private/css" ]; then cp -r /apps/css /opt/private/css; else echo "Error: Directory /opt/private/css exists."; fi && if [ ! -d "/opt/private/util" ]; then cp -r /apps/util /opt/private/util; else echo "Error: Directory /opt/private/util exists."; fi  && if [ ! -d "/opt/private/components" ]; then cp -r /apps/components /opt/private/components; else echo "Error: Directory /opt/private/components exists."; fi && chmod -R 777 /opt/private/  && rm -rf /opt/private/lost+found {{- end }}']
         volumeMounts:
@@ -63,21 +63,32 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: GRAPHISTRY_SERVER
+            value: "{{ .Values.domain }}" 
+    {{ if eq .Values.tls true }}              
+          - name: GRAPHISTRY_PROTOCOL
+            value: "https"
           - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
             value: "https://{{ .Values.domain }}"
+    {{ else }}
+          - name: GRAPHISTRY_PROTOCOL
+            value: "http"
+          - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
+            value: "http://{{ .Values.domain }}"
+    {{ end }}
           - name: GRAPHISTRY_USERNAME
             value: "{{ .Values.graphAppKitusername }}"
           - name:  GRAPHISTRY_PASSWORD
             value: "{{ .Values.graphAppKitpassword }}"
           #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}
+          image: {{.Values.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:
             exec:
               command:
                 - sh 
                 - -c 
-                - 'curl -Lf http://localhost:8501/dashboard/healthz'
+                - 'curl -Lf http://localhost:8501/healthz'
 
           name: graph-app-kit-public
           ports:
@@ -100,25 +111,36 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: GRAPHISTRY_SERVER
+            value: "{{ .Values.domain }}" 
+    {{ if eq .Values.tls true }}              
+          - name: GRAPHISTRY_PROTOCOL
+            value: "https"
           - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
             value: "https://{{ .Values.domain }}"
+    {{ else }}
+          - name: GRAPHISTRY_PROTOCOL
+            value: "http"
+          - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
+            value: "http://{{ .Values.domain }}"
+    {{ end }}
           - name: GRAPHISTRY_USERNAME
             value: "{{ .Values.graphAppKitusername }}"
           - name:  GRAPHISTRY_PASSWORD
             value: "{{ .Values.graphAppKitpassword }}"
           #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
-          image: {{.Values.azurecontainerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.graphAppKit.tag}}
+          image: {{.Values.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:
             exec:
               command:
                 - sh 
                 - -c 
-                - 'curl -Lf http://localhost:8501/dashboard/healthz'
+                - 'curl -Lf http://localhost:8502/healthz'
 
           name: graph-app-kit-private
           ports:
-            - containerPort: 8501
+            - containerPort: 8502
           resources: {}
           volumeMounts:
             - mountPath: /apps/css
@@ -184,9 +206,9 @@ metadata:
   name: graph-app-kit-private
 spec:
   ports:
-    - name: "8501"
+    - name: "8502-8501"
       port: 8501
-      targetPort: 8501
+      targetPort: 8502
   selector:
     io.kompose.service: graph-app-kit-public
 {{- end }}

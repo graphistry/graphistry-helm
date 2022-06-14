@@ -43,6 +43,13 @@ spec:
         args: 
         - "job"
         - "nexus-migration-job-{{ .Release.Revision}}"
+      - name: volume-mount-hack
+        image: busybox
+        command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]
+        volumeMounts:
+        - mountPath: /home/graphistry/notebooks
+          subPath: notebooks
+          name: data-mount
       containers:
         - env:
    {{- range .Values.env }}

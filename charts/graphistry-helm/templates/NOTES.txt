@@ -16,8 +16,8 @@ Your release is named {{ .Release.Name }}.
 
 To learn more about the release, try:
 
-  $ helm status {{ .Release.Name }}
-  $ helm get all {{ .Release.Name }}
+  $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
+  $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
 
 {{ if eq .Values.devMode false }} 
 
@@ -33,7 +33,7 @@ To change the restartPolicy while deployed:
 
 
 HOW TO:
-helm upgrade -i {{ .Release.Name }} --set restartPolicy=Never graphistry-helm/Graphistry-Helm-Chart
+helm upgrade -i {{ .Release.Name }} --set restartPolicy=Never graphistry-helm/Graphistry-Helm-Chart  -n {{ .Release.Namespace }}
 
 
 
@@ -46,7 +46,7 @@ To change the tag while deployed set tag to another version that is in your Azur
 
 HOW TO:
 
-helm upgrade -i {{ .Release.Name }} --set tag=v2.38.10 graphistry-helm/Graphistry-Helm-Chart
+helm upgrade -i {{ .Release.Name }} --set tag=v2.38.10 graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }}
 
 LOAD BALANCER
  
@@ -63,7 +63,7 @@ ingress:
 
 HOW TO:
 
- helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
+ helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
   --set-string ingress.management.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-internal"="true" 
 
 
@@ -84,7 +84,7 @@ kubectl label nodes <node_name> accelerator=nvidia (by default the nodeSelector 
 2) set the nodeSelector while deploying with the label you assigned the node:
 ex:
 
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \ 
+helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \ 
   --set nodeSelector."accelerator"=nvidia 
 
 can change to any label provided by kubectl describe node <node_name> just follow the format provided.
@@ -107,7 +107,7 @@ label you assigned.:
 
 ex:
 
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \ 
+helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \ 
   --set multiNode=true \
   --set nodeSelector."accelerator"=nvidia  
 
@@ -129,7 +129,7 @@ to change deployment strategy to rollingUpdate while deployed:
 
 ex:
 
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
+helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
   --set rollingUpdate=true
 
 DOMAIN
@@ -141,7 +141,7 @@ to change the domain while deployed:
 
 ex: 
 
-  helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
+  helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
     --set domain=graphistry.com but DNS has to resolve to the IP address of the node and you must own the domain.
 
 {{- if eq .Values.tls true  }}
@@ -180,7 +180,7 @@ When in developer mode set the Tag in the values.yaml file to the latest version
 Tag: is set to {{ .Values.tag }} for development containers.
 
 to set the tag to the latest version of the developers containers while deployed:
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart \
+helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
   --set tag=v2.39.12 \ 
   --set devMode=true
 

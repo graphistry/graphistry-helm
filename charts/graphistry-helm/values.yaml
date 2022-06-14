@@ -62,7 +62,7 @@ restartPolicy: Always
 
 #domain - set to  the node external ip
 #example: 18.116.94.149.nip.io - graphistry.18.116.94.149.nip.io
-domain: eks-dev.graphistry.com
+domain: 
 
 #set tlsStaging to true to enable tls staging
 tlsStaging: false

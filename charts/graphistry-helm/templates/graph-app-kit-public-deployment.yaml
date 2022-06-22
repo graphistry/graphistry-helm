@@ -63,19 +63,12 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          - name: GRAPHISTRY_SERVER
-            value: "{{ .Values.domain }}" 
-    {{ if eq .Values.tls true }}              
-          - name: GRAPHISTRY_PROTOCOL
-            value: "https"
-          - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
-            value: "https://{{ .Values.domain }}"
-    {{ else }}
           - name: GRAPHISTRY_PROTOCOL
             value: "http"
           - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
-            value: "http://{{ .Values.domain }}"
-    {{ end }}
+            value: ""
+          - name: GRAPHISTRY_SERVER
+            value: "nginx"
           - name: GRAPHISTRY_USERNAME
             value: "{{ .Values.graphAppKitusername }}"
           - name:  GRAPHISTRY_PASSWORD
@@ -110,20 +103,13 @@ spec:
    {{- range .Values.stENVPrivate }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
-   {{- end }}
-          - name: GRAPHISTRY_SERVER
-            value: "{{ .Values.domain }}" 
-    {{ if eq .Values.tls true }}              
-          - name: GRAPHISTRY_PROTOCOL
-            value: "https"
-          - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
-            value: "https://{{ .Values.domain }}"
-    {{ else }}
+   {{- end }}             
           - name: GRAPHISTRY_PROTOCOL
             value: "http"
           - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
-            value: "http://{{ .Values.domain }}"
-    {{ end }}
+            value: ""
+          - name: GRAPHISTRY_SERVER
+            value: "nginx"
           - name: GRAPHISTRY_USERNAME
             value: "{{ .Values.graphAppKitusername }}"
           - name:  GRAPHISTRY_PASSWORD

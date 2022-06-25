@@ -171,7 +171,7 @@ http://{{ .Values.domain }}
   
 The cluster is currently running in Developers Mode with only a small number of containers running.
 
-postgres, nexus, streamglviz, nginx, and forge etl python are all running in Developers Mode
+postgres, nexus, nginx, are all running in Developers Mode
 
 HOW TO:
 
@@ -181,8 +181,29 @@ Tag: is set to {{ .Values.tag }} for development containers.
 
 to set the tag to the latest version of the developers containers while deployed:
 helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
-  --set tag=v2.39.12 \ 
+  --set tag={{ .Values.tag }} \ 
   --set devMode=true
+
+
+HOW TO:
+
+check logs : 
+
+1) to get the name of the pod 
+kubectl get pods -n {{ .Release.Namespace }} 
+
+
+2) THEN:
+kubectl logs -n graphistry <pod name> -f
+
+HOW TO:
+
+shell into the pod:
+
+1) to get the name of the pod 
+kubectl get pods -n {{ .Release.Namespace }} 
+
+2) kubectl exec -it -n {{ .Release.Namespace }} <pod name> -- /bin/bash
 
 {{- end }}
 

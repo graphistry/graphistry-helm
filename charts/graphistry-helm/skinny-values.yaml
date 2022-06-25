@@ -1,0 +1,11 @@
+
+domain: eks-skinny.grph.xyz   
+tls: true
+devMode: true 
+nodeEnv: development 
+appEnvironment: development 
+djangoSettingsModule: "config.settings.dev" 
+graphistryCPUMode: "1" 
+djangoDebug: "True"
+imagePullPolicy: Always
+imagePullSecrets: dockerhub-secret

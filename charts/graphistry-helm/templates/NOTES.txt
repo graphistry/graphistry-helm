@@ -129,7 +129,7 @@ to change deployment strategy to rollingUpdate while deployed:
 
 ex:
 
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
+$ helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
   --set rollingUpdate=true
 
 DOMAIN
@@ -141,7 +141,7 @@ to change the domain while deployed:
 
 ex: 
 
-  helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
+  $ helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
     --set domain=graphistry.com but DNS has to resolve to the IP address of the node and you must own the domain.
 
 {{- if eq .Values.tls true  }}
@@ -177,33 +177,36 @@ HOW TO:
 
 When in developer mode set the Tag in the values.yaml file to the latest version of the developers containers.
 
-Tag: is set to {{ .Values.tag }} for development containers.
+Tag: is set to {{ .Values.tag }} for this deployment of development containers.
 
 to set the tag to the latest version of the developers containers while deployed:
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
+$ helm upgrade -i {{ .Release.Name }} ./charts/graphistry-helm -n {{ .Release.Namespace }} \
   --set tag={{ .Values.tag }} \ 
-  --set devMode=true
+  --values ./charts/graphistry-helm/skinny-values.yaml
 
 
 HOW TO:
 
-check logs : 
+check logs: 
 
-1) to get the name of the pod 
-kubectl get pods -n {{ .Release.Namespace }} 
+1) to get the name of the pod: 
+$ kubectl get pods -n {{ .Release.Namespace }} 
 
 
 2) THEN:
-kubectl logs -n graphistry <pod name> -f
+$ kubectl logs -n graphistry <pod name> -f
 
 HOW TO:
 
 shell into the pod:
 
-1) to get the name of the pod 
-kubectl get pods -n {{ .Release.Namespace }} 
+1) to get the name of the pod:
+$ kubectl get pods -n {{ .Release.Namespace }} 
 
-2) kubectl exec -it -n {{ .Release.Namespace }} <pod name> -- /bin/bash
+2) to get shell in the pod:
+$ kubectl exec -it -n {{ .Release.Namespace }} <pod name> -- /bin/bash
+
+
 
 {{- end }}
 

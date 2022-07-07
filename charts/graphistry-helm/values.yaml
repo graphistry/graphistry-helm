@@ -41,6 +41,7 @@ nginxPorts:
 #port for postgres service to listen on
 postgresPort: 5432
 
+#ports for nexus service to listen on
 nexusPort: 
   portOne: 8000
   portTwo: 8080
@@ -88,7 +89,7 @@ imagePullPolicy: IfNotPresent #could also be Always
 
 #cuda version
 cuda:
-  version: "11.0"
+  version: "11.4"
 
 #tag for the docker image
 tag: latest
@@ -103,12 +104,12 @@ caddy:
 #graph app kit repository name and tag
 graphAppKit:
   repository: graph-app-kit-st
-  tag: latest
+
 
 #redis repository name and tag
 redis:
   repository: redis
-  tag: 6.0.5
+  tag: 6.2.6
 
 #postgres repository name 
 postgres:

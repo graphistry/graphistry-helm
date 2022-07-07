@@ -158,11 +158,19 @@ https://{{ .Values.domain }}
  can use  http://nip.io  for wildcard DNS for any address 
  http://<node_IP>.nip.io
 
+{{ if .Values.domain }}
  to visit the deployed application:
 http://{{ .Values.domain }}
-
-
+{{ else }}
+ to visit the deployed application:
+kubectl get ingress -n {{ .Release.Namespace }}
+{{ end }}
+  
 {{- end }}
+
+
+
+
 
 
 {{ else }}

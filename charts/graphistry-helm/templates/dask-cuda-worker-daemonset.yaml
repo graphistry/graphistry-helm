@@ -54,7 +54,9 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-
+          - name: POSTGRES_PORT
+            value: {{.Values.postgresPort | quote }}
+            
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
 
           imagePullPolicy: {{.Values.imagePullPolicy }}

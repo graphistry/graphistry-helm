@@ -1,5 +1,6 @@
+{{ if eq .Values.postgresstatefule false }}
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   annotations:
     autoheal: "true"
@@ -10,18 +11,19 @@ metadata:
     io.kompose.service: postgres
   name: postgres
 spec:
+  serviceName: postgres
   replicas: 1
   selector:
     matchLabels:
       io.kompose.service: postgres
-  strategy:
+  updateStrategy:
 {{ if eq .Values.rollingUpdate true }}
     type: RollingUpdate
     rollingUpdate:
       maxSurge: {{.Values.maxSurge}}
       maxUnavailable: "0%"
 {{ else }}
-    type: Recreate
+    type: OnDelete
 {{- end }}
   template:
     metadata:
@@ -88,7 +90,8 @@ spec:
 {{ if eq .Values.multiNode false }}
       nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
 {{- end }}    
-status: {}
+status:
+  replicas: 1
 
 ---
 #service
@@ -105,7 +108,7 @@ metadata:
   name: postgres
 spec:
   ports:
-    - name: "{{.Values.postgresPort}}"
+    - name: {{.Values.postgresPort | quote }}
       port: {{.Values.postgresPort}}
       targetPort: {{.Values.postgresPort}}
   selector:
@@ -153,4 +156,6 @@ spec:
     requests:
       storage: 1Gi
 status: {}
+{{- end }}
+
 {{- end }}

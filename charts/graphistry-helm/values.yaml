@@ -19,6 +19,8 @@ maxSurge : "10%"
 #dev mode for debugging with nexus, postgres and nginx
 devMode: false
 
+httpTesting: false
+
 #set to development in dev mode
 nodeEnv: production
 
@@ -206,8 +208,6 @@ graphistryKey:
  # can be set like helm install chart_name --name release_name \
  #--set env.DBUser="FOO" --set env.DBPassword="BAR"
 env:
- - name: POSTGRES_PORT
-   value: "5432"
  - name: HOST
    value: 0.0.0.0
  - name: AUTH_LDAP_BIND_PASSWORD

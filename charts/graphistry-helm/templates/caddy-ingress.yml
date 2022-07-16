@@ -28,10 +28,10 @@ spec:
   rules:
   {{ if .Values.domain }}
     - host: {{.Values.domain}}
-  {{ else }}
-    - host:  
-  {{- end }}
       http:
+  {{ else }}
+    - http:  
+  {{- end }}
         paths:
           - backend:
               service:

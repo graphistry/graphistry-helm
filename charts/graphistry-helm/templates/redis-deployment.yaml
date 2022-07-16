@@ -49,7 +49,15 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: POSTGRES_PORT
+            value: {{.Values.postgresPort | quote }}
+          #image: redis:6.2.6           
+          #image: {{.Values.containerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
+          {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+          image: {{.Values.redis.repository}}:{{.Values.redis.tag}} #DockerHub
+          {{ else }}
           image: {{.Values.containerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
+          {{- end }}
           imagePullPolicy: {{.Values.imagePullPolicy }}         
           livenessProbe:
             exec:

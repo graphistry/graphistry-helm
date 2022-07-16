@@ -28,8 +28,9 @@ spec:
   rules:
   {{ if .Values.domain }}
     - host: {{.Values.domain}}
+      http:
   {{ else }}
-    - host:  
+    - http:  
   {{- end }}
       http:
         paths:

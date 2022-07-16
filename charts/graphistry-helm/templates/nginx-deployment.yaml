@@ -72,6 +72,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: POSTGRES_PORT
+            value: {{.Values.postgresPort | quote }}
           - name: K8S_NAMESPACE_SUFFIX
             value: .{{ .Release.Namespace }}.svc.cluster.local
           - name: LONGHORN_NAMESPACE

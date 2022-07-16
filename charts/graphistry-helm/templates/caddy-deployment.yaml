@@ -49,6 +49,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: POSTGRES_PORT
+            value: {{.Values.postgresPort | quote }}
           image: {{.Values.containerregistry.name}}/{{.Values.caddy.repository}}:{{.Values.tag}}-universal
           imagePullPolicy: {{.Values.imagePullPolicy }}
           livenessProbe:

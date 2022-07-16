@@ -4,5 +4,9 @@ tls: true
 graphAppKitusername: 
 graphAppKitpassword: 
 imagePullPolicy: Always
+httpTesting: true
+containerregistry:
+  name: docker.io/graphistry
+imagePullSecrets: docker-secret-prod
 
 #helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml --set tag=v2.39.17-koa-sso-new --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-41-160.us-east-2.compute.internal --namespace graphistry --create-namespace 

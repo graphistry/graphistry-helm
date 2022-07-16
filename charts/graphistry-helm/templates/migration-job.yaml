@@ -27,6 +27,9 @@ spec:
             - name: {{ .name  }}
               value: {{ .value | quote }}
    {{- end }}
+            - name: POSTGRES_PORT
+              value: {{.Values.postgresPort | quote }}
+            
       restartPolicy: Never
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}

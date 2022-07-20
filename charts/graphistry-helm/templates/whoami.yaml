@@ -47,7 +47,7 @@ metadata:
 
 spec:
   rules:
-  - host: whoami.eks-dev2.grph.xyz
+  - host: whoami.{{.Values.domain}}
     http:
       paths:
       - path: /

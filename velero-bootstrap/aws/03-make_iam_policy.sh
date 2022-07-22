@@ -45,6 +45,4 @@ cat > velero_policy.json <<EOF
 }
 EOF
 
-aws iam create-policy \ 
-    --policy-name VeleroAccessPolicy \
-    --policy-document file://velero_policy.json
+aws iam create-policy --policy-name VeleroAccessPolicy --policy-document file://velero_policy.json

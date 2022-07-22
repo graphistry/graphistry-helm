@@ -1,0 +1,19 @@
+configuration:
+  backupStorageLocation:
+    bucket: graphistry-eks-velero-backups
+  provider: aws
+  volumeSnapshotLocation:
+    config:
+      region: us-east-2
+credentials:
+  useSecret: false
+initContainers:
+- name: velero-plugin-for-aws
+  image: velero/velero-plugin-for-aws:v1.5.0
+  volumeMounts:
+  - mountPath: /target
+    name: plugins
+serviceAccount:
+  server:
+    annotations:
+      eks.amazonaws.com/role-arn: "arn:aws:iam::627416405843:role/eks-velero-backup"

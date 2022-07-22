@@ -5,6 +5,9 @@
 
 if [[ $PRIMARY_CLUSTER ]]
 then
+echo " associating OIDC with primary cluster"
+eksctl utils associate-iam-oidc-provider --region=$REGION --cluster=$PRIMARY_CLUSTER --approve
+
 echo "creating iam service account for primary cluster"
 
 
@@ -23,6 +26,8 @@ fi
 
 if [[ $RECOVERY_CLUSTER ]]
 then
+echo " associating OIDC with recovery cluster"
+eksctl utils associate-iam-oidc-provider --region=$REGION --cluster=$RECOVERY_CLUSTER --approve
 echo "creating iam service account for recovery cluster"
 eksctl create iamserviceaccount \
 --cluster=$RECOVERY_CLUSTER \

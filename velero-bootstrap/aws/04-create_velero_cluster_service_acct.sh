@@ -1,11 +1,12 @@
 #!/bin/bash
+#PRIMARY_CLUSTER=${PRIMARY_CLUSTER:-k8s-cluster}
+#RECOVERY_CLUSTER=${RECOVERY_CLUSTER:-k8s-cluster-recovery}
+#ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 
 if [[ $PRIMARY_CLUSTER ]]
 then
 echo "creating iam service account for primary cluster"
-PRIMARY_CLUSTER=${PRIMARY_CLUSTER:-k8s-cluster}
 
-ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 
 eksctl create iamserviceaccount \
 --cluster=$PRIMARY_CLUSTER \

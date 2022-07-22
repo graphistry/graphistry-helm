@@ -127,3 +127,4 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+velero-bootstrap/aws/velero_policy.json

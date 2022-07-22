@@ -4,10 +4,7 @@ This document is for Graphistry helm contributors on tasks like setting up a loc
 
 For using the Graphistry helm charts in your own Kubernetes,  See the main [README](README.md)
 
-
-https://dev.azure.com/graphistry/Graphistry%20Dev 
-
-
+For an even more encompassing list of commands and options, see the [kubectl cheatsheet](https://kubernetes.io/docs/reference/kubectl/cheatsheet/)
 
 # TO-DOs
 
@@ -21,6 +18,7 @@ https://dev.azure.com/graphistry/Graphistry%20Dev
 8) add multinode volume support with NFS (longhorn)
 
 # Convenient Commands
+
 
 ## get pods
 ```kubectl get pods```

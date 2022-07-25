@@ -13,7 +13,7 @@ graphistry-helm` to see the charts.
 
 To install the Graphistry-Helm-Chart chart:
 
-    helm install my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart
+    helm install my-graphistry-chart graphistry-helm/graphistry-helm-chart
 
 To uninstall the chart:
 

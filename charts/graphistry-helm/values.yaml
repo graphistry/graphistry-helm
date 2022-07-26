@@ -13,7 +13,12 @@ ingress:
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
+#storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
 provisioner: kubernetes.io/aws-ebs
+
+#the namespace of the ingress controller - this is the namespace that the ingress controller is going to be deployed to.
+ingressNamespace: ingress-nginx
+
 
 #max surge of pods in rolling updates
 maxSurge : "10%"

@@ -5,7 +5,7 @@ metadata:
   labels:
     app: ingress-nginx
   name: nginx-configuration
-  namespace: ingress-nginx
+  namespace: {{ .Values.ingressNamespace }}
 data:
   use-forwarded-headers: "true"
   

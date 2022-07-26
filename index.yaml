@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   Graphistry-Helm-Chart:
   - apiVersion: v1
+    created: "2022-07-26T19:36:44.278464258Z"
+    description: Helm Charts to deploy Graphistry to kubernetes for 100x visualizations
+    digest: b27363c60ae8e86a9df470c2655e3a4982fb6917fd684ca6bbbd96080559ae58
+    keywords:
+    - Graphistry
+    - Helm Charts
+    - 100x
+    - visualizations
+    - kubernetes
+    name: Graphistry-Helm-Chart
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/Graphistry-Helm-Chart-0.3.1/Graphistry-Helm-Chart-0.3.1.tgz
+    version: 0.3.1
+  - apiVersion: v1
     created: "2022-07-26T18:30:43.150979939Z"
     description: Helm Charts to deploy Graphistry to kubernetes for 100x visualizations
     digest: fe069946badaa4cfb42fd6981baf8d309112df85cb9ed155447b8a54f843e837
@@ -412,4 +426,4 @@ entries:
     urls:
     - https://github.com/graphistry/graphistry-helm/releases/download/Graphistry-Helm-Chart-0.0.1/Graphistry-Helm-Chart-0.0.1.tgz
     version: 0.0.1
-generated: "2022-07-26T18:30:43.151365651Z"
+generated: "2022-07-26T19:36:44.278745158Z"

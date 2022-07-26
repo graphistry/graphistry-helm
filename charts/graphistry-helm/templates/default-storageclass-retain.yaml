@@ -8,7 +8,7 @@ metadata:
 parameters:
   fsType: ext4
   type: gp2
-provisioner: kubernetes.io/aws-ebs
+provisioner: {{ .Values.provisioner }}
 reclaimPolicy: Retain
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer

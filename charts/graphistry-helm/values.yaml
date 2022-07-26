@@ -13,6 +13,8 @@ ingress:
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
+provisioner: kubernetes.io/aws-ebs
+
 #max surge of pods in rolling updates
 maxSurge : "10%"
 

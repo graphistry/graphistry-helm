@@ -199,7 +199,8 @@ helm upgrade -i nginx-ingress ingress-nginx/ingress-nginx \
     --set defaultBackend.image.image=$DEFAULTBACKEND_IMAGE \
     --set defaultBackend.image.tag=$DEFAULTBACKEND_TAG \
     --set defaultBackend.image.digest="" \
-    --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+    --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls" \
+    --set imagePullSecrets[0].name=$IMAGE_PULL_SECRETS
 else
 # Use Helm to deploy an NGINX ingress controller
 helm upgrade -i nginx-ingress ingress-nginx/ingress-nginx \
@@ -220,7 +221,8 @@ helm upgrade -i nginx-ingress ingress-nginx/ingress-nginx \
     --set defaultBackend.image.registry=$CONTAINER_REGISTRY_NAME.azurecr.io \
     --set defaultBackend.image.image=$DEFAULTBACKEND_IMAGE \
     --set defaultBackend.image.tag=$DEFAULTBACKEND_TAG \
-    --set defaultBackend.image.digest=""
+    --set defaultBackend.image.digest="" \
+    --set imagePullSecrets[0].name=$IMAGE_PULL_SECRETS
 fi
 
 

@@ -42,8 +42,9 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           - name: POSTGRES_PORT
-            value: {{.Values.postgresPort | quote }}
-            
+            value: {{.Values.postgres.port | quote }}
+          - name: POSTGRES_HOST
+            value: {{.Values.postgres.host | quote }}
       {{ if eq .Values.devMode false }}
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.postgres.repository}}-{{.Values.tag}}-universal
       {{ else }}  
@@ -61,7 +62,7 @@ spec:
             timeoutSeconds: 5
           name: postgres
           ports:
-            - containerPort: {{.Values.postgresPort}}
+            - containerPort: {{.Values.postgres.port}}
               name: postgres
               protocol: TCP
           resources: {}
@@ -107,9 +108,9 @@ metadata:
   name: postgres
 spec:
   ports:
-    - name: {{.Values.postgresPort | quote }}
-      port: {{.Values.postgresPort}}
-      targetPort: {{.Values.postgresPort}}
+    - name: {{.Values.postgres.port | quote }}
+      port: {{.Values.postgres.port}}
+      targetPort: {{.Values.postgres.port}}
   selector:
     io.kompose.service: postgres
 status:

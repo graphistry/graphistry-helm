@@ -31,7 +31,11 @@ spec:
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
-        image: "groundnuty/k8s-wait-for:latest"
+        {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 
         - "job"

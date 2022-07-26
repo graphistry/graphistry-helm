@@ -111,3 +111,7 @@ echo "Importing nginx ingress controller images into ACR"
 import_nginx_ingress_into_acr "$CONTROLLER_IMAGE" "$CONTROLLER_TAG"
 import_nginx_ingress_into_acr "$PATCH_IMAGE" "$PATCH_TAG"
 import_nginx_ingress_into_acr "$DEFAULTBACKEND_IMAGE" "$DEFAULTBACKEND_TAG"
+
+echo "importing k8s wait for container (initcontainer for graphistry) into acr "
+
+import_if_missing "k8s-wait-for:latest" "groundnuty"

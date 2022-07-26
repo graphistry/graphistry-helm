@@ -135,7 +135,7 @@ postgres:
 #port for postgres service to listen on
   port: 5432
 #hostname for postgres
-  host: postgres
+  host: postgres-0
 
 #streamgl-viz repository name 
 streamglviz:

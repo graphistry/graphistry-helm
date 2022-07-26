@@ -51,7 +51,7 @@ spec:
           - name: POSTGRES_PORT
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: {{.Values.postgres.host | quote }}
+            value: "{{.Values.postgres.host }}.postgres.{{ .Release.Namespace }}.svc.cluster.local"
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetlpython.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
 
           imagePullPolicy: {{.Values.imagePullPolicy }}    

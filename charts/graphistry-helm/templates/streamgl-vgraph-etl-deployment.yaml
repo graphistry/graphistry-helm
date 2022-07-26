@@ -54,8 +54,9 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           - name: POSTGRES_PORT
-            value: {{.Values.postgresPort | quote }}
-            
+            value: {{.Values.postgres.port | quote }}
+          - name: POSTGRES_HOST
+            value: {{.Values.postgres.host | quote }}
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglvgraph.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}   
           livenessProbe:

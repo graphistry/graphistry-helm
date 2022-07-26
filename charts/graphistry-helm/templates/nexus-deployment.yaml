@@ -62,8 +62,9 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           - name: POSTGRES_PORT
-            value: {{.Values.postgresPort | quote }}
-            
+            value: {{.Values.postgres.port | quote }}
+          - name: POSTGRES_HOST
+            value: {{.Values.postgres.host | quote }}
      {{ if eq .Values.devMode false }}
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
       {{ else }}  

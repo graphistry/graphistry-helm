@@ -6,8 +6,13 @@ metadata:
     #storageclass.kubernetes.io/is-default-class: "true"
   name: gp2-retain
 parameters:
-  fsType: ext4
-  type: gp2
+{{- if .Values.provider.aws }}
+{{ toYaml .Values.provider.aws | indent 2 }}
+{{- else if .Values.provider.azure }}
+{{ toYaml .Values.provider.azure | indent 2 }}
+{{- else if .Values.provider.vmware }}
+{{ toYaml .Values.provider.vmware | indent 2 }}
+{{- end }}
 provisioner: {{ .Values.provisioner }}
 reclaimPolicy: Retain
 allowVolumeExpansion: true

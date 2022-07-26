@@ -1,4 +1,3 @@
-{{ if eq .Values.postgresstatefule false }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -156,6 +155,4 @@ spec:
     requests:
       storage: 1Gi
 status: {}
-{{- end }}
-
 {{- end }}

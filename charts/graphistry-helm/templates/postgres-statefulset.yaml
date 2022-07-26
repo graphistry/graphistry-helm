@@ -44,7 +44,7 @@ spec:
           - name: POSTGRES_PORT
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: {{.Values.postgres.host | quote }}
+            value: "{{.Values.postgres.host }}.postgres.{{ .Release.Namespace }}.svc.cluster.local"
       {{ if eq .Values.devMode false }}
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.postgres.repository}}-{{.Values.tag}}-universal
       {{ else }}  
@@ -107,14 +107,15 @@ metadata:
     io.kompose.service: postgres
   name: postgres
 spec:
+  type: ClusterIP
+  clusterIP: None
   ports:
     - name: {{.Values.postgres.port | quote }}
       port: {{.Values.postgres.port}}
       targetPort: {{.Values.postgres.port}}
   selector:
     io.kompose.service: postgres
-status:
-  loadBalancer: {}
+
 
 ---
 # longhorn storageclass setting reclaim policy to retain

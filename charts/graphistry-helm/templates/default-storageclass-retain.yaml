@@ -6,12 +6,12 @@ metadata:
     #storageclass.kubernetes.io/is-default-class: "true"
   name: gp2-retain
 parameters:
-{{- if .Values.provider.aws }}
-{{ toYaml .Values.provider.aws | indent 2 }}
-{{- else if .Values.provider.azure }}
-{{ toYaml .Values.provider.azure | indent 2 }}
-{{- else if .Values.provider.vmware }}
-{{ toYaml .Values.provider.vmware | indent 2 }}
+{{- if .Values.storageClassParameters.aws }}
+{{ toYaml .Values.storageClassParameters.aws | indent 2 }}
+{{- else if .Values.storageClassParameters.azure }}
+{{ toYaml .Values.storageClassParameters.azure | indent 2 }}
+{{- else if .Values.storageClassParameters.vmware }}
+{{ toYaml .Values.storageClassParameters.vmware | indent 2 }}
 {{- end }}
 provisioner: {{ .Values.provisioner }}
 reclaimPolicy: Retain

@@ -7,13 +7,22 @@ set -ex
 trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
 trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
-#### Required ###
+#### Required FOR IMPORTING GRAPHISTRY INTO ACR  ###
 # ACR_NAME
 # DOCKERHUB_USERNAME
 # DOCKERHUB_TOKEN
 #### Optional ###
 # APP_BUILD_TAG
 # CUDA_SHORT_VERSION
+###
+##REQUIRED FOR IMPORTING NGINX-INGRESS INTO ACR ###
+SOURCE_REGISTRY=${SOURCE_REGISTRY:-k8s.gcr.io}
+CONTROLLER_IMAGE=${CONTROLLER_IMAGE:-ingress-nginx/controller}
+CONTROLLER_TAG=${CONTROLLER_TAG:-v1.2.1}
+PATCH_IMAGE=${PATCH_IMAGE:-ingress-nginx/kube-webhook-certgen}
+PATCH_TAG=${PATCH_TAG:-v1.1.1}
+DEFAULTBACKEND_IMAGE=${DEFAULTBACKEND_IMAGE:-defaultbackend-amd64}
+DEFAULTBACKEND_TAG=${DEFAULTBACKEND_TAG:-1.5} 
 ###
 # ex: 
 # ACR_NAME=myacr DOCKERHUB_USERNAME=mydockerhubuser DOCKERHUB_TOKEN=mydockerhubtoken import-image-into-acr-from-dockerhub.sh
@@ -56,8 +65,27 @@ import_if_missing ()
   echo "... Finished handling $IMAGE"
 }
 
+import_nginx_ingress_into_acr(){
+  IMAGE=$1
+  TAG=$2
+  echo "Importing image if missing: $IMAGE:$TAG from $SOURCE_REGISTRY"
+  ( az acr repository show --name $ACR_NAME --image "$IMAGE:$TAG" &> /dev/null ) \
+    && echo "Image \"$IMAGE\" found in ACR, skipping" \
+    || { \
+      echo "Image \"$IMAGE\" not found in ACR, importing..." \
+      && az acr import \
+        --name ${ACR_NAME} \
+        --source "$SOURCE_REGISTRY/$IMAGE:$TAG" \
+        --image $IMAGE:$TAG \
+      ; \
+    }
+  echo "... Finished handling $IMAGE:$TAG"
+
+}
+
 #####
 
+echo " Importing Graphistry images into ACR"
 # cuda
 import_if_missing "graphistry:etl-server-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
 import_if_missing "graphistry:etl-server-python-${APP_BUILD_TAG:-latest}-${CUDA_SHORT_VERSION:-11.0}"
@@ -78,3 +106,8 @@ import_if_missing "caddy:${APP_BUILD_TAG:-latest}-universal"
 import_if_missing "redis:6.2.6" "library"
 
 
+echo "Importing nginx ingress controller images into ACR"
+
+import_nginx_ingress_into_acr "$CONTROLLER_IMAGE" "$CONTROLLER_TAG"
+import_nginx_ingress_into_acr "$PATCH_IMAGE" "$PATCH_TAG"
+import_nginx_ingress_into_acr "$DEFAULTBACKEND_IMAGE" "$DEFAULTBACKEND_TAG"

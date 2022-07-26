@@ -16,6 +16,16 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 #APP_TAG
 #MULTINODE
 
+####these are required for deploying ingress-nginx controller into the cluster###
+SOURCE_REGISTRY=${SOURCE_REGISTRY:-k8s.gcr.io}
+CONTROLLER_IMAGE=${CONTROLLER_IMAGE:-ingress-nginx/controller}
+CONTROLLER_TAG=${CONTROLLER_TAG:-v1.2.1}
+PATCH_IMAGE=${PATCH_IMAGE:-ingress-nginx/kube-webhook-certgen}
+PATCH_TAG=${PATCH_TAG:-v1.1.1}
+DEFAULTBACKEND_IMAGE=${DEFAULTBACKEND_IMAGE:-defaultbackend-amd64}
+DEFAULTBACKEND_TAG=${DEFAULTBACKEND_TAG:-1.5} 
+
+
 echo "SERVICE_PRINCIPAL USERNAME: $SERVICE_PRINCIPAL_USERNAME"
 echo "SERVICE_PRINCIPAL_PASSWORD: $SERVICE_PRINCIPAL_PASSWORD"
 echo "TENANT_ID: $TENANT_ID"
@@ -26,11 +36,11 @@ echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
 echo "NODE_NAME: $NODE_NAME"
 echo "IMAGE_PULL_SECRETS: $IMAGE_PULL_SECRETS"
 
-echo "APP_TAG": $APP_TAG
+echo "APP_TAG: $APP_TAG"
 
-echo "MULTINODE": $MULTINODE
+echo "MULTINODE: $MULTINODE"
 
-echo "TLS": $TLS
+echo "TLS: $TLS"
     
 [[ ! -z "${SERVICE_PRINCIPAL_USERNAME}" ]] \
     || { echo "Set SERVICE_PRINCIPAL_USERNAME (ex: myserviceprincipalusername )" && exit 1; }
@@ -101,21 +111,35 @@ helm upgrade --install cert-manager cert-manager \
 
 }
 
+ingress-nginx(){
+
+    if [[ $(helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx | grep "exists")   ]]; 
+    then
+        echo "Nginx Ingress Controller Helm Repo already exists upgrading..."
+        helm repo update ingress-nginx
+    else
+        echo "Nginx Ingress Controller Helm does not exist adding..."
+        helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+    fi
+}
 
 longhorn () {
-if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
-then
-  echo "Longhorn Helm Repo already exists upgrading..."
-  helm repo update longhorn
-else
-    echo "Longhorn Helm Repo does not exist adding..."
-    helm repo add longhorn https://charts.longhorn.io
-fi
+    if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
+    then
+        echo "Longhorn Helm Repo already exists upgrading..."
+        helm repo update longhorn
+    else
+        echo "Longhorn Helm Repo does not exist adding..."
+        helm repo add longhorn https://charts.longhorn.io
+    fi
 
-kubectl create namespace longhorn-system
-kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/prerequisite/longhorn-iscsi-installation.yaml -n longhorn-system
-helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system 
+    kubectl create namespace longhorn-system
+    echo "Deploying Longhorn"
+    kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/prerequisite/longhorn-iscsi-installation.yaml -n longhorn-system
+    helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system 
 }
+
+
 
 
 if [[ $MULTINODE=TRUE ]]
@@ -128,7 +152,7 @@ fi
 
 if [[ $TLS=TRUE ]]
 then
-echo "installing Longhorn NFS "
+echo "installing cert-manager "
 certmanager()
 else
 :
@@ -155,12 +179,48 @@ helm upgrade -i my-graphistry-chart graphistry-helm/Graphistry-Helm-Chart \
 
 if [[ $TLS=TRUE ]]
 then
-helm upgrade --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace \
-  --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+# Use Helm to deploy an NGINX ingress controller
+helm upgrade -i nginx-ingress ingress-nginx/ingress-nginx \
+    --version 4.1.3 \
+    --namespace ingress-nginx \
+    --create-namespace \
+    --set controller.nodeSelector."kubernetes\.io/hostname"=$NODE_NAME \
+    --set controller.image.registry=$CONTAINER_REGISTRY_NAME.azurecr.io \
+    --set controller.image.image=$CONTROLLER_IMAGE \
+    --set controller.image.tag=$CONTROLLER_TAG \
+    --set controller.image.digest="" \
+    --set controller.admissionWebhooks.patch.nodeSelector."kubernetes\.io/hostname"=$NODE_NAME \
+    --set controller.admissionWebhooks.patch.image.registry=$CONTAINER_REGISTRY_NAME.azurecr.io \
+    --set controller.admissionWebhooks.patch.image.image=$PATCH_IMAGE \
+    --set controller.admissionWebhooks.patch.image.tag=$PATCH_TAG \
+    --set controller.admissionWebhooks.patch.image.digest="" \
+    --set defaultBackend.nodeSelector."kubernetes\.io/hostname"=$NODE_NAME \
+    --set defaultBackend.image.registry=$CONTAINER_REGISTRY_NAME.azurecr.io \
+    --set defaultBackend.image.image=$DEFAULTBACKEND_IMAGE \
+    --set defaultBackend.image.tag=$DEFAULTBACKEND_TAG \
+    --set defaultBackend.image.digest="" \
+    --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
 else
-helm upgrade --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace
+# Use Helm to deploy an NGINX ingress controller
+helm upgrade -i nginx-ingress ingress-nginx/ingress-nginx \
+    --version 4.1.3 \
+    --namespace ingress-nginx \
+    --create-namespace \
+    --set controller.nodeSelector."kubernetes\.io/hostname"=$NODE_NAME \
+    --set controller.image.registry=$CONTAINER_REGISTRY_NAME.azurecr.io \
+    --set controller.image.image=$CONTROLLER_IMAGE \
+    --set controller.image.tag=$CONTROLLER_TAG \
+    --set controller.image.digest="" \
+    --set controller.admissionWebhooks.patch.nodeSelector."kubernetes\.io/hostname"=$NODE_NAME \
+    --set controller.admissionWebhooks.patch.image.registry=$CONTAINER_REGISTRY_NAME.azurecr.io \
+    --set controller.admissionWebhooks.patch.image.image=$PATCH_IMAGE \
+    --set controller.admissionWebhooks.patch.image.tag=$PATCH_TAG \
+    --set controller.admissionWebhooks.patch.image.digest="" \
+    --set defaultBackend.nodeSelector."kubernetes\.io/hostname"=$NODE_NAME \
+    --set defaultBackend.image.registry=$CONTAINER_REGISTRY_NAME.azurecr.io \
+    --set defaultBackend.image.image=$DEFAULTBACKEND_IMAGE \
+    --set defaultBackend.image.tag=$DEFAULTBACKEND_TAG \
+    --set defaultBackend.image.digest=""
 fi
+
+

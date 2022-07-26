@@ -30,7 +30,7 @@ spec:
         io.kompose.service: forge-etl-python
     spec:
       initContainers:
-      - name: "{{ .Chart.Name }}-init"
+      - name: "{{ lower .Chart.Name }}-init"
         image: "groundnuty/k8s-wait-for:latest"
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 

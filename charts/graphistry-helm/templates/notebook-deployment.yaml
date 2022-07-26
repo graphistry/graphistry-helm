@@ -37,7 +37,7 @@ spec:
         io.kompose.service: notebook
     spec:
       initContainers:
-      - name: "{{ .Chart.Name }}-init"
+      - name: "{{ lower .Chart.Name }}-init"
         image: "groundnuty/k8s-wait-for:latest"
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 

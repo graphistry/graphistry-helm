@@ -25,6 +25,8 @@ spec:
         {{- end }}        
         command: ["/bin/bash"]
         args: ["-c", "while true; do ping localhost; sleep 60;done"]
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }} 
 
 
 

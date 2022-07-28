@@ -115,3 +115,9 @@ import_nginx_ingress_into_acr "$DEFAULTBACKEND_IMAGE" "$DEFAULTBACKEND_TAG"
 echo "importing k8s wait for container (initcontainer for graphistry) into acr "
 
 import_if_missing "k8s-wait-for:latest" "groundnuty"
+
+
+echo " importing netshoot container for dns/http optional debugging"
+
+import_if_missing "netshoot:latest" "nicolaka"
+

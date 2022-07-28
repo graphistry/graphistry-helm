@@ -10,6 +10,7 @@ spec:
     metadata:
       labels:
         io.kompose.service: nexus-migration-job
+        io.kompose.network/grph: "true"
     spec:
       containers:
       - name: nexus-migration-job

@@ -1,0 +1,30 @@
+
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: netshoot
+  labels:
+    io.kompose.service: netshoot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: nginx-netshoot
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: netshoot
+  spec:
+      containers:
+      - name: netshoot
+        {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+        image: nicolaka/netshoot:latest
+        {{- else }}
+        image: {{.Values.containerregistry.name}}/nicolaka/netshoot:latest
+        {{- end }}        
+        command: ["/bin/bash"]
+        args: ["-c", "while true; do ping localhost; sleep 60;done"]
+
+
+

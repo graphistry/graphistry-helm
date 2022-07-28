@@ -13,7 +13,7 @@ spec:
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2
+  storageClassName: uploadfiles-sc
   resources:
     requests:
       storage: 40Gi

@@ -1,0 +1,21 @@
+{{- if eq .Values.multiNode false  }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+    #storageclass.kubernetes.io/is-default-class: "true"
+  name: uploadfiles-sc
+parameters:
+{{- if .Values.storageClassParameters.aws }}
+{{ toYaml .Values.storageClassParameters.aws | indent 2 }}
+{{- else if .Values.storageClassParameters.azure }}
+{{ toYaml .Values.storageClassParameters.azure | indent 2 }}
+{{- else if .Values.storageClassParameters.vmware }}
+{{ toYaml .Values.storageClassParameters.vmware | indent 2 }}
+{{- end }}
+provisioner: {{ .Values.provisioner }}
+reclaimPolicy: Delete
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+{{- end }}
+

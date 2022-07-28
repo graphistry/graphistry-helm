@@ -15,7 +15,7 @@ spec:
       labels:
         io.kompose.network/grph: "true"
         io.kompose.service: netshoot
-  spec:
+    spec:
       containers:
       - name: netshoot
         {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}

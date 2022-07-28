@@ -48,7 +48,7 @@ spec:
         - "job"
         - "nexus-migration-job-{{ .Release.Revision}}"
       - name: volume-mount-hack
-        image: busybox
+        image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.notebook.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]
         volumeMounts:
         - mountPath: /home/graphistry/notebooks

@@ -66,7 +66,7 @@ fi
 
 if [[ $TLS=true ]]
 then
-echo "installing Longhorn NFS "
+echo "installing cert-manager"
 certmanager()
 else
 :
@@ -101,4 +101,4 @@ fi
 
 
 
-exit 1
+exit 0

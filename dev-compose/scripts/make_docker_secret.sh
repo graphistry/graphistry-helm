@@ -1,5 +1,5 @@
 #!/bin/bash
-# Derived from https://docs.microsoft.com/en-us/azure/container-registry/container-registry-auth-kubernetes
+
 
 #these 3 enviroment variables are required
 #CONTAINER_REGISTRY_NAME
@@ -9,7 +9,7 @@
 echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
 echo "DOCKER_USER_NAME: $DOCKER_USER_NAME"
 echo "DOCKER_PASSWORD: $DOCKER_PASSWORD"
-echo "DOCKER_EMAIL: $DOCKER_EMAIL"
+
 
 
 [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
@@ -21,8 +21,6 @@ echo "DOCKER_EMAIL: $DOCKER_EMAIL"
 [[ ! -z "${DOCKER_PASSWORD}" ]] \
     || { echo "Set DOCKER_PASSWORD (ex: myacrk8sregistry.azurecr.io )" && exit 1; }
 
-[[ ! -z "${DOCKER_EMAIL}" ]] \
-    || { echo "Set DOCKER_EMAIL (ex: service_Account@graphistry.com )" && exit 1; }
 
 echo "Creating kubernetes image pull secret named docker-secret"
 
@@ -31,7 +29,9 @@ kubectl create secret docker-registry docker-secret \
     --namespace graphistry \
     --docker-server=$CONTAINER_REGISTRY_NAME \
     --docker-username=$DOCKER_USER_NAME \
-    --docker-password=$DOCKER_PASSWORD \
-    --docker-email=$DOCKER_EMAIL
+    --docker-password=$DOCKER_PASSWORD 
+
+
+
 
 exit 1

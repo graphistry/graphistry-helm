@@ -1,0 +1,13 @@
+graphAppKitusername:
+graphAppKitpassword:
+containerregistry:
+  name: 
+imagePullSecrets: 
+ingressNamespace: default
+provisioner: disk.csi.azure.com
+storageClassParameters:
+  azure:
+    skuName: StandardSSD_LRS  
+
+
+#example values.yaml for a azure aks deployment with a private repository

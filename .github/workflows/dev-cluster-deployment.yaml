@@ -63,8 +63,8 @@ jobs:
         run:  docker-compose -f dev-compose/docker-compose.yml up aws-setup  
 
 # needs to only run once
-      - name: create cluster secrets
-        run:  docker-compose -f dev-compose/docker-compose.yml up make-cluster-secrets  
+      #- name: create cluster secrets
+      #  run:  docker-compose -f dev-compose/docker-compose.yml up make-cluster-secrets  
 
 # needs to only run once
       - name: setup the cluster

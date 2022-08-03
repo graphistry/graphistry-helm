@@ -10,7 +10,7 @@ services:
     volumes:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
-      - ~/.kube/:/root/.kube
+      - ~/.kube:/root/.kube
     command: bash ./check-secret.sh && helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml  --set tag=${APP_TAG} --namespace graphistry   --create-namespace  --dry-run
     environment:
       - APP_TAG=${APP_TAG}
@@ -25,7 +25,7 @@ services:
     volumes:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
-      - ~/.kube/:/root/.kube
+      - ~/.kube:/root/.kube
     command: bash ./check-secret.sh && helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml  --set tag=${APP_TAG}  --namespace graphistry   --create-namespace  --dry-run
     environment:
       - APP_TAG=${APP_TAG}
@@ -37,7 +37,7 @@ services:
     command: bash ./setup_deploy.sh
     volumes:
       - ~/.aws:/root/.aws
-      - ~/.kube/:/root/.kube
+      - ~/.kube:/root/.kube
     environment:
       - MULTINODE=${MULTINODE}
       - TLS=${TLS}
@@ -49,7 +49,7 @@ services:
     command: bash ./copy-aws-creds.sh
     volumes:
       - ~/.aws:/root/.aws
-      - ~/.kube/:/root/.kube
+      - ~/.kube:/root/.kube
     environment:
       - MULTINODE=${MULTINODE}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
@@ -65,7 +65,7 @@ services:
     volumes:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
-      - ~/.kube/:/root/.kube
+      - ~/.kube:/root/.kube
     environment:
       - CONTAINER_REGISTRY_NAME=${CONTAINER_REGISTRY_NAME}
       - DOCKER_USER_NAME=${DOCKER_USER_NAME}
@@ -83,7 +83,7 @@ services:
     volumes:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
-      - ~/.kube/:/root/.kube
+      - ~/.kube:/root/.kube
     command: helm delete g-chart -n graphistry 
     environment:
       - APP_TAG=${APP_TAG}

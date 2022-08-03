@@ -75,7 +75,7 @@ jobs:
         env:
             CLUSTER: ${{github.event.inputs.cluster}}
 # deploy to eks2 cluster
-      - name: deploy the dev cluster
+      - name: deploy the eks-dev2 cluster
         if: "${{ env.CLUSTER == 'eks-dev2' }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
         env:

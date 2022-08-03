@@ -12,9 +12,8 @@ on:
 jobs:
   test:
     env:
-      DEV_TRUE: ${{secrets.DEV_TRUE}} 
       DOCKER_BUILDKIT: 1
-    if: ${{ env.DEV_TRUE == "TRUE" }} 
+    if: ${{ secrets.DEV_TRUE == "TRUE" }}
     runs-on: ubuntu-latest
     
     steps:
@@ -58,11 +57,11 @@ jobs:
         run:  docker-compose -f dev-compose/docker-compose.yml up make-cluster-secrets  
 # needs to only run once
 
-# deploy to dev cluster
+# deploy to skinny dev cluster
       - name: deploy the dev cluster
-        if: ${{ github.event.inputs.cluster }} == "skinny"
+        if: ${{ github.event.inputs.cluster == "skinny" }}
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
-# deploy to dev cluster
+# deploy to eks2 cluster
       - name: deploy the dev cluster
-        if: ${{ github.event.inputs.cluster }} == "eks-dev2"
+        if: ${{ github.event.inputs.cluster == "eks-dev2" }}
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 

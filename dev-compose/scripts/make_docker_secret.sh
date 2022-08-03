@@ -18,8 +18,7 @@ if [[ $CLUSTER_ENV=skinny ]]
 then
 
 echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
-echo "DOCKER_USER_NAME: $DOCKER_USER_NAME"
-echo "DOCKER_PASSWORD: $DOCKER_PASSWORD"
+
 
 [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
     || { echo "Set CONTAINER_REGISTRY_NAME (ex: docker.io )" && exit 1; }
@@ -40,8 +39,7 @@ kubectl create secret docker-registry docker-secret \
 else if [[ $CLUSTER_ENV=eks-dev2 ]]
 then
 echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
-echo "DOCKER_USER_NAME: $DOCKER_USER_NAME_PROD"
-echo "DOCKER_PASSWORD: $DOCKER_PASSWORD_PROD"
+
 
 [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
     || { echo "Set CONTAINER_REGISTRY_NAME (ex: docker.io )" && exit 1; }

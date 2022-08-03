@@ -55,27 +55,27 @@ helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system
 }
 
 
-if ${MULTINODE}=='TRUE';
+if [[$MULTINODE=='TRUE']]
 then
-echo "installing Longhorn NFS "
-longhorn()
+  echo "installing Longhorn NFS "
+  longhorn
 fi
 
 
-if ${TLS}=='true';
+if [[ $TLS=='true' ]];
 then
-echo "installing cert-manager"
-certmanager()
-echo "installing nginx ingress controller with ssl"
-helm upgrade -i --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace \
-  --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+  echo "installing cert-manager"
+  certmanager
+  echo "installing nginx ingress controller with ssl"
+  helm upgrade -i --install ingress-nginx ingress-nginx \
+    --repo https://kubernetes.github.io/ingress-nginx \
+    --namespace ingress-nginx --create-namespace \
+    --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
 else
-echo "installing nginx ingress controller"
-helm upgrade -i --install ingress-nginx ingress-nginx \
-  --repo https://kubernetes.github.io/ingress-nginx \
-  --namespace ingress-nginx --create-namespace 
+  echo "installing nginx ingress controller"
+  helm upgrade -i --install ingress-nginx ingress-nginx \
+    --repo https://kubernetes.github.io/ingress-nginx \
+    --namespace ingress-nginx --create-namespace 
 fi
 
 

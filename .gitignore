@@ -128,3 +128,4 @@ dmypy.json
 # Pyre type checker
 .pyre/
 velero-bootstrap/aws/velero_policy.json
+charts/graphistry-helm/velero_values_primary_cluster.yaml

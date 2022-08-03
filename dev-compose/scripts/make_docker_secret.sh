@@ -14,7 +14,7 @@
 
 echo "Creating kubernetes image pull secret named docker-secret"
 
-if [[ $CLUSTER_ENV=skinny ]]
+if [[ $CLUSTER_ENV=='skinny' ]]
 then
 
 echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
@@ -36,8 +36,9 @@ kubectl create secret docker-registry docker-secret \
     --docker-username=$DOCKER_USER_NAME \
     --docker-password=$DOCKER_PASSWORD 
 
-else if [[ $CLUSTER_ENV=eks-dev2 ]]
+elif [[ $CLUSTER_ENV=='eks-dev2' ]]
 then
+
 echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
 
 
@@ -58,6 +59,8 @@ kubectl create secret docker-registry docker-secret \
     --docker-username=$DOCKER_USER_NAME_PROD \
     --docker-password=$DOCKER_PASSWORD_PROD 
 
+else
+:
 fi
 
 

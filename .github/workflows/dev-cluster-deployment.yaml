@@ -10,11 +10,20 @@ on:
         description: 'cluster to deploy to (eks-dev2,skinny)'
         required: true
 jobs:
+  check-dev-true:
+      runs-on: ubuntu-latest
+      outputs:
+        DEV_TRUE: ${{ steps.dev-true.outputs.defined }}
+      steps:
+          - id: dev-true
+            if: ${{ env.DEV_TRUE == "TRUE" }}
+            run: echo "::set-output name=defined::true"
+            env:
+                DEV_TRUE: ${{secrets.DEV_TRUE}}
   test:
     env:
       DOCKER_BUILDKIT: 1
-      DEV_TRUE: ${{secrets.DEV_TRUE}} >> $GITHUB_ENV
-    if: ${{ env.DEV_TRUE == "TRUE" }}
+    if: needs.check-dev-true.outputs.DEV_TRUE == 'TRUE'
     runs-on: ubuntu-latest
     
     steps:

@@ -6,6 +6,9 @@ on:
       version:
         description: 'Version to deploy'
         required: true
+      cluster:
+        description: 'cluster to deploy to (eks-dev2,skinny)'
+        required: true
 jobs:
   test:
     env:
@@ -49,6 +52,11 @@ jobs:
         run:  docker-compose -f dev-compose/docker-compose.yml up make-cluster-secrets  
 # needs to only run once
 
-# deploy cluster
+# deploy to dev cluster
       - name: deploy the dev cluster
+        if: ${{ github.event.inputs.cluster }} == "skinny"
+        run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
+# deploy to dev cluster
+      - name: deploy the dev cluster
+        if: ${{ github.event.inputs.cluster }} == "eks-dev2"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 

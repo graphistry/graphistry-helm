@@ -5,6 +5,21 @@ networks:
     name: grph_net
 
 services:
+  helm-docker:
+    build:
+      context: ./scripts
+      dockerfile: ../docker/Dockerfile
+    image: helm-docker
+    volumes:
+      - ../charts/:/charts
+      #- ${AWS_CREDS}:/root/.aws:ro
+      #- ${KUBECONFIG}:/root/.kube/dev-cluster:ro
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml  --set tag=${{ env.APP_TAG }} --namespace graphistry   --create-namespace  --dry-run
+    environment:
+      - APP_TAG=${APP_TAG}
+      - TLS=${TLS}
+      #- AWS_CREDS=${AWS_CREDS}
+      #- KUBECONFIG=${KUBECONFIG}
 
   helm-docker-dev:
     build:
@@ -21,6 +36,7 @@ services:
       - TLS=${TLS}
       #- AWS_CREDS=${AWS_CREDS}
       #- KUBECONFIG=${KUBECONFIG}
+
   cluster-setup:
     image: helm-docker
     command: bash ./setup_deploy.sh

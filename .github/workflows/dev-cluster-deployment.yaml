@@ -58,17 +58,17 @@ jobs:
       - name: Build the cluster dockerfile
         run: docker-compose -f dev-compose/docker-compose.yml build
 
+# needs to only run once
       - name: create aws credentials
         run:  docker-compose -f dev-compose/docker-compose.yml up aws-setup  
-# needs to only run once
 
+# needs to only run once
       - name: create cluster secrets
         run:  docker-compose -f dev-compose/docker-compose.yml up make-cluster-secrets  
-# needs to only run once
 
+# needs to only run once
       - name: setup the cluster
         run:  docker-compose -f dev-compose/docker-compose.yml up cluster-setup
-##needs to run only once 
 
 
 
@@ -78,6 +78,7 @@ jobs:
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
         env:
             CLUSTER: ${{github.event.inputs.cluster}}
+
 # deploy to eks2 cluster
       - name: deploy the eks-dev2 cluster
         if: "${{ env.CLUSTER == 'eks-dev2' }}"

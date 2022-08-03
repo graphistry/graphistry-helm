@@ -27,7 +27,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2
 ARG KUBE_VERSION="v1.18.20" HELM_VERSION="v3.6.1" 
 
 RUN wget -q https://storage.googleapis.com/kubernetes-release/release/${KUBE_VERSION}/bin/linux/amd64/kubectl -O /usr/local/bin/kubectl && \
-    chmod +x /usr/local/bin/kubectl 
+    chmod +x /usr/local/bin/kubectl && \
+    kubectl version --client
 
 RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | tar -xz && \
     mv linux-amd64/helm /usr/bin/helm && \

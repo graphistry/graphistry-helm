@@ -6,11 +6,21 @@ mkdir /root/.aws
 cat > /root/.aws/config <<EOF
 [default]
 region = us-east-2
+
+[profile admin]
+role_arn=$AWS_ROLE_ARN
+source_profile=$SOURCE_PROFILE 
+
 EOF
 cat > /root/.aws/credentials <<EOF
 [default]
 aws_access_key_id = $AWS_ACCESS_KEY_ID
 aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
+
+[$SOURCE_PROFILE]
+aws_access_key_id = $AWS_ACCESS_KEY_ID
+aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
+
 EOF
 echo "AWS creds created"
 else  

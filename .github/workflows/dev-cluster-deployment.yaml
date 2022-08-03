@@ -53,7 +53,7 @@ jobs:
           echo "DOCKER_PASSWORD_PROD=${{ secrets.DOCKER_PASSWORD_PROD }}" >> $GITHUB_ENV
           echo "DEV_CLUSTER_ROLE=${{ secrets.DEV_CLUSTER_ROLE }}" >> $GITHUB_ENV
           echo "K8S_CLUSTER_ROLE=${{ secrets.K8S_CLUSTER_ROLE }}" >> $GITHUB_ENV
-
+          echo "SOURCE_PROFILE=${{ secrets.SOURCE_PROFILE }}" >> $GITHUB_ENV
 ## docker compose build
       - name: Build the cluster dockerfile
         run: docker-compose -f dev-compose/docker-compose.yml build

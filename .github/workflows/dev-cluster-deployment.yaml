@@ -25,6 +25,7 @@ jobs:
       DOCKER_BUILDKIT: 1
     if: needs.check-dev-true.outputs.DEV_TRUE == 'TRUE'
     runs-on: ubuntu-latest
+    needs: [check-dev-true]
     
     steps:
       - uses: actions/checkout@v2

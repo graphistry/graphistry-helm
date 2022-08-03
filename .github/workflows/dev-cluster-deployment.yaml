@@ -31,10 +31,15 @@ jobs:
           echo "MULTINODE=${{ secrets.MULTINODE }}" >> $GITHUB_ENV
           echo "TLS=${{ secrets.TLS }}" >> $GITHUB_ENV
           echo "APP_TAG=${{ github.event.inputs.version }}" >> $GITHUB_ENV
-          echo "GRAPHISTRY_KEY=${{ secrets.GRAPHISTRY_KEY }}" >> $GITHUB_ENV
+          ##echo "GRAPHISTRY_KEY=${{ secrets.GRAPHISTRY_KEY }}" >> $GITHUB_ENV
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
-
+          echo "CONTAINER_REGISTRY_NAME=${{ secrets.CONTAINER_REGISTRY_NAME }}" >> $GITHUB_ENV
+          echo "DOCKER_USER_NAME=${{ secrets.DOCKER_USER_NAME }}" >> $GITHUB_ENV
+          echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}" >> $GITHUB_ENV
+          echo "CLUSTER_ENV=${{ github.event.inputs.cluster }}" >> $GITHUB_ENV
+          echo "DOCKER_USER_NAME_PROD=${{ secrets.DOCKER_USER_NAME_PROD }}" >> $GITHUB_ENV
+          echo "DOCKER_PASSWORD_PROD=${{ secrets.DOCKER_PASSWORD_PROD }}" >> $GITHUB_ENV
 ## docker compose build
       - name: Build the cluster dockerfile
         run: docker-compose -f dev-compose/docker-compose.yml build

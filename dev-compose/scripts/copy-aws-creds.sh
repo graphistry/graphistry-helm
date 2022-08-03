@@ -23,7 +23,7 @@ then
 
 echo "creating kubeconfig for skinny cluster "
 aws eks update-kubeconfig --region us-east-2 --name dev-cluster
-$(aws eks update-kubeconfig --name dev-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN) > /dev/null 2>&1 || { echo "Error creating kubeconfig" && exit 1; }
+aws eks update-kubeconfig --name dev-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN
 
 
 echo "kubeconfig created"
@@ -32,7 +32,7 @@ then
 
 echo "creating kubeconfig for eks-dev2 cluster "
 aws eks update-kubeconfig --region us-east-2 --name k8s-cluster
-$(aws eks update-kubeconfig --name k8s-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN) > /dev/null 2>&1 || { echo "Error creating kubeconfig" && exit 1; }
+aws eks update-kubeconfig --name k8s-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN
 echo "kubeconfig created"
 else
 :

@@ -52,7 +52,7 @@ fi
 }
 
 
-if [[ $MULTINODE=='TRUE']]
+if [[ $MULTINODE=='TRUE']];
 then
 echo "installing Longhorn NFS "
 longhorn()
@@ -63,7 +63,7 @@ else
 :
 fi
 
-if [[ $TLS=='true' ]]
+if [[ $TLS=='true' ]];
 then
 echo "installing cert-manager"
 certmanager()

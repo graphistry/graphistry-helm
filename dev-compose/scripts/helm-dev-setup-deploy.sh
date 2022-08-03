@@ -40,24 +40,25 @@ helm upgrade --install cert-manager cert-manager \
 }
 
 
-
-if [[ $MULTINODE=='TRUE']];
+longhorn () {
+if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
 then
-echo "installing multinode dependencies"
-echo "installing Longhorn NFS "
-  if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
-    then
-      echo "Longhorn Helm Repo already exists upgrading..."
-      helm repo update longhorn
-    else
-        echo "Longhorn Helm Repo does not exist adding..."
-        helm repo add longhorn https://charts.longhorn.io
-  fi
+  echo "Longhorn Helm Repo already exists upgrading..."
+  helm repo update longhorn
+else
+    echo "Longhorn Helm Repo does not exist adding..."
+    helm repo add longhorn https://charts.longhorn.io
+fi
 kubectl create namespace longhorn-system
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/prerequisite/longhorn-iscsi-installation.yaml -n longhorn-system
 helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system 
-else
-echo "multinode is off"
+}
+
+
+if [[ $MULTINODE=='TRUE']];
+then
+echo "installing Longhorn NFS "
+longhorn()
 fi
 
 

@@ -16,7 +16,7 @@ jobs:
         DEV_TRUE: ${{ steps.dev-true.outputs.defined }}
       steps:
           - id: dev-true
-            if: ${{ env.DEV_TRUE == "TRUE" }}
+            if: "${{ env.DEV_TRUE == TRUE }}"
             run: echo "::set-output name=defined::true"
             env:
                 DEV_TRUE: ${{secrets.DEV_TRUE}}
@@ -69,9 +69,13 @@ jobs:
 
 # deploy to skinny dev cluster
       - name: deploy the dev cluster
-        if: ${{ github.event.inputs.cluster == "skinny" }}
+        if: "${{ env.CLUSTER == skinny }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
+        env:
+            CLUSTER: ${{github.event.inputs.cluster}}
 # deploy to eks2 cluster
       - name: deploy the dev cluster
-        if: ${{ github.event.inputs.cluster == "eks-dev2" }}
+        if: "${{ env.CLUSTER == eks-dev2 }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
+        env:
+            CLUSTER: ${{github.event.inputs.cluster}}

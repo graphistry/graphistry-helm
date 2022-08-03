@@ -22,13 +22,17 @@ then
 
 
 echo "creating kubeconfig for skinny cluster "
-aws eks update-kubeconfig --name dev-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN --only-show-errors
+aws eks update-kubeconfig --region us-east-2 --name dev-cluster
+$(aws eks update-kubeconfig --name dev-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN) > /dev/null 2>&1 || { echo "Error creating kubeconfig" && exit 1; }
+
+
 echo "kubeconfig created"
 elif [[ $CLUSTER_ENV=='eks-dev2' ]]
 then
 
 echo "creating kubeconfig for eks-dev2 cluster "
-aws eks update-kubeconfig --name k8s-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN --only-show-errors
+aws eks update-kubeconfig --region us-east-2 --name k8s-cluster
+$(aws eks update-kubeconfig --name k8s-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN) > /dev/null 2>&1 || { echo "Error creating kubeconfig" && exit 1; }
 echo "kubeconfig created"
 else
 :

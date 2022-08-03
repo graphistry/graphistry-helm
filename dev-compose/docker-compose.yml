@@ -1,8 +1,5 @@
 version: "3.5"
 
-networks:
-  grph_net:
-    name: grph_net
 
 services:
   helm-docker:

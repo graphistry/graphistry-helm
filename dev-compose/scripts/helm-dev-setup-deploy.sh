@@ -59,6 +59,8 @@ if [[$MULTINODE=='TRUE']]
 then
   echo "installing Longhorn NFS "
   longhorn
+else
+  echo "multinode is off"
 fi
 
 

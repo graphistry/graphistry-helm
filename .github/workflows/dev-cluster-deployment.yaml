@@ -13,7 +13,8 @@ jobs:
   test:
     env:
       DOCKER_BUILDKIT: 1
-    if: ${{ secrets.DEV_TRUE == "TRUE" }}
+      DEV_TRUE: ${{ secrets.DEV_TRUE }}
+    if: ${{ DEV_TRUE == "TRUE" }}
     runs-on: ubuntu-latest
     
     steps:

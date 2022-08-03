@@ -12,9 +12,8 @@ on:
 jobs:
   test:
     env:
-      DEV_TRUE: ${{secrets.DEV_TRUE}} 
       DOCKER_BUILDKIT: 1
-    if: ${{ env.DEV_TRUE }} == "TRUE"
+    if: ${{ secrets.DEV_TRUE }} == "TRUE"
     runs-on: ubuntu-latest
     
     steps:

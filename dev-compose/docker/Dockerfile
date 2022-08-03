@@ -35,7 +35,7 @@ RUN wget -q https://get.helm.sh/helm-${HELM_VERSION}-linux-amd64.tar.gz -O - | t
     rm -rf linux-amd64 && \
     helm version
 
-RUN helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+#RUN helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
 
 CMD tail -f /dev/null
 

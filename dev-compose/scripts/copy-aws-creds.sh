@@ -2,11 +2,12 @@
 #checks if aws creds are created and if not creates them
 if [[ ! -d /root/.aws ]]
 then 
-touch /root/.aws/config && cat > /root/.aws/config <<EOF
+mkdir /root/.aws
+cat > /root/.aws/config <<EOF
 [default]
 region = us-east-2
 EOF
-touch /root/.aws/credentials && cat > /root/.aws/credentials <<EOF
+cat > /root/.aws/credentials <<EOF
 [default]
 aws_access_key_id = $AWS_ACCESS_KEY_ID
 aws_secret_access_key = $AWS_SECRET_ACCESS_KEY

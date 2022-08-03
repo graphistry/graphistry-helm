@@ -55,14 +55,14 @@ helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system
 }
 
 
-if [[ $MULTINODE=='TRUE']];
+if ${MULTINODE}=='TRUE';
 then
 echo "installing Longhorn NFS "
 longhorn()
 fi
 
 
-if [[ $TLS=='true' ]];
+if ${TLS}=='true';
 then
 echo "installing cert-manager"
 certmanager()

@@ -79,27 +79,26 @@ then
 
   if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]] && [[ ! -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
   then
-    echo "ingress-nginx with TLS already exists" && exit 0;
+    echo "ingress-nginx with TLS already exists";
   else
     echo "installing nginx ingress controller with TLS"
     helm upgrade -i --install ingress-nginx ingress-nginx \
       --repo https://kubernetes.github.io/ingress-nginx \
       --namespace ingress-nginx --create-namespace \
       --set "controller.extraArgs.default-ssl-certificate=graphistry/letsencrypt-tls" --dry-run
-    exit 0;
+
   fi
 
 else
 
   if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]] && [[ -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
   then
-    echo "ingress-nginx already exists without TLS" && exit 0;
+    echo "ingress-nginx already exists without TLS";
   else
     echo "installing nginx ingress controller without TLS"
     helm upgrade -i --install ingress-nginx ingress-nginx \
       --repo https://kubernetes.github.io/ingress-nginx \
       --namespace ingress-nginx --create-namespace --dry-run
-    exit 0;
   fi
 
 fi
@@ -107,4 +106,3 @@ fi
 
 
 
-exit 0

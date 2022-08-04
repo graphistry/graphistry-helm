@@ -56,8 +56,6 @@ services:
       - SOURCE_PROFILE=${SOURCE_PROFILE}
       - CLUSTER_NAME=${CLUSTER_NAME}
 
-
-
   make-cluster-secrets:
     image: helm-docker
     command: bash ./make_secret.sh
@@ -72,7 +70,6 @@ services:
       - DOCKER_USER_NAME_PROD=${DOCKER_USER_NAME_PROD}
       - DOCKER_PASSWORD_PROD=${DOCKER_PASSWORD_PROD}
       - CLUSTER_NAME=${CLUSTER_NAME}
-
 
   scale-to-zero:
     build:

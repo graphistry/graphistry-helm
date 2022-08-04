@@ -25,7 +25,7 @@ if [[ $CLUSTER_NAME=='skinny' ]]; then
         || { echo "Set DOCKER_PASSWORD (ex: mypassword )" && exit 1; }
 
     if [[ ! -z $(kubectl get secrets -n graphistry  | grep "dockerhub-secret") ]]; then 
-        echo "secret exist" && exit 0; 
+        echo "secret exist for skinny cluster" && exit 0; 
     else  
         echo "creating secret for skinny cluster "
         kubectl create secret docker-registry dockerhub-secret \
@@ -35,8 +35,7 @@ if [[ $CLUSTER_NAME=='skinny' ]]; then
             --docker-password=$DOCKER_PASSWORD 
         exit 0;
     fi
-elif [[ $CLUSTER_NAME=='eks-dev2' ]]
-then
+elif [[ $CLUSTER_NAME=='eks-dev2' ]]; then
 
     [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
         || { echo "Set CONTAINER_REGISTRY_NAME (ex: docker.io )" && exit 1; }
@@ -47,9 +46,8 @@ then
     [[ ! -z "${DOCKER_PASSWORD_PROD}" ]] \
         || { echo "Set DOCKER_PASSWORD_PROD (ex: mypassword )" && exit 1; }
 
-    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "docker-secret-prod") ]]; 
-    then 
-        echo "secret exist" && exit 0; 
+    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "docker-secret-prod") ]]; then 
+        echo "secret exist for eks-dev2" && exit 0; 
     else  
         echo "creating secret for eks-dev2 cluster "
         kubectl create secret docker-registry docker-secret-prod \

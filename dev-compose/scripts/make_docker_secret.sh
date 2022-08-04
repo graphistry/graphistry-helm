@@ -11,8 +11,8 @@
 
 
 
-
-echo "Creating kubernetes image pull secret"
+echo "CLUSTER_NAME:" $CLUSTER_NAME
+echo "checking for kubernetes image pull secret"
 
 if [[ $CLUSTER_NAME=='skinny' ]]
 then

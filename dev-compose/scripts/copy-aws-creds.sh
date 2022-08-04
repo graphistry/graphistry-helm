@@ -51,14 +51,14 @@ echo "AWS creds created"
 fi
 
 echo "CLUSTER_NAME:" $CLUSTER_NAME
-if [[ "$CLUSTER_NAME"=="skinny" ]]
+if [[ $CLUSTER_NAME="skinny" ]]
 then
 
     echo "creating kubeconfig for skinny cluster "
     aws eks update-kubeconfig --name dev-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN
     echo "kubeconfig created"
 
-elif [[ "$CLUSTER_NAME"=="eks-dev2" ]]
+elif [[ $CLUSTER_NAME="eks-dev2" ]]
 then
 
     echo "creating kubeconfig for eks-dev2 cluster "

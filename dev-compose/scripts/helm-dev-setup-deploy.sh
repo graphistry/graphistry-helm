@@ -77,7 +77,7 @@ then
     certmanager
   fi
 
-  if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]] && [[ ! -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: default/letsencrypt-tls") ]]; 
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]] && [[ ! -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
   then
     echo "ingress-nginx with TLS already exists" && exit 0;
   else
@@ -91,7 +91,7 @@ then
 
 else
 
-  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]] && [[ -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: default/letsencrypt-tls") ]]; 
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]] && [[ -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
   then
     echo "ingress-nginx already exists without TLS" && exit 0;
   else

@@ -2,7 +2,6 @@ FROM ubuntu:18.04
 
 COPY ./helm-dev-setup-deploy.sh setup_deploy.sh
 COPY ./make_docker_secret.sh make_secret.sh
-COPY ./check-secret.sh check-secret.sh
 COPY ./copy-aws-creds.sh copy-aws-creds.sh
 
 RUN apt-get update -y && \ 

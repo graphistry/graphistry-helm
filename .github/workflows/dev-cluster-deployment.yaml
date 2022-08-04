@@ -9,6 +9,12 @@ on:
       cluster:
         description: 'cluster to deploy to (eks-dev2,skinny)'
         required: true
+      multinode:
+        description: 'deploying to multiple nodes? (true,false)'
+        required: true
+      tls:
+        description: 'deploying tls? (true,false)'
+        required: true
 jobs:
   check-dev-true:
       runs-on: ubuntu-latest
@@ -38,8 +44,8 @@ jobs:
           ## echo "ACR_NAME=${{ secrets.ACR_NAME }}" >> $GITHUB_ENV
           ## echo "AZSUBSCRIPTION=${{ secrets.AZSUBSCRIPTION }}" >> $GITHUB_ENV
           ## echo "CONTAINER_REGISTRY_NAME=${{ secrets.CONTAINER_REGISTRY_NAME }}" >> $GITHUB_ENV
-          echo "MULTINODE=${{ secrets.MULTINODE }}" >> $GITHUB_ENV
-          echo "TLS=${{ secrets.TLS }}" >> $GITHUB_ENV
+          echo "MULTINODE=${{ github.event.inputs.multinode }}" >> $GITHUB_ENV
+          echo "TLS=${{ github.event.inputs.tls }}" >> $GITHUB_ENV
           echo "APP_TAG=${{ github.event.inputs.version }}" >> $GITHUB_ENV
           ##echo "GRAPHISTRY_KEY=${{ secrets.GRAPHISTRY_KEY }}" >> $GITHUB_ENV
           echo "AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV

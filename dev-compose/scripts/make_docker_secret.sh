@@ -14,7 +14,7 @@
 
 echo "Creating kubernetes image pull secret"
 
-if [[ $CLUSTER_ENV=='skinny' ]]
+if [[ $CLUSTER_NAME=='skinny' ]]
 then
 
     echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
@@ -41,7 +41,7 @@ then
             --docker-password=$DOCKER_PASSWORD 
         exit 0;
     fi
-elif [[ $CLUSTER_ENV=='eks-dev2' ]]
+elif [[ $CLUSTER_NAME=='eks-dev2' ]]
 then
 
     echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"

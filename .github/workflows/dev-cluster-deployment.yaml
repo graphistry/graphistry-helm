@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: 'Version to deploy'
+        description: 'Version to deploy?'
         required: true
       cluster:
-        description: 'cluster to deploy to (eks-dev2,skinny)'
+        description: 'cluster to deploy to? (eks-dev2,skinny)'
         required: true
       multinode:
         description: 'deploying to multiple nodes? (true,false)'
@@ -15,6 +15,9 @@ on:
       tls:
         description: 'deploying tls? (true,false)'
         required: true
+      scale-to-zero:
+        description: 'scaling to zero? (true,false)'
+        required: false
 jobs:
   check-dev-true:
       runs-on: ubuntu-latest
@@ -61,6 +64,7 @@ jobs:
           echo "SOURCE_PROFILE=${{ secrets.SOURCE_PROFILE }}" >> $GITHUB_ENV
           echo "CLUSTER_NAME=${{ github.event.inputs.cluster }}" >> $GITHUB_ENV
 
+
 ## docker compose build
       - name: Build the cluster dockerfile
         run: docker-compose -f dev-compose/docker-compose.yml build
@@ -75,20 +79,20 @@ jobs:
 
 # needs to only run once
       - name: setup the cluster
+        if: "${{ !contains(github.event.inputs.scale-to-zero , 'true') }}"
         run:  docker-compose -f dev-compose/docker-compose.yml up cluster-setup
-
-
 
 # deploy to skinny dev cluster
       - name: deploy the dev cluster
-        if: "${{ env.CLUSTER_NAME == 'skinny' }}"
+        if: "${{ env.CLUSTER_NAME == 'skinny' && !contains(github.event.inputs.scale-to-zero , 'true') }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
-        #env:
-        #    CLUSTER: ${{github.event.inputs.cluster}}
 
 # deploy to eks2 cluster
       - name: deploy the eks-dev2 cluster
-        if: "${{ env.CLUSTER_NAME == 'eks-dev2' }}"
+        if: "${{ env.CLUSTER_NAME == 'eks-dev2' && !contains(github.event.inputs.scale-to-zero , 'true') }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker 
-        #env:
-        #    CLUSTER: ${{github.event.inputs.cluster}}
+
+# scale to zero ##NEEDS WORK
+      - name: deletes the cluster deployment.
+        if: "${{ github.event.inputs.scale-to-zero == 'true' }}"
+        run: docker-compose -f dev-compose/docker-compose.yml up scale-to-zero

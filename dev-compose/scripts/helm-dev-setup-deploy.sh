@@ -64,7 +64,6 @@ fi
 
 if [[ $TLS=='true' ]];
 then
-  echo "installing cert-manager"
   certmanager
   echo "installing nginx ingress controller with ssl"
   helm upgrade -i --install ingress-nginx ingress-nginx \

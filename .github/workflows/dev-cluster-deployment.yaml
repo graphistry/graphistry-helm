@@ -54,7 +54,6 @@ jobs:
           echo "CONTAINER_REGISTRY_NAME=${{ secrets.CONTAINER_REGISTRY_NAME }}" >> $GITHUB_ENV
           echo "DOCKER_USER_NAME=${{ secrets.DOCKER_USER_NAME }}" >> $GITHUB_ENV
           echo "DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}" >> $GITHUB_ENV
-          echo "CLUSTER_ENV=${{ github.event.inputs.cluster }}" >> $GITHUB_ENV
           echo "DOCKER_USER_NAME_PROD=${{ secrets.DOCKER_USER_NAME_PROD }}" >> $GITHUB_ENV
           echo "DOCKER_PASSWORD_PROD=${{ secrets.DOCKER_PASSWORD_PROD }}" >> $GITHUB_ENV
           echo "DEV_CLUSTER_ROLE=${{ secrets.DEV_CLUSTER_ROLE }}" >> $GITHUB_ENV
@@ -82,14 +81,14 @@ jobs:
 
 # deploy to skinny dev cluster
       - name: deploy the dev cluster
-        if: "${{ env.CLUSTER == 'skinny' }}"
+        if: "${{ env.CLUSTER_NAME == 'skinny' }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
-        env:
-            CLUSTER: ${{github.event.inputs.cluster}}
+        #env:
+        #    CLUSTER: ${{github.event.inputs.cluster}}
 
 # deploy to eks2 cluster
       - name: deploy the eks-dev2 cluster
-        if: "${{ env.CLUSTER == 'eks-dev2' }}"
+        if: "${{ env.CLUSTER_NAME == 'eks-dev2' }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker 
-        env:
-            CLUSTER: ${{github.event.inputs.cluster}}
+        #env:
+        #    CLUSTER: ${{github.event.inputs.cluster}}

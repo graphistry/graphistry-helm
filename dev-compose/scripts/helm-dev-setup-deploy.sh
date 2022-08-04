@@ -53,7 +53,7 @@ helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system
 }
 
 
-if [[ $MULTINODE=TRUE ]]
+if [[ $MULTINODE="TRUE" ]]
 then
   echo "installing Longhorn NFS "
   longhorn
@@ -62,7 +62,7 @@ else
 fi
 
 
-if [[ $TLS=true ]];
+if [[ $TLS="true" ]];
 then
   certmanager
   echo "installing nginx ingress controller with ssl"

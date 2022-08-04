@@ -29,12 +29,12 @@ then
     [[ ! -z "${DOCKER_PASSWORD}" ]] \
         || { echo "Set DOCKER_PASSWORD (ex: mypassword )" && exit 1; }
 
-    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "docker-secret") ]]; 
+    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "dockerhub-secret") ]]; 
     then 
         echo "secret exist" && exit 0; 
     else  
         echo "creating secret for skinny cluster "
-        kubectl create secret docker-registry docker-secret \
+        kubectl create secret docker-registry dockerhub-secret \
             --namespace graphistry \
             --docker-server=$CONTAINER_REGISTRY_NAME \
             --docker-username=$DOCKER_USER_NAME \

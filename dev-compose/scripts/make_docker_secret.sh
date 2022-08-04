@@ -14,7 +14,7 @@
 echo "CLUSTER_NAME:" $CLUSTER_NAME
 echo "checking for kubernetes image pull secret"
 
-if [[ "$CLUSTER_NAME"=="skinny" ]]; then
+if [[ $CLUSTER_NAME=skinny ]]; then
     [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
         || { echo "Set CONTAINER_REGISTRY_NAME (ex: docker.io )" && exit 1; }
 
@@ -35,7 +35,7 @@ if [[ "$CLUSTER_NAME"=="skinny" ]]; then
             --docker-password=$DOCKER_PASSWORD 
         exit 0;
     fi
-elif [[ "$CLUSTER_NAME"=="eks-dev2" ]]; then
+elif [[ $CLUSTER_NAME=eks-dev2 ]]; then
 
     [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
         || { echo "Set CONTAINER_REGISTRY_NAME (ex: docker.io )" && exit 1; }

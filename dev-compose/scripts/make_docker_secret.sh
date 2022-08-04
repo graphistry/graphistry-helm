@@ -14,12 +14,7 @@
 echo "CLUSTER_NAME:" $CLUSTER_NAME
 echo "checking for kubernetes image pull secret"
 
-if [[ $CLUSTER_NAME=='skinny' ]]
-then
-
-    echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
-
-
+if [[ $CLUSTER_NAME=='skinny' ]]; then
     [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
         || { echo "Set CONTAINER_REGISTRY_NAME (ex: docker.io )" && exit 1; }
 
@@ -29,8 +24,7 @@ then
     [[ ! -z "${DOCKER_PASSWORD}" ]] \
         || { echo "Set DOCKER_PASSWORD (ex: mypassword )" && exit 1; }
 
-    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "dockerhub-secret") ]]; 
-    then 
+    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "dockerhub-secret") ]]; then 
         echo "secret exist" && exit 0; 
     else  
         echo "creating secret for skinny cluster "
@@ -43,9 +37,6 @@ then
     fi
 elif [[ $CLUSTER_NAME=='eks-dev2' ]]
 then
-
-    echo "CONTAINER_REGISTRY_NAME: $CONTAINER_REGISTRY_NAME"
-
 
     [[ ! -z "${CONTAINER_REGISTRY_NAME}" ]] \
         || { echo "Set CONTAINER_REGISTRY_NAME (ex: docker.io )" && exit 1; }

@@ -2,6 +2,7 @@
 #checks if aws creds are created and if not creates them
 if [[  -d /root/.aws ]]
 then 
+
 cat > /root/.aws/config <<EOF
 [default]
 region = us-east-2
@@ -22,7 +23,9 @@ aws_secret_access_key = $AWS_SECRET_ACCESS_KEY
 
 EOF
 echo "AWS creds created"
+
 else  
+
 echo "directory doesnt exist creating.."
 mkdir /root/.aws
 cat > /root/.aws/config <<EOF
@@ -60,7 +63,7 @@ then
 
     echo "creating kubeconfig for eks-dev2 cluster "
     aws eks update-kubeconfig --name k8s-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN
-    echo "kubeconfig created"`
+    echo "kubeconfig created"
 
 else
 :

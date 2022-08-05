@@ -32,7 +32,7 @@ helm upgrade --install cert-manager cert-manager \
   --create-namespace \
   --version v1.7.1 \
   --set installCRDs=true \
-  --set createCustomResource=true --dry-run
+  --set createCustomResource=true 
 
 
 }
@@ -49,7 +49,7 @@ else
 fi
 kubectl create namespace longhorn-system
 kubectl apply -f https://raw.githubusercontent.com/longhorn/longhorn/master/deploy/prerequisite/longhorn-iscsi-installation.yaml -n longhorn-system
-helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system --dry-run
+helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system 
 }
 
 
@@ -85,7 +85,7 @@ then
     helm upgrade -i --install ingress-nginx ingress-nginx \
       --repo https://kubernetes.github.io/ingress-nginx \
       --namespace ingress-nginx --create-namespace \
-      --set "controller.extraArgs.default-ssl-certificate=graphistry/letsencrypt-tls" --dry-run
+      --set "controller.extraArgs.default-ssl-certificate=graphistry/letsencrypt-tls" 
 
   fi
 
@@ -98,7 +98,7 @@ else
     echo "installing nginx ingress controller without TLS"
     helm upgrade -i --install ingress-nginx ingress-nginx \
       --repo https://kubernetes.github.io/ingress-nginx \
-      --namespace ingress-nginx --create-namespace --dry-run
+      --namespace ingress-nginx --create-namespace 
   fi
 
 fi

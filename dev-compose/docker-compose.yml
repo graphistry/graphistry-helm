@@ -10,7 +10,7 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG} --namespace graphistry   --create-namespace --dry-run  
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG} --namespace graphistry   --create-namespace   
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}
@@ -25,7 +25,7 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG}  --namespace graphistry   --create-namespace --dry-run 
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG}  --namespace graphistry   --create-namespace  
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}

@@ -1,8 +1,6 @@
 #!/bin/bash
 
-set -ex
-trap 'last_command=$current_command; current_command=$BASH_COMMAND' DEBUG
-trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
+
 
 
 
@@ -15,7 +13,7 @@ echo "MULTINODE": $MULTINODE
 echo "TLS": $TLS
 
 [[ ! -z "${MULTINODE}" ]] \
-    || { echo "Set MULTINODE (ex: TRUE/FALSE  )" && exit 1; }
+    || { echo "Set MULTINODE (ex: true/false  )" && exit 1; }
 
 [[ ! -z "${TLS}" ]] \
     || { echo "Set TLS (ex: true/false )" && exit 1; }
@@ -34,14 +32,14 @@ helm upgrade --install cert-manager cert-manager \
   --create-namespace \
   --version v1.7.1 \
   --set installCRDs=true \
-  --set createCustomResource=true
+  --set createCustomResource=true 
 
 
 }
 
 
 longhorn () {
-if [[ $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
+if [[ ! -z $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
 then
   echo "Longhorn Helm Repo already exists upgrading..."
   helm repo update longhorn
@@ -55,32 +53,56 @@ helm upgrade -i longhorn longhorn/longhorn --namespace longhorn-system
 }
 
 
-if [[$MULTINODE=='TRUE']]
+if [[ $MULTINODE == "true" ]]
 then
-  echo "installing Longhorn NFS "
-  longhorn
+  if [[ ! -z $(kubectl get ns | grep "longhorn-system")   ]]; 
+  then
+    echo "longhorn already exists"
+  else
+    echo " installing longhorn on the cluster"
+    longhorn
+  fi
 else
   echo "multinode is off"
 fi
 
 
-if [[ $TLS=='true' ]];
+if [[ $TLS == "true" ]];
 then
-  echo "installing cert-manager"
-  certmanager
-  echo "installing nginx ingress controller with ssl"
-  helm upgrade -i --install ingress-nginx ingress-nginx \
-    --repo https://kubernetes.github.io/ingress-nginx \
-    --namespace ingress-nginx --create-namespace \
-    --set "controller.extraArgs.default-ssl-certificate=default/letsencrypt-tls"
+  if [[ ! -z $(kubectl get ns | grep "cert-manager")   ]]; 
+  then
+    echo "cert-manager already exists"
+  else
+    echo " installing cert-manager on the cluster"
+    certmanager
+  fi
+
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]] && [[ ! -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
+  then
+    echo "ingress-nginx with TLS already exists";
+  else
+    echo "installing nginx ingress controller with TLS"
+    helm upgrade -i --install ingress-nginx ingress-nginx \
+      --repo https://kubernetes.github.io/ingress-nginx \
+      --namespace ingress-nginx --create-namespace \
+      --set "controller.extraArgs.default-ssl-certificate=graphistry/letsencrypt-tls" 
+
+  fi
+
 else
-  echo "installing nginx ingress controller"
-  helm upgrade -i --install ingress-nginx ingress-nginx \
-    --repo https://kubernetes.github.io/ingress-nginx \
-    --namespace ingress-nginx --create-namespace 
+
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]] && [[ -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
+  then
+    echo "ingress-nginx already exists without TLS";
+  else
+    echo "installing nginx ingress controller without TLS"
+    helm upgrade -i --install ingress-nginx ingress-nginx \
+      --repo https://kubernetes.github.io/ingress-nginx \
+      --namespace ingress-nginx --create-namespace 
+  fi
+
 fi
 
 
 
 
-exit 0

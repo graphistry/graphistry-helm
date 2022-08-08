@@ -1,6 +1,5 @@
 version: "3.5"
 
-
 services:
   helm-docker:
     build:
@@ -9,11 +8,13 @@ services:
     image: helm-docker
     volumes:
       - ../charts/:/charts
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml  --set tag=${APP_TAG} --namespace graphistry   --create-namespace  --dry-run
+      - ~/.aws:/root/.aws
+      - ~/.kube:/root/.kube
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG} --namespace graphistry   --create-namespace   
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}
-    network_mode: "host" 
+      - MULTINODE=${MULTINODE}
 
   helm-docker-dev:
     build:
@@ -22,43 +23,53 @@ services:
     image: helm-docker
     volumes:
       - ../charts/:/charts
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml  --set tag=${APP_TAG}  --namespace graphistry   --create-namespace  --dry-run
+      - ~/.aws:/root/.aws
+      - ~/.kube:/root/.kube
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG}  --namespace graphistry   --create-namespace  
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}
-    network_mode: "host" 
+      - MULTINODE=${MULTINODE}
 
   cluster-setup:
     image: helm-docker
     command: bash ./setup_deploy.sh
+    volumes:
+      - ~/.aws:/root/.aws
+      - ~/.kube:/root/.kube
     environment:
       - MULTINODE=${MULTINODE}
       - TLS=${TLS}
       - APP_TAG=${APP_TAG}
-    network_mode: "host" 
+
 
   aws-setup:
     image: helm-docker
     command: bash ./copy-aws-creds.sh
+    volumes:
+      - ~/.aws:/root/.aws
+      - ~/.kube:/root/.kube
     environment:
-      - MULTINODE=${MULTINODE}
       - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
       - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
       - AWS_ROLE_ARN=${AWS_ROLE_ARN}
       - SOURCE_PROFILE=${SOURCE_PROFILE}
-    network_mode: "host" 
+      - CLUSTER_NAME=${CLUSTER_NAME}
 
   make-cluster-secrets:
     image: helm-docker
-    command: bash ./check-secret.sh
+    command: bash ./make_secret.sh
+    volumes:
+      - ../charts/:/charts
+      - ~/.aws:/root/.aws
+      - ~/.kube:/root/.kube
     environment:
       - CONTAINER_REGISTRY_NAME=${CONTAINER_REGISTRY_NAME}
       - DOCKER_USER_NAME=${DOCKER_USER_NAME}
       - DOCKER_PASSWORD=${DOCKER_PASSWORD}
       - DOCKER_USER_NAME_PROD=${DOCKER_USER_NAME_PROD}
       - DOCKER_PASSWORD_PROD=${DOCKER_PASSWORD_PROD}
-    network_mode: "host" 
-
+      - CLUSTER_NAME=${CLUSTER_NAME}
 
   scale-to-zero:
     build:
@@ -67,7 +78,7 @@ services:
     image: helm-docker
     volumes:
       - ../charts/:/charts
+      - ~/.aws:/root/.aws
+      - ~/.kube:/root/.kube
     command: helm delete g-chart -n graphistry 
-    environment:
-      - APP_TAG=${APP_TAG}
-    network_mode: "host" 
+

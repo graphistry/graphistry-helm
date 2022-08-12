@@ -10,7 +10,7 @@ spec:
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2-retain
+  storageClassName: retain-sc
 {{- end }}  
   resources:
     requests: 

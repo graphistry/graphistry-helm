@@ -18,10 +18,10 @@ spec:
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2-retain
+  storageClassName: retain-sc
   resources:
     requests:
-      storage: 1Gi
+      storage: 4Gi
 status: {}
 {{- end }}
 
@@ -45,10 +45,10 @@ spec:
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2-retain
+  storageClassName: retain-sc
   resources:
     requests:
-      storage: 1Gi
+      storage: 4Gi
 status: {}
 {{- end }}
 

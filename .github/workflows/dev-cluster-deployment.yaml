@@ -7,7 +7,7 @@ on:
         description: 'Version to deploy?'
         required: true
       cluster:
-        description: 'cluster to deploy to? (eks-dev2,skinny)'
+        description: 'cluster to deploy to? (eks-dev,skinny)'
         required: true
       multinode:
         description: 'deploying to multiple nodes? (true,false)'
@@ -88,8 +88,8 @@ jobs:
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
 
 # deploy to eks2 cluster
-      - name: deploy the eks-dev2 cluster
-        if: "${{ env.CLUSTER_NAME == 'eks-dev2' && !contains(github.event.inputs.scale-to-zero , 'true') }}"
+      - name: deploy the eks-dev cluster
+        if: "${{ env.CLUSTER_NAME == 'eks-dev' && !contains(github.event.inputs.scale-to-zero , 'true') }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker 
 
 # scale to zero ##NEEDS WORK

@@ -25,18 +25,26 @@ echo "TLS": $TLS
 
 
 certmanager () {
-echo "installing cert-manager"
-helm upgrade --install cert-manager cert-manager \
-  --repo https://charts.jetstack.io \
-  --namespace cert-manager \
-  --create-namespace \
-  --version v1.7.1 \
-  --set installCRDs=true \
-  --set createCustomResource=true 
+  echo "installing cert-manager"
+  helm upgrade --install cert-manager cert-manager \
+    --repo https://charts.jetstack.io \
+    --namespace cert-manager \
+    --create-namespace \
+    --version v1.7.1 \
+    --set installCRDs=true \
+    --set createCustomResource=true 
 
 
 }
 
+nginx_ingress_controller () {
+    echo "installing nginx ingress controller"
+    helm upgrade -i --install ingress-nginx ingress-nginx \
+      --repo https://kubernetes.github.io/ingress-nginx \
+      --namespace ingress-nginx --create-namespace 
+
+
+}
 
 longhorn () {
 if [[ ! -z $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
@@ -77,28 +85,23 @@ then
     certmanager
   fi
 
-  if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]] && [[ ! -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]]; 
   then
-    echo "ingress-nginx with TLS already exists";
+    echo "nginx ingress controller already exists";
   else
-    echo "installing nginx ingress controller with TLS"
-    helm upgrade -i --install ingress-nginx ingress-nginx \
-      --repo https://kubernetes.github.io/ingress-nginx \
-      --namespace ingress-nginx --create-namespace \
-      --set "controller.extraArgs.default-ssl-certificate=graphistry/letsencrypt-tls" 
+    echo "installing nginx ingress controller on the cluster"
+    nginx_ingress_controller
 
   fi
 
 else
 
-  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]] && [[ -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]]; 
   then
-    echo "ingress-nginx already exists without TLS";
+    echo "nginx ingress controller already";
   else
-    echo "installing nginx ingress controller without TLS"
-    helm upgrade -i --install ingress-nginx ingress-nginx \
-      --repo https://kubernetes.github.io/ingress-nginx \
-      --namespace ingress-nginx --create-namespace 
+    echo "installing nginx ingress controller on the cluster"
+    nginx_ingress_controller
   fi
 
 fi

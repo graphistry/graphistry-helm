@@ -8,6 +8,7 @@ httpTesting: false
 containerregistry:
   name: docker.io/graphistry
 imagePullSecrets: docker-secret-prod
+rollingUpdate: true
 storageClassParameters:
   aws:
     csi.storage.k8s.io/fstype: xfs

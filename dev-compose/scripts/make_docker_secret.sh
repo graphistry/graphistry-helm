@@ -5,6 +5,7 @@
 #CONTAINER_REGISTRY_NAME
 #DOCKER_USER_NAME
 #DOCKER_PASSWORD
+#NAMESPACE
 
 
 
@@ -24,12 +25,15 @@ if [[  $CLUSTER_NAME == "skinny" ]]; then
     [[ ! -z "${DOCKER_PASSWORD}" ]] \
         || { echo "Set DOCKER_PASSWORD (ex: mypassword )" && exit 1; }
 
-    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "dockerhub-secret") ]]; then 
+    [[ ! -z "${NAMESPACE}" ]] \
+        || { echo "Set NAMESPACE (ex: graphistry )" && exit 1; }
+
+    if [[ ! -z $(kubectl get secrets -n $NAMESPACE  | grep "dockerhub-secret") ]]; then 
         echo "secret exist for skinny cluster" && exit 0; 
     else  
         echo "creating secret for skinny cluster "
         kubectl create secret docker-registry dockerhub-secret \
-            --namespace graphistry \
+            --namespace $NAMESPACE \
             --docker-server=$CONTAINER_REGISTRY_NAME \
             --docker-username=$DOCKER_USER_NAME \
             --docker-password=$DOCKER_PASSWORD 
@@ -46,12 +50,15 @@ elif [[  $CLUSTER_NAME == "eks-dev" ]]; then
     [[ ! -z "${DOCKER_PASSWORD_PROD}" ]] \
         || { echo "Set DOCKER_PASSWORD_PROD (ex: mypassword )" && exit 1; }
 
-    if [[ ! -z $(kubectl get secrets -n graphistry  | grep "docker-secret-prod") ]]; then 
+    [[ ! -z "${NAMESPACE}" ]] \
+        || { echo "Set NAMESPACE (ex: graphistry )" && exit 1; }
+
+    if [[ ! -z $(kubectl get secrets -n $NAMESPACE  | grep "docker-secret-prod") ]]; then 
         echo "secret exist for eks-dev" && exit 0; 
     else  
         echo "creating secret for eks-dev cluster "
         kubectl create secret docker-registry docker-secret-prod \
-            --namespace graphistry \
+            --namespace $NAMESPACE \
             --docker-server=$CONTAINER_REGISTRY_NAME \
             --docker-username=$DOCKER_USER_NAME_PROD \
             --docker-password=$DOCKER_PASSWORD_PROD 

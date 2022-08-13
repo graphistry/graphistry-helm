@@ -85,6 +85,8 @@ spec:
             value: .{{ .Release.Namespace }}.svc.cluster.local
           - name: LONGHORN_NAMESPACE
             value: .longhorn-system.svc.cluster.local
+          - name: K8S_DASHBOARD_NAMESPACE
+            value: .kubernetes-dashboard.svc.cluster.local
           - name: IS_K8S
             value: "1"
           - name: NGINX_RESOLVER

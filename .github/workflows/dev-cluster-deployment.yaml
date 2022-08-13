@@ -18,6 +18,9 @@ on:
       scale-to-zero:
         description: 'scaling to zero? (true,false)'
         required: false
+      namespace:
+        description: 'what namespace to deploy to? (ex: graphistry-prod, graphistry-staging)'
+        required: true
 jobs:
   check-dev-true:
       runs-on: ubuntu-latest
@@ -63,6 +66,7 @@ jobs:
           echo "K8S_CLUSTER_ROLE=${{ secrets.K8S_CLUSTER_ROLE }}" >> $GITHUB_ENV
           echo "SOURCE_PROFILE=${{ secrets.SOURCE_PROFILE }}" >> $GITHUB_ENV
           echo "CLUSTER_NAME=${{ github.event.inputs.cluster }}" >> $GITHUB_ENV
+          echo "NAMESPACE=${{ github.event.inputs.namespace }}" >> $GITHUB_ENV
 
 
 ## docker compose build

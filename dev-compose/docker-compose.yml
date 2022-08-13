@@ -10,11 +10,12 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG} --namespace graphistry   --create-namespace   
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG} --namespace ${NAMESPACE} --create-namespace   
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}
       - MULTINODE=${MULTINODE}
+      - NAMESPACE=${NAMESPACE}
 
   helm-docker-dev:
     build:
@@ -25,11 +26,12 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG}  --namespace graphistry   --create-namespace  
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG}  --namespace ${NAMESPACE} --create-namespace  
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}
       - MULTINODE=${MULTINODE}
+      - NAMESPACE=${NAMESPACE}
 
   cluster-setup:
     image: helm-docker
@@ -70,6 +72,7 @@ services:
       - DOCKER_USER_NAME_PROD=${DOCKER_USER_NAME_PROD}
       - DOCKER_PASSWORD_PROD=${DOCKER_PASSWORD_PROD}
       - CLUSTER_NAME=${CLUSTER_NAME}
+      - NAMESPACE=${NAMESPACE}
 
   scale-to-zero:
     build:
@@ -80,5 +83,7 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm delete g-chart -n graphistry 
+    command: helm delete g-chart -n ${NAMESPACE}
+    environment:
+      - NAMESPACE=${NAMESPACE}
 

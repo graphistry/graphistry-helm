@@ -1,11 +1,6 @@
 #!/bin/bash
 
 
-
-
-
-
-
 echo "APP_TAG": $APP_TAG
 
 echo "MULTINODE": $MULTINODE
@@ -42,8 +37,6 @@ nginx_ingress_controller () {
     helm upgrade -i --install ingress-nginx ingress-nginx \
       --repo https://kubernetes.github.io/ingress-nginx \
       --namespace ingress-nginx --create-namespace 
-
-
 }
 
 longhorn () {

@@ -95,6 +95,9 @@ tlsEmail: ""
 #enables longhorn dashboard
 longhornDashboard: false
 
+#enables k8s dashboard
+k8sDashboard: false
+
 #container registry name
 containerregistry:
   name: acrgraphistryk8s.azurecr.io

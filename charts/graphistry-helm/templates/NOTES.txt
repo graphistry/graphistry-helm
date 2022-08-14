@@ -72,6 +72,8 @@ NODE SELECTOR
 
 nodeSelector - is set to: {{ .Values.nodeSelector }}
 
+
+
 can change the nodeSelector while deployed:
 
 HOW TO:
@@ -88,6 +90,7 @@ helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ 
   --set nodeSelector."accelerator"=nvidia 
 
 can change to any label provided by kubectl describe node <node_name> just follow the format provided.
+
 
 
 
@@ -151,6 +154,13 @@ ex:
  to visit the deployed application:
 https://{{ .Values.domain }}
 
+{{ if eq .Values.k8sDashboard true }} 
+
+k8sDashboard - is set to: {{ .Values.k8sDashboard }}
+
+ to visit the deployed dashboard:
+https://{{ .Values.domain }}/k8s/dash/
+{{ end }}
 
 
 {{ else }}

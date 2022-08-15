@@ -96,7 +96,9 @@ tlsEmail: ""
 longhornDashboard: false
 
 #enables k8s dashboard
-k8sDashboard: false
+k8sDashboard: 
+  enabled: false
+  readonly: false
 
 #container registry name
 containerregistry:

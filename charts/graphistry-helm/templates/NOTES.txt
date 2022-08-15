@@ -154,12 +154,13 @@ ex:
  to visit the deployed application:
 https://{{ .Values.domain }}
 
-{{ if eq .Values.k8sDashboard true }} 
+{{ if eq .Values.k8sDashboard.enabled true }} 
 
-k8sDashboard - is set to: {{ .Values.k8sDashboard }}
+k8sDashboard - is enabled and set to: 
+readonly: {{ .Values.k8sDashboard.readonly }}
 
  to visit the deployed dashboard:
-https://{{ .Values.domain }}/k8s/dash/
+https://{{ .Values.domain }}/k8s/dashboard/
 {{ end }}
 
 

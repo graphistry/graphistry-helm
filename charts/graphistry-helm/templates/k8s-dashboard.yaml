@@ -291,7 +291,7 @@ spec:
       volumes:
         - name: tmp-volume
           emptyDir: {}
-{{ if eq .Values.k8sDashboard.readonly false }}
+
 ---
 apiVersion: v1
 kind: ServiceAccount
@@ -300,11 +300,12 @@ metadata:
     k8s-app: kubernetes-dashboard
   name: kubernetes-dashboard
   namespace: kubernetes-dashboard
+ {{ if eq .Values.k8sDashboard.readonly false }} 
 ---
-apiVersion: rbac.authorization.k8s.io/v1
+   apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: kubernetes-dashboard
+  name: kubernetes-dashboard-admin
   labels:
     k8s-app: kubernetes-dashboard
 roleRef:
@@ -314,7 +315,7 @@ roleRef:
 subjects:
 - kind: ServiceAccount
   name: kubernetes-dashboard
-  namespace: kubernetes-dashboard
+  namespace: kubernetes-dashboard   
 {{ else }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -451,7 +452,7 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1beta1
 kind: ClusterRoleBinding
 metadata:
-  name: kubernetes-dashboard
+  name: kubernetes-dashboard-viewonly
   labels:
     k8s-app: kubernetes-dashboard
 roleRef:

@@ -1,5 +1,4 @@
 {{ if eq .Values.k8sDashboard true }}
-
 # Copyright 2017 The Kubernetes Authors.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -40,25 +39,10 @@ metadata:
   namespace: kubernetes-dashboard
 spec:
   ports:
-    - name: https
-      port: 443
-      targetPort: 8443
-    - name: http
-      port: 80
+    - port: 80
       targetPort: 9090
   selector:
     k8s-app: kubernetes-dashboard
-
----
-
-apiVersion: v1
-kind: Secret
-metadata:
-  labels:
-    k8s-app: kubernetes-dashboard
-  name: kubernetes-dashboard-certs
-  namespace: kubernetes-dashboard
-type: Opaque
 
 ---
 
@@ -197,32 +181,26 @@ spec:
       containers:
         - name: kubernetes-dashboard
           image: kubernetesui/dashboard:v2.6.1
-          imagePullPolicy: Always
           ports:
-            - containerPort: 8443
-              protocol: TCP
             - containerPort: 9090
-              protocol: TCP  
+              protocol: TCP
           args:
-            #- --auto-generate-certificates
             - --namespace=kubernetes-dashboard
+            - --enable-insecure-login
             - --enable-skip-login
             - --disable-settings-authorizer
             - --enable-insecure-login
             - --insecure-bind-address=0.0.0.0
-            # Uncomment the following line to manually specify Kubernetes API server Host
-            # If not specified, Dashboard will attempt to auto discover the API server and connect
-            # to it. Uncomment only if the default does not work.
-            # - --apiserver-host=http://my-address:port
+          # Uncomment the following line to manually specify Kubernetes API server Host
+          # If not specified, Dashboard will attempt to auto discover the API server and connect
+          # to it. Uncomment only if the default does not work.
+          # - --apiserver-host=http://my-address:port
           volumeMounts:
-            - name: kubernetes-dashboard-certs
-              mountPath: /certs
-              # Create on-disk volume to store exec logs
+            # Create on-disk volume to store exec logs
             - mountPath: /tmp
               name: tmp-volume
           livenessProbe:
             httpGet:
-              scheme: HTTP
               path: /
               port: 9090
             initialDelaySeconds: 30
@@ -233,9 +211,6 @@ spec:
             runAsUser: 1001
             runAsGroup: 2001
       volumes:
-        - name: kubernetes-dashboard-certs
-          secret:
-            secretName: kubernetes-dashboard-certs
         - name: tmp-volume
           emptyDir: {}
       serviceAccountName: kubernetes-dashboard
@@ -317,3 +292,4 @@ spec:
         - name: tmp-volume
           emptyDir: {}
 {{- end }}
+

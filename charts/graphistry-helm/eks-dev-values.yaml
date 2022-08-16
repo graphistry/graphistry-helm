@@ -14,10 +14,8 @@ k8sDashboard:
   readonly: false
 storageClassParameters:
   aws:
-    csi.storage.k8s.io/fstype: xfs
-    type: io1
-    iopsPerGB: "100"
-    encrypted: "true"
+    csi.storage.k8s.io/fstype: ext4
+    type: gp2
 provisioner: ebs.csi.aws.com
 #example values.yaml of an aws eks based deployment
 

@@ -5,9 +5,12 @@ metadata:
     autoheal: "true"
     kompose.cmd: kompose --file ./compose/release.yml convert -c
     kompose.version: 1.26.0 (40646f47)
+    prometheus.io/scrape: "true"
+    prometheus.io/port: "4040"
   creationTimestamp: null
   labels:
     io.kompose.service: nginx
+    app: nginx-{{ .Release.Namespace }}
   name: nginx
 spec:
   replicas: 1
@@ -108,6 +111,7 @@ spec:
             initialDelaySeconds: 60
             periodSeconds: 120
             timeoutSeconds: 30
+
           name: nginx
           ports:
             - containerPort: {{.Values.nginxPorts.portOne}}
@@ -131,6 +135,26 @@ spec:
               name: uploads-files
             - mountPath: /opt/graphistry/data
               name: data-mount
+{{if eq .Values.metrics true }}
+        - env:         
+          - name: PROMETHEUS_PORT
+            value: "4040"
+          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2
+          args: ["-config-file", "/etc/prometheus-nginxlog-exporter/config.hcl"]
+          imagePullPolicy: {{.Values.imagePullPolicy }}
+          name: nginx-log-exporter
+          ports:
+            - containerPort: 4040
+          resources: 
+            limits:
+              memory: 128Mi
+              cpu: 500m
+          volumeMounts:
+          - name: exporter-config
+            mountPath: /etc/prometheus-nginxlog-exporter
+
+{{- end }}
+
       restartPolicy: {{ .Values.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
@@ -152,6 +176,9 @@ spec:
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
+        - name: exporter-config
+          configMap:
+            name: exporter-config
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
 {{ if eq .Values.multiNode false }}
@@ -171,6 +198,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: nginx
+    app: nginx-{{ .Release.Namespace }}
   name: nginx
 spec:
   ports:
@@ -180,6 +208,9 @@ spec:
     - name: "{{.Values.nginxPorts.portTwo}}"
       port: {{.Values.nginxPorts.portTwo}}
       targetPort: {{.Values.nginxPorts.portTwo}}
+    - name: metrics
+      port: 4040
+      targetPort: 4040
   selector:
     io.kompose.service: nginx
 

@@ -9,11 +9,11 @@ spec:
 {{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: datamount-longhorn
+  storageClassName: datamount-longhorn-{{ .Release.Namespace }}
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: uploadfiles-sc
+  storageClassName: uploadfiles-sc-{{ .Release.Namespace }}
   resources:
     requests:
       storage: 40Gi

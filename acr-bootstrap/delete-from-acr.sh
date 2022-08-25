@@ -8,19 +8,12 @@ trap 'echo "\"${last_command}\" command filed with exit code $?."' EXIT
 
 
 echo "ACR_NAME: $ACR_NAME"
-echo "DOCKERHUB_USERNAME: $DOCKERHUB_USERNAME"
-echo "DOCKERHUB_TOKEN: $DOCKERHUB_TOKEN"
+
 
 
 [[ ! -z "${ACR_NAME}" ]] \
     || { echo "Set ACR_NAME (ex: myacr )" && exit 1; }
 
-[[ ! -z "${DOCKERHUB_USERNAME}" ]] \
-    || { echo "Set DOCKERHUB_USERNAME (ex: mydockerhubuser )" && exit 1; }
-
-
-[[ ! -z "${DOCKERHUB_TOKEN}" ]] \
-    || { echo "Set DOCKERHUB_TOKEN (ex: mydockerhubtoken )" && exit 1; }
 
 
 delete_if_present ()

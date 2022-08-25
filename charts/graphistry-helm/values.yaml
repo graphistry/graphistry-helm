@@ -36,6 +36,9 @@ maxSurge : "10%"
 #dev mode for debugging with nexus, postgres and nginx
 devMode: false
 
+#forwards backend proxy's headers to ingress controller
+fwdHeaders: false
+
 httpTesting: false
 
 #set to development in dev mode
@@ -57,7 +60,7 @@ nginxPorts:
   portOne: 80
   portTwo: 443
 
-
+metrics: false
 
 #ports for nexus service to listen on
 nexusPort: 
@@ -75,6 +78,16 @@ multiNode: false
 
 # rolling update deployment strategy switch (postgres and nexus are exempt)
 rollingUpdate: false
+
+# django session cookie timeout (seconds)
+sessionCookieAge : "1209600"
+
+# django drf-jwt, jwt token timeout (seconds)
+jwtExpirationDelta : "3600"
+
+# ENABLE django silk - performance analysis library
+enableDjangoSilk : "False"
+
 
 #restart policy
 restartPolicy: Always

@@ -3,7 +3,7 @@
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: datamount-longhorn
+  name: datamount-longhorn-{{ .Release.Namespace }}
   annotations:
     # make this class the default storage class
     #storageclass.kubernetes.io/is-default-class: "true"

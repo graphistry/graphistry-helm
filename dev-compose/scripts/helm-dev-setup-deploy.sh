@@ -34,9 +34,20 @@ certmanager () {
 
 nginx_ingress_controller () {
     echo "installing nginx ingress controller"
-    helm upgrade -i --install ingress-nginx ingress-nginx \
-      --repo https://kubernetes.github.io/ingress-nginx \
-      --namespace ingress-nginx --create-namespace 
+    if [[ $GRAFANA == "true" ]];
+    then
+      helm upgrade -i ingress-nginx ingress-nginx \
+        --repo https://kubernetes.github.io/ingress-nginx \
+        --namespace ingress-nginx --create-namespace \
+        --set controller.metrics.enabled=true \
+        --set controller.metrics.serviceMonitor.enabled=true \
+        --set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
+    else
+      helm upgrade -i ingress-nginx ingress-nginx \
+        --repo https://kubernetes.github.io/ingress-nginx \
+        --namespace ingress-nginx --create-namespace 
+    fi
+
 }
 
 longhorn () {

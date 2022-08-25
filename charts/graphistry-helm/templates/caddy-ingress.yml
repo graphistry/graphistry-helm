@@ -3,6 +3,8 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
+  namespace: {{ .Release.Namespace }}
+  name: caddy-ingress-{{ .Release.Namespace }}
   annotations:
     kubernetes.io/ingress.class: nginx
     nginx.ingress.kubernetes.io/affinity: "cookie"
@@ -23,7 +25,7 @@ metadata:
 {{ toYaml .Values.ingress.management.annotations | indent 4 }}
 {{- end }}
   labels:
-  name: caddy-ingress
+  name: caddy-ingress-{{ .Release.Namespace }}
 spec:
   rules:
   {{ if .Values.domain }}
@@ -35,7 +37,7 @@ spec:
         paths:
           - backend:
               service:
-                name: caddy
+                name: caddy-{{ .Release.Namespace }}
                 port:
                   number: 80
             path: /

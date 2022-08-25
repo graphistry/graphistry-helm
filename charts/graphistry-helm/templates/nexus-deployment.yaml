@@ -57,6 +57,12 @@ spec:
             value: {{ .Values.djangoSettingsModule | quote }}
           - name : DJANGO_DEBUG
             value: {{ .Values.djangoDebug | quote }}
+          - name : SESSION_COOKIE_AGE 
+            value: {{ .Values.sessionCookieAge | quote }}
+          - name : JWT_EXPIRATION_DELTA 
+            value: {{ .Values.jwtExpirationDelta | quote }}
+          - name : ENABLE_DJANGO_SILK
+            value: {{ .Values.enableDjangoSilk | quote  }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

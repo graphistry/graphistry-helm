@@ -89,20 +89,41 @@ then
     certmanager
   fi
 
-  if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]]; 
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]]; 
   then
-    echo "nginx ingress controller already exists";
+    if  [[ $GRAFANA == "true" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+    then
+      echo "nginx ingress controller already exists with prometheus";
+    elif [[ $GRAFANA == "true" ]] && [[ -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+        echo "installing nginx ingress controller on the cluster with prometheus enabled"
+        nginx_ingress_controller
+    elif [[ $GRAFANA == "false" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]] 
+        echo "installing nginx ingress controller on the cluster with prometheus disabled"
+        nginx_ingress_controller
+    else
+      echo "nginx ingress controller already exists"
+    fi
   else
     echo "installing nginx ingress controller on the cluster"
     nginx_ingress_controller
-
   fi
 
 else
 
   if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]]; 
   then
-    echo "nginx ingress controller already";
+    if  [[ $GRAFANA == "true" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+    then
+      echo "nginx ingress controller already exists with prometheus";
+    elif [[ $GRAFANA == "true" ]] && [[ -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+        echo "installing nginx ingress controller on the cluster with prometheus enabled"
+        nginx_ingress_controller
+    elif [[ $GRAFANA == "false" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]] 
+        echo "installing nginx ingress controller on the cluster with prometheus disabled"
+        nginx_ingress_controller
+    else
+      echo "nginx ingress controller already exists"
+    fi
   else
     echo "installing nginx ingress controller on the cluster"
     nginx_ingress_controller

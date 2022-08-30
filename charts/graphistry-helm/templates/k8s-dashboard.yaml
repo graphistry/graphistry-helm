@@ -293,6 +293,7 @@ spec:
           emptyDir: {}
 
 ---
+ {{ if eq .Values.k8sDashboard.createServiceAccount true }} 
 apiVersion: v1
 kind: ServiceAccount
 metadata:
@@ -300,6 +301,8 @@ metadata:
     k8s-app: kubernetes-dashboard
   name: kubernetes-dashboard
   namespace: kubernetes-dashboard
+  createServiceAccount: false
+{{ end }}
  {{ if eq .Values.k8sDashboard.readonly false }} 
 ---
    apiVersion: rbac.authorization.k8s.io/v1

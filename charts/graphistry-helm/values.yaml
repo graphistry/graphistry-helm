@@ -108,10 +108,12 @@ tlsEmail: ""
 #enables longhorn dashboard
 longhornDashboard: false
 
-#enables k8s dashboard
+#enables k8s dashboard 
+##createServiceAccount: true only on initial deployment
 k8sDashboard: 
   enabled: false
   readonly: false
+  createServiceAccount: false
 
 #container registry name
 containerregistry:

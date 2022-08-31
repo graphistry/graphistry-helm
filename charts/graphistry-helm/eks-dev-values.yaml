@@ -13,8 +13,7 @@ fwdHeaders: true
 k8sDashboard: 
   enabled: true
   readonly: false
-  createServiceAccount: false  
-  ## only true on initial deployment
+  createServiceAccount: false  ## createServiceAccount: true only true on initial deployment
 storageClassParameters:
   aws:
     csi.storage.k8s.io/fstype: ext4

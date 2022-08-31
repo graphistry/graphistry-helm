@@ -13,7 +13,8 @@ fwdHeaders: true
 k8sDashboard: 
   enabled: true
   readonly: false
-  createServiceAccount: false  ## only true on initial deployment
+  createServiceAccount: false  
+  ## only true on initial deployment
 storageClassParameters:
   aws:
     csi.storage.k8s.io/fstype: ext4
@@ -21,4 +22,4 @@ storageClassParameters:
 provisioner: ebs.csi.aws.com
 #example values.yaml of an aws eks based deployment
 
-#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev-values.yaml --set tag=v2.39.24-cody-nginx --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-29-0.us-east-2.compute.internal --namespace graphistry --create-namespace 
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev-values.yaml --set tag=v2.39.24-koa-sso-fix --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-29-0.us-east-2.compute.internal --namespace graphistry --create-namespace 

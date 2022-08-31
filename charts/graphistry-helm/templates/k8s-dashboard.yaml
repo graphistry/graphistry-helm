@@ -291,9 +291,8 @@ spec:
       volumes:
         - name: tmp-volume
           emptyDir: {}
-
----
  {{ if eq .Values.k8sDashboard.createServiceAccount true }} 
+---
 apiVersion: v1
 kind: ServiceAccount
 metadata:

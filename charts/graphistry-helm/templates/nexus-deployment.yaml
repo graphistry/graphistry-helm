@@ -63,6 +63,10 @@ spec:
             value: {{ .Values.jwtExpirationDelta | quote }}
           - name : ENABLE_DJANGO_SILK
             value: {{ .Values.enableDjangoSilk | quote  }}
+          {{- if eq .Values.tls true  }}
+          - name: COOKIE_SECURE
+            value: "True"
+        {{- end }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

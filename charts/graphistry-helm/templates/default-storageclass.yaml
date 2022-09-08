@@ -7,6 +7,7 @@ metadata:
     meta.helm.sh/release-name: {{ .Release.Name }}
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}
   name: uploadfiles-sc-{{ .Release.Namespace }}
+{{- if .Values.storageClassParameters }}
 parameters:
 {{- if .Values.storageClassParameters.aws }}
 {{ toYaml .Values.storageClassParameters.aws | indent 2 }}
@@ -14,6 +15,7 @@ parameters:
 {{ toYaml .Values.storageClassParameters.azure | indent 2 }}
 {{- else if .Values.storageClassParameters.vmware }}
 {{ toYaml .Values.storageClassParameters.vmware | indent 2 }}
+{{- end }}
 {{- end }}
 provisioner: {{ .Values.provisioner }}
 reclaimPolicy: Delete

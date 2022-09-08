@@ -45,7 +45,7 @@ spec:
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: retain-sc
+  storageClassName: retain-sc-{{ .Release.Namespace }}
   resources:
     requests:
       storage: 4Gi

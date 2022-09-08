@@ -55,7 +55,7 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm upgrade -i prometheus-community kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts --set grafana."grafana\.ini".server.domain="$(yq e ".domain" ./charts/graphistry-helm/overrides/internal/eks-dev-values.yaml)" --set grafana."grafana\.ini".server.root_url="https://$(yq e ".domain" ./charts/graphistry-helm/overrides/internal/eks-dev-values.yaml)/k8s/grafana" --set grafana."grafana\.ini".server.serve_from_sub_path=true --set grafana."grafana\.ini"."auth\.anonymous".enabled=true --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false --namespace prometheus-community --create-namespace
+    command: helm upgrade -i prometheus-community kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts --set grafana."grafana\.ini".server.domain="$(yq e ".domain" ./charts/graphistry-helm/overrides/plugins/eks-dev-values.yaml)" --set grafana."grafana\.ini".server.root_url="https://$(yq e ".domain" ./charts/graphistry-helm/overrides/internal/eks-dev-values.yaml)/k8s/grafana" --set grafana."grafana\.ini".server.serve_from_sub_path=true --set grafana."grafana\.ini"."auth\.anonymous".enabled=true --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false --namespace prometheus-community --create-namespace
 
   aws-setup:
     image: helm-docker

@@ -14,14 +14,14 @@ spec:
 {{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: datamount-longhorn
+  storageClassName: datamount-longhorn-{{ .Release.Namespace }}
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2-retain
+  storageClassName: retain-sc-{{ .Release.Namespace }}
   resources:
     requests:
-      storage: 1Gi
+      storage: 4Gi
 status: {}
 {{- end }}
 
@@ -45,10 +45,10 @@ spec:
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: gp2-retain
+  storageClassName: retain-sc-{{ .Release.Namespace }}
   resources:
     requests:
-      storage: 1Gi
+      storage: 4Gi
 status: {}
 {{- end }}
 

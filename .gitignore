@@ -129,3 +129,7 @@ dmypy.json
 .pyre/
 velero-bootstrap/aws/velero_policy.json
 charts/graphistry-helm/velero_values_primary_cluster.yaml
+cluster-config/cluster-config.yml
+charts/kube-prometheus-stack
+charts/eks-dev-values.yaml
+charts/graphistry-jupyter-hub

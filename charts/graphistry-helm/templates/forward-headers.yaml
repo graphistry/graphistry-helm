@@ -1,11 +1,14 @@
+{{ if eq .Values.fwdHeaders true }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   annotations:
+    meta.helm.sh/release-namespace: {{ .Release.Namespace }}
   labels:
     app: ingress-nginx
   name: nginx-configuration
   namespace: {{ .Values.ingressNamespace }}
 data:
   use-forwarded-headers: "true"
-  
+{{- end }}  
+

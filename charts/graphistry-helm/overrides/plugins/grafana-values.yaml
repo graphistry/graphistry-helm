@@ -1,0 +1,48 @@
+grafana:
+  grafana.ini:
+    server:
+      domain: eks-dev.grph.xyz
+      root_url: https://eks-dev.grph.xyz/k8s/grafana
+      serve_from_sub_path: true
+    auth.anonymous:
+      enabled: true
+
+prometheus:
+  prometheusSpec:
+    podMonitorSelectorNilUsesHelmValues: false
+    serviceMonitorSelectorNilUsesHelmValues: false
+#with a values file
+  #helm upgrade -i prometheus-community kube-prometheus-stack \
+  #  --repo https://prometheus-community.github.io/helm-charts \
+  #  --values ./charts/graphistry-helm/grafana-values.yaml \
+  #  --namespace prometheus-community \
+  #  --create-namespace --dry-run
+
+
+
+#using yq to get the domain from the values.yaml file
+#helm upgrade -i prometheus-community kube-prometheus-stack \
+#    --repo https://prometheus-community.github.io/helm-charts \
+#    --set grafana."grafana\.ini".server.domain="$(yq e ".domain" ./charts/graphistry-helm/eks-dev-values.yaml)" \
+#    --set grafana."grafana\.ini".server.root_url="https://$(yq e ".domain" ./charts/graphistry-helm/eks-dev-values.yaml)/k8s/grafana" \
+#    --set grafana."grafana\.ini".server.serve_from_sub_path=true \
+#    --set grafana."grafana\.ini"."auth\.anonymous".enabled=true \
+#    --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
+#    --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+#    --namespace prometheus-community \
+#    --create-namespace
+
+
+#using set command
+#  helm upgrade -i prometheus-community kube-prometheus-stack \
+#    --repo https://prometheus-community.github.io/helm-charts \
+#    --set grafana."grafana\.ini".server.domain="eks-dev.grph.xyz" \
+#    --set grafana."grafana\.ini".server.root_url="https://eks-dev.grph.xyz/k8s/grafana" \
+#    --set grafana."grafana\.ini".server.serve_from_sub_path=true \
+#    --set grafana."grafana\.ini"."auth\.anonymous".enabled=true \
+#    --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false \
+#    --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false \
+#    --namespace prometheus-community \
+#    --create-namespace    
+
+

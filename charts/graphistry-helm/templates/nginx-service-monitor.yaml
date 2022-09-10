@@ -1,0 +1,15 @@
+{{if eq .Values.metrics true }}
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: nginx-service-monitor
+  namespace: {{ .Release.Namespace }}
+spec:
+  namespaceSelector:
+    any: true
+  selector:
+    matchLabels:
+      app: nginx-{{ .Release.Namespace }}
+  endpoints:
+  - port: metrics
+{{- end }}

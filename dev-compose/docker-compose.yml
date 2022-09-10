@@ -10,11 +10,13 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/eks-dev2-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG} --namespace graphistry   --create-namespace   
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/overrides/internal/eks-dev-values.yaml --set multiNode=${MULTINODE} --set metrics=${GRAFANA} --set tls=${TLS}  --set tag=${APP_TAG} --namespace ${NAMESPACE} --create-namespace   
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}
       - MULTINODE=${MULTINODE}
+      - NAMESPACE=${NAMESPACE}
+      - GRAFANA=${GRAFANA}
 
   helm-docker-dev:
     build:
@@ -25,11 +27,12 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG}  --namespace graphistry   --create-namespace  
+    command: helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/overrides/internal/skinny-values.yaml --set multiNode=${MULTINODE} --set tls=${TLS}  --set tag=${APP_TAG}  --namespace ${NAMESPACE} --create-namespace  
     environment:
       - APP_TAG=${APP_TAG}
       - TLS=${TLS}
       - MULTINODE=${MULTINODE}
+      - NAMESPACE=${NAMESPACE}
 
   cluster-setup:
     image: helm-docker
@@ -41,7 +44,18 @@ services:
       - MULTINODE=${MULTINODE}
       - TLS=${TLS}
       - APP_TAG=${APP_TAG}
-
+      - GRAFANA=${GRAFANA}
+      
+  launch-grafana:
+    build:
+      context: ./scripts
+      dockerfile: ../docker/Dockerfile
+    image: helm-docker
+    volumes:
+      - ../charts/:/charts
+      - ~/.aws:/root/.aws
+      - ~/.kube:/root/.kube
+    command: helm upgrade -i prometheus-community kube-prometheus-stack --repo https://prometheus-community.github.io/helm-charts --set grafana."grafana\.ini".server.domain="$(yq e ".domain" ./charts/graphistry-helm/overrides/plugins/eks-dev-values.yaml)" --set grafana."grafana\.ini".server.root_url="https://$(yq e ".domain" ./charts/graphistry-helm/overrides/internal/eks-dev-values.yaml)/k8s/grafana" --set grafana."grafana\.ini".server.serve_from_sub_path=true --set grafana."grafana\.ini"."auth\.anonymous".enabled=true --set prometheus.prometheusSpec.podMonitorSelectorNilUsesHelmValues=false --set prometheus.prometheusSpec.serviceMonitorSelectorNilUsesHelmValues=false --namespace prometheus-community --create-namespace
 
   aws-setup:
     image: helm-docker
@@ -70,6 +84,7 @@ services:
       - DOCKER_USER_NAME_PROD=${DOCKER_USER_NAME_PROD}
       - DOCKER_PASSWORD_PROD=${DOCKER_PASSWORD_PROD}
       - CLUSTER_NAME=${CLUSTER_NAME}
+      - NAMESPACE=${NAMESPACE}
 
   scale-to-zero:
     build:
@@ -80,5 +95,7 @@ services:
       - ../charts/:/charts
       - ~/.aws:/root/.aws
       - ~/.kube:/root/.kube
-    command: helm delete g-chart -n graphistry 
+    command: helm delete g-chart -n ${NAMESPACE}
+    environment:
+      - NAMESPACE=${NAMESPACE}
 

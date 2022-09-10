@@ -20,7 +20,7 @@ VERSION=${VERSION:-v1.9.0}
 COMPANY_NAME=${COMPANY_NAME:-graphistry}
 BUCKET=${BUCKET:-$COMPANY_NAME-eks-velero-backups}
 REGION=${REGION:-us-east-2}
-PRIMARY_CLUSTER=${PRIMARY_CLUSTER:-k8s-cluster}
+PRIMARY_CLUSTER=${PRIMARY_CLUSTER:-k8s-cluster-managed}
 RECOVERY_CLUSTER=${RECOVERY_CLUSTER}
 ACCOUNT=$(aws sts get-caller-identity --query Account --output text)
 

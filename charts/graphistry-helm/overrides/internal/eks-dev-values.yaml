@@ -1,0 +1,24 @@
+domain: eks-dev.grph.xyz 
+tlsEmail: "cody@graphistry.com" 
+tls: true
+graphAppKitusername: 
+graphAppKitpassword: 
+imagePullPolicy: Always
+containerregistry:
+  name: docker.io/graphistry
+imagePullSecrets: docker-secret-prod
+metrics: true
+rollingUpdate: true
+fwdHeaders: true
+k8sDashboard: 
+  enabled: true
+  readonly: false
+  createServiceAccount: false  ## createServiceAccount: true only true on initial deployment
+storageClassParameters:
+  aws:
+    csi.storage.k8s.io/fstype: ext4
+    type: gp2
+provisioner: ebs.csi.aws.com
+#example values.yaml of an aws eks based deployment
+
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/overrides/internal/eks-dev-values.yaml --set tag=v2.39.24-koa-sso-fix --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-29-0.us-east-2.compute.internal --namespace graphistry --create-namespace 

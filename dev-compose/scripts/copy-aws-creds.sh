@@ -58,11 +58,11 @@ then
     aws eks update-kubeconfig --name dev-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN
     echo "kubeconfig created"
 
-elif [[ $CLUSTER_NAME == "eks-dev2" ]]
+elif [[ $CLUSTER_NAME == "eks-dev" ]]
 then
 
     echo "creating kubeconfig for eks-dev2 cluster "
-    aws eks update-kubeconfig --name k8s-cluster --region us-east-2 --role-arn $AWS_ROLE_ARN
+    aws eks update-kubeconfig --name k8s-cluster-managed --region us-east-2 --role-arn $AWS_ROLE_ARN
     echo "kubeconfig created"
 
 else

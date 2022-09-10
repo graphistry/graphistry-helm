@@ -8,6 +8,10 @@ RUN apt-get update -y && \
     apt-get install -y  wget apt-utils curl unzip \
     ca-certificates apt-transport-https lsb-release gnupg
 
+RUN add-apt-repository ppa:rmescandon/yq && \
+    apt update && \
+    apt install yq -y
+
 
 RUN echo "deb [arch=amd64] https://packages.microsoft.com/repos/azure-cli/ $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/azure-cli.list
 

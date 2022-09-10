@@ -1,0 +1,10 @@
+tls: false
+graphAppKitPublic: false
+graphAppKitPrivate: false
+containerregistry:
+  name: docker.io/graphistry
+imagePullSecrets: docker-secret-prod
+provisioner: microk8s.io/hostpath
+#example values.yaml of an aws eks based deployment
+
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/overrides/microk8s_example_values.yaml --set tag=v2.39.24-koa-sso-fix --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-29-0.us-east-2.compute.internal --namespace graphistry --create-namespace 

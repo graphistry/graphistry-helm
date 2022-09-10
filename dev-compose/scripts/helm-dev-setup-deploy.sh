@@ -1,11 +1,6 @@
 #!/bin/bash
 
 
-
-
-
-
-
 echo "APP_TAG": $APP_TAG
 
 echo "MULTINODE": $MULTINODE
@@ -25,18 +20,35 @@ echo "TLS": $TLS
 
 
 certmanager () {
-echo "installing cert-manager"
-helm upgrade --install cert-manager cert-manager \
-  --repo https://charts.jetstack.io \
-  --namespace cert-manager \
-  --create-namespace \
-  --version v1.7.1 \
-  --set installCRDs=true \
-  --set createCustomResource=true 
+  echo "installing cert-manager"
+  helm upgrade --install cert-manager cert-manager \
+    --repo https://charts.jetstack.io \
+    --namespace cert-manager \
+    --create-namespace \
+    --version v1.7.1 \
+    --set installCRDs=true \
+    --set createCustomResource=true 
 
 
 }
 
+nginx_ingress_controller () {
+    echo "installing nginx ingress controller"
+    if [[ $GRAFANA == "true" ]];
+    then
+      helm upgrade -i ingress-nginx ingress-nginx \
+        --repo https://kubernetes.github.io/ingress-nginx \
+        --namespace ingress-nginx --create-namespace \
+        --set controller.metrics.enabled=true \
+        --set controller.metrics.serviceMonitor.enabled=true \
+        --set controller.metrics.serviceMonitor.additionalLabels.release="prometheus"
+    else
+      helm upgrade -i ingress-nginx ingress-nginx \
+        --repo https://kubernetes.github.io/ingress-nginx \
+        --namespace ingress-nginx --create-namespace 
+    fi
+
+}
 
 longhorn () {
 if [[ ! -z $(helm repo add longhorn https://charts.longhorn.io | grep "exists")   ]]; 
@@ -77,28 +89,44 @@ then
     certmanager
   fi
 
-  if [[ ! -z $(kubectl get ns | grep "ingress-nginx") ]] && [[ ! -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]]; 
   then
-    echo "ingress-nginx with TLS already exists";
+    if  [[ $GRAFANA == "true" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+    then
+      echo "nginx ingress controller already exists with prometheus";
+    elif [[ $GRAFANA == "true" ]] && [[ -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+        echo "installing nginx ingress controller on the cluster with prometheus enabled"
+        nginx_ingress_controller
+    elif [[ $GRAFANA == "false" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]] 
+        echo "installing nginx ingress controller on the cluster with prometheus disabled"
+        nginx_ingress_controller
+    else
+      echo "nginx ingress controller already exists"
+    fi
   else
-    echo "installing nginx ingress controller with TLS"
-    helm upgrade -i --install ingress-nginx ingress-nginx \
-      --repo https://kubernetes.github.io/ingress-nginx \
-      --namespace ingress-nginx --create-namespace \
-      --set "controller.extraArgs.default-ssl-certificate=graphistry/letsencrypt-tls" 
-
+    echo "installing nginx ingress controller on the cluster"
+    nginx_ingress_controller
   fi
 
 else
 
-  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]] && [[ -z  $(helm get all ingress-nginx -n ingress-nginx | grep "default-ssl-certificate: graphistry/letsencrypt-tls") ]]; 
+  if [[ ! -z $(kubectl get ns | grep "ingress-nginx")   ]]; 
   then
-    echo "ingress-nginx already exists without TLS";
+    if  [[ $GRAFANA == "true" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+    then
+      echo "nginx ingress controller already exists with prometheus";
+    elif [[ $GRAFANA == "true" ]] && [[ -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]]
+        echo "installing nginx ingress controller on the cluster with prometheus enabled"
+        nginx_ingress_controller
+    elif [[ $GRAFANA == "false" ]] && [[ ! -z $(helm get values ingress-nginx --namespace ingress-nginx | grep "prometheus") ]] 
+        echo "installing nginx ingress controller on the cluster with prometheus disabled"
+        nginx_ingress_controller
+    else
+      echo "nginx ingress controller already exists"
+    fi
   else
-    echo "installing nginx ingress controller without TLS"
-    helm upgrade -i --install ingress-nginx ingress-nginx \
-      --repo https://kubernetes.github.io/ingress-nginx \
-      --namespace ingress-nginx --create-namespace 
+    echo "installing nginx ingress controller on the cluster"
+    nginx_ingress_controller
   fi
 
 fi

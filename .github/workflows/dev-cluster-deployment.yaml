@@ -7,7 +7,7 @@ on:
         description: 'Version to deploy?'
         required: true
       cluster:
-        description: 'cluster to deploy to? (eks-dev2,skinny)'
+        description: 'cluster to deploy to? (eks-dev,skinny)'
         required: true
       multinode:
         description: 'deploying to multiple nodes? (true,false)'
@@ -18,6 +18,12 @@ on:
       scale-to-zero:
         description: 'scaling to zero? (true,false)'
         required: false
+      namespace:
+        description: 'what namespace to deploy to? (ex: graphistry-prod, graphistry-staging)'
+        required: true
+      grafana:
+        description: 'would you like to launch grafana? (true,false)'
+        required: true
 jobs:
   check-dev-true:
       runs-on: ubuntu-latest
@@ -63,6 +69,8 @@ jobs:
           echo "K8S_CLUSTER_ROLE=${{ secrets.K8S_CLUSTER_ROLE }}" >> $GITHUB_ENV
           echo "SOURCE_PROFILE=${{ secrets.SOURCE_PROFILE }}" >> $GITHUB_ENV
           echo "CLUSTER_NAME=${{ github.event.inputs.cluster }}" >> $GITHUB_ENV
+          echo "NAMESPACE=${{ github.event.inputs.namespace }}" >> $GITHUB_ENV
+          echo "GRAFANA=${{ github.event.inputs.grafana }}" >> $GITHUB_ENV
 
 
 ## docker compose build
@@ -88,9 +96,14 @@ jobs:
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker-dev 
 
 # deploy to eks2 cluster
-      - name: deploy the eks-dev2 cluster
-        if: "${{ env.CLUSTER_NAME == 'eks-dev2' && !contains(github.event.inputs.scale-to-zero , 'true') }}"
+      - name: deploy the eks-dev cluster
+        if: "${{ env.CLUSTER_NAME == 'eks-dev' && !contains(github.event.inputs.scale-to-zero , 'true') }}"
         run: docker-compose -f dev-compose/docker-compose.yml up helm-docker 
+
+# launch grafana
+      - name: deploy the eks-dev cluster
+        if: "${{ !contains(github.event.inputs.scale-to-zero , 'true') && contains(github.event.inputs.grafana , 'true')  }}"
+        run: docker-compose -f dev-compose/docker-compose.yml up launch-grafana         
 
 # scale to zero ##NEEDS WORK
       - name: deletes the cluster deployment.

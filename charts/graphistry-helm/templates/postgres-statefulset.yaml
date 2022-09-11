@@ -1,5 +1,5 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   annotations:
     autoheal: "true"
@@ -10,18 +10,19 @@ metadata:
     io.kompose.service: postgres
   name: postgres
 spec:
+  serviceName: postgres
   replicas: 1
   selector:
     matchLabels:
       io.kompose.service: postgres
-  strategy:
+  updateStrategy:
 {{ if eq .Values.rollingUpdate true }}
     type: RollingUpdate
     rollingUpdate:
       maxSurge: {{.Values.maxSurge}}
       maxUnavailable: "0%"
 {{ else }}
-    type: Recreate
+    type: OnDelete
 {{- end }}
   template:
     metadata:
@@ -42,7 +43,8 @@ spec:
    {{- end }}
           - name: POSTGRES_PORT
             value: {{.Values.postgres.port | quote }}
-            
+          - name: POSTGRES_HOST
+            value: "{{.Values.postgres.host }}"
       {{ if eq .Values.devMode false }}
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.postgres.repository}}-{{.Values.tag}}-universal
       {{ else }}  
@@ -88,7 +90,8 @@ spec:
 {{ if eq .Values.multiNode false }}
       nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
 {{- end }}    
-status: {}
+status:
+  replicas: 1
 
 ---
 #service
@@ -104,14 +107,15 @@ metadata:
     io.kompose.service: postgres
   name: postgres
 spec:
+  type: ClusterIP
+  clusterIP: None
   ports:
-    - name: "{{.Values.postgres.port}}"
+    - name: {{.Values.postgres.port | quote }}
       port: {{.Values.postgres.port}}
       targetPort: {{.Values.postgres.port}}
   selector:
     io.kompose.service: postgres
-status:
-  loadBalancer: {}
+
 
 ---
 # longhorn storageclass setting reclaim policy to retain

@@ -1,0 +1,175 @@
+{{ if eq .Values.devMode false }}
+apiVersion: kubernetes.dask.org/v1
+kind: DaskCluster
+metadata:
+  name: dask-cuda-cluster
+  labels:
+    service: dask-cuda-cluster
+spec:
+  strategy:
+{{ if eq .Values.rollingUpdate true }}
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{.Values.maxSurge}}
+      maxUnavailable: "0%"
+{{ else }}
+    type: Recreate
+{{- end }}
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+  worker:
+    replicas: 2
+    spec:
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init"
+        {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
+      containers:
+      - name: dask-cuda-worker
+        image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+        imagePullPolicy: {{.Values.imagePullPolicy }}
+        args:
+            - dask-cuda-worker
+            - --interface
+            - eth0
+            - --dashboard-address localhost:8787
+            - --resources GPU=10
+            - dask-scheduler:8786
+        command:
+            - /entrypoints/rapids-entrypoint.sh
+        env:
+          - name: GRAPHISTRY_CPU_MODE
+            value: {{.Values.graphistryCPUMode | quote }}
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          - name: POSTGRES_PORT
+            value: {{.Values.postgres.port | quote }}
+          - name: POSTGRES_HOST
+            value: "{{.Values.postgres.host }}"
+        livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "curl -Lf http://localhost:8787/health && curl -f http://forge-etl-python:8080/workerhealth"
+
+            failureThreshold: 1
+            initialDelaySeconds: 180
+            periodSeconds: 120
+            timeoutSeconds: 30
+        ports:
+            - containerPort: 8787
+        resources: {}
+        volumeMounts:
+            - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /dask-shared
+              name: data-mount
+      restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }}  
+      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+  scheduler:
+    spec:
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init"
+        {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        args: 
+        - "job"
+        - "nexus-migration-job-{{ .Release.Revision}}"
+      containers:
+      - name: dask-scheduler
+        image: "ghcr.io/dask/dask:latest"
+        imagePullPolicy: {{.Values.imagePullPolicy }}
+        args:
+            - dask-scheduler
+            - --port
+            - "8786"
+            - --interface
+            - eth0
+            - --no-show
+            - --dashboard-address
+            - "8787"
+        command:
+            - /entrypoints/rapids-entrypoint.sh
+        env:
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          - name: POSTGRES_PORT
+            value: {{.Values.postgres.port | quote }}
+          - name: POSTGRES_HOST
+            value: "{{.Values.postgres.host }}"
+        ports:
+          - name: tcp-comm
+            containerPort: 8786
+            protocol: TCP
+          - name: http-dashboard
+            containerPort: 8787
+            protocol: TCP
+        readinessProbe:
+          httpGet:
+            port: http-dashboard
+            path: /health
+          initialDelaySeconds: 5
+          periodSeconds: 10
+        livenessProbe:
+          httpGet:
+            port: http-dashboard
+            path: /health
+          failureThreshold: 3
+          initialDelaySeconds: 30
+          periodSeconds: 30
+          timeoutSeconds: 30
+        volumeMounts:
+            - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /dask-shared
+              name: data-mount
+      restartPolicy: {{ .Values.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount            
+      imagePullSecrets:
+          - name: {{ .Values.imagePullSecrets }} 
+{{ if eq .Values.multiNode false }}
+      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+{{- end }} 
+    service:
+      selector:
+        dask.org/cluster-name: dask-cuda-cluster
+        dask.org/component: scheduler
+      ports:
+      - name: tcp-comm
+        protocol: TCP
+        port: 8786
+        targetPort: "tcp-comm"
+      - name: http-dashboard
+        protocol: TCP
+        port: 8787
+        targetPort: "http-dashboard"
+{{- end }}   

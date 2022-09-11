@@ -18,9 +18,6 @@ spec:
   updateStrategy:
 {{ if eq .Values.rollingUpdate true }}
     type: RollingUpdate
-    rollingUpdate:
-      maxSurge: {{.Values.maxSurge}}
-      maxUnavailable: "0%"
 {{ else }}
     type: OnDelete
 {{- end }}
@@ -92,7 +89,7 @@ spec:
 {{- end }}    
 status:
   replicas: 1
-
+  availableReplicas: 1
 ---
 #service
 apiVersion: v1

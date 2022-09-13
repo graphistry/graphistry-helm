@@ -5,6 +5,18 @@ metadata:
   labels:
     io.kompose.service: local-media-mount
   name: local-media-mount
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+{{- if eq .Values.multiNode true  }}
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+
+{{ else }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+{{- end }}
+  finalizers:
+  - kubernetes.io/pvc-protection
 spec:
 {{- if eq .Values.multiNode true  }}
   accessModes:
@@ -14,8 +26,8 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
+{{- end }}
   resources:
     requests:
       storage: 4Gi
 status: {}
-{{- end }}

@@ -8,14 +8,12 @@ containerregistry:
   name: docker.io/graphistry
 imagePullSecrets: docker-secret-prod
 metrics: true
-rollingUpdate: true
 fwdHeaders: true
 k8sDashboard: 
   enabled: true
   readonly: false
   createServiceAccount: false  ## createServiceAccount: true only true on initial deployment
 storageClassParameters:
-  aws:
     csi.storage.k8s.io/fstype: ext4
     type: gp2
 provisioner: ebs.csi.aws.com

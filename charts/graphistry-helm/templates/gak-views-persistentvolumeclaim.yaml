@@ -10,15 +10,29 @@ metadata:
   labels:
     io.kompose.service: gak-public
   name: gak-public
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+{{- if eq .Values.multiNode true  }}
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+
+{{ else }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+{{- end }}
+  finalizers:
+  - kubernetes.io/pvc-protection
 spec:
 {{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
   storageClassName: datamount-longhorn-{{ .Release.Namespace }}
+
 {{- else }}
   accessModes:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
+
   resources:
     requests:
       storage: 4Gi
@@ -37,15 +51,29 @@ metadata:
   labels:
     io.kompose.service: gak-private
   name: gak-private
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+{{- if eq .Values.multiNode true  }}
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+
+{{ else }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+{{- end }}
+  finalizers:
+  - kubernetes.io/pvc-protection
 spec:
 {{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: datamount-longhorn
+  storageClassName: datamount-longhorn-{{ .Release.Namespace }}
+
 {{- else }}
   accessModes:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
+
   resources:
     requests:
       storage: 4Gi

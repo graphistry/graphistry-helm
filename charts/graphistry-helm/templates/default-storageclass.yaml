@@ -9,13 +9,7 @@ metadata:
   name: uploadfiles-sc-{{ .Release.Namespace }}
 {{- if .Values.storageClassParameters }}
 parameters:
-{{- if .Values.storageClassParameters.aws }}
-{{ toYaml .Values.storageClassParameters.aws | indent 2 }}
-{{- else if .Values.storageClassParameters.azure }}
-{{ toYaml .Values.storageClassParameters.azure | indent 2 }}
-{{- else if .Values.storageClassParameters.vmware }}
-{{ toYaml .Values.storageClassParameters.vmware | indent 2 }}
-{{- end }}
+{{ toYaml .Values.storageClassParameters | indent 2 }}
 {{- end }}
 provisioner: {{ .Values.provisioner }}
 reclaimPolicy: Delete

@@ -120,7 +120,7 @@ spec:
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
-  name: postgres-longhorn
+  name: postgres-longhorn-{{ .Release.Namespace }}
   annotations:
     # make this class the default storage class
     #storageclass.kubernetes.io/is-default-class: "true"
@@ -141,15 +141,29 @@ metadata:
   labels:
     io.kompose.service: postgres-data
   name: postgres-data
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+{{- if eq .Values.multiNode true  }}
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+
+{{ else }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+{{- end }}
+  finalizers:
+  - kubernetes.io/pvc-protection
 spec:
 {{- if eq .Values.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: datamount-longhorn
+  storageClassName: postgres-longhorn-{{ .Release.Namespace }}
+
 {{- else }}
   accessModes:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
+
   resources:
     requests:
       storage: 4Gi

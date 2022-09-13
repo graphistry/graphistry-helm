@@ -18,12 +18,12 @@ provisioner: kubernetes.io/aws-ebs
 
 #cloud provider storage class parameters - Each StorageClass has a set of parameters that are used to determine how the storage is provisioned.
 storageClassParameters:
-  #aws:
+  #aws types:
   #  fsType: ext4
   #  type: gp2
-  #azure:
+  #azure types:
   #  skuName: StandardSSD_LRS  
-  #vmware:
+  #vmware types:
   #  storagePolicyName: optional
 
 #the namespace of the ingress controller - this is the namespace that the ingress controller is going to be deployed to.

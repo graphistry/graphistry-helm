@@ -5,8 +5,6 @@ metadata:
   namespace: argo
   finalizers:
   - resources-finalizer.argocd.argoproj.io
-  annotations:
-    argocd.argoproj.io/sync-options: Validate=false
 spec:
   destination:
     server: https://kubernetes.default.svc
@@ -25,3 +23,4 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+      - Validate=false

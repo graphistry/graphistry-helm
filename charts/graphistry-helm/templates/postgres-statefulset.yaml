@@ -148,8 +148,8 @@ metadata:
     volume.kubernetes.io/storage-provisioner: driver.longhorn.io
 
 {{ else }}
-    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
-    volume.kubernetes.io/storage-provisioner: {{ .Values.provisioner }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
 {{- end }}
   finalizers:
   - kubernetes.io/pvc-protection

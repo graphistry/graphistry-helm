@@ -10,7 +10,7 @@ metadata:
 parameters:
 {{ toYaml .Values.storageClassParameters | indent 2 }}
 {{- end }}
-provisioner: {{ .Values.provisioner }}
+provisioner: {{ .Values.global.provisioner }}
 reclaimPolicy: Retain
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer

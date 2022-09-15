@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphistry-resource-ci
+  name: graphistry-app-ci
   namespace: argo
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -11,13 +11,15 @@ spec:
     namespace: graphistry
   project: default
   source:
-    path: charts/graphistry-helm-resources
+    path: charts/graphistry-helm
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: v0.3.5
+    targetRevision: v0.3.5 #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
-        - ../graphistry-helm/overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+        - ../values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

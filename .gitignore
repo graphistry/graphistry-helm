@@ -134,3 +134,5 @@ charts/kube-prometheus-stack
 charts/eks-dev-values.yaml
 charts/graphistry-jupyter-hub
 charts/argo-cd/charts/argo-cd-5.4.3.tgz
+charts/graphistry-helm/charts/graphistry-helm-resources-0.3.5.tgz
+*.lock

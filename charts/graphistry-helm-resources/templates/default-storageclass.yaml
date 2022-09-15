@@ -11,7 +11,7 @@ metadata:
 parameters:
 {{ toYaml .Values.storageClassParameters | indent 2 }}
 {{- end }}
-provisioner: {{ .Values.provisioner }}
+provisioner: {{ .Values.global.provisioner }}
 reclaimPolicy: Delete
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer

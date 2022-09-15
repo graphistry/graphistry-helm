@@ -16,7 +16,7 @@ spec:
     targetRevision: v0.3.5 #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
-        - overrides/internal/eks-dev-values.yaml 
+        - overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true

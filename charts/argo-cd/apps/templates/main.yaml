@@ -14,13 +14,9 @@ spec:
     path: charts/argo-cd/apps/templates/graphistry-ci-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: v0.3.5
-    helm:
-      valueFiles:
-        - ../../../values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-      - Validate=false

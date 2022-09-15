@@ -1,0 +1,3 @@
+apiVersion: v2
+name: graphistry-app-cd
+version: 1.0.0

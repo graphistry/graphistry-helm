@@ -2,18 +2,18 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: graphistry-helm
-  namespace: graphistry
+  namespace: argo
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
-    server: https://kubernetes.default.svc
+    server: https://kubernetes.graphistry.svc
     namespace: graphistry
   project: default
   source:
     path: charts/graphistry-helm
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: v0.3.5
+    targetRevision: v0.3.5 #BRANCH OR HEAD WHEN IN MAIN
   syncPolicy:
     automated:
       prune: true

@@ -2,12 +2,12 @@ apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: graphistry-resource-ci
-  namespace: graphistry
+  namespace: argo
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
-    server: https://kubernetes.default.svc
+    server: https://kubernetes.graphistry.svc
     namespace: graphistry
   project: default
   source:

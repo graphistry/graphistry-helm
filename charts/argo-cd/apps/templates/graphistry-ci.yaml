@@ -1,0 +1,19 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: graphistry-helm
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: graphistry
+  project: default
+  source:
+    path: charts/graphistry-helm
+    repoURL: https://github.com/graphistry/graphistry-helm.git
+    targetRevision: v0.3.5
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true

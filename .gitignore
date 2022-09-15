@@ -133,3 +133,4 @@ cluster-config/cluster-config.yml
 charts/kube-prometheus-stack
 charts/eks-dev-values.yaml
 charts/graphistry-jupyter-hub
+charts/argo-cd/charts/argo-cd-5.4.3.tgz

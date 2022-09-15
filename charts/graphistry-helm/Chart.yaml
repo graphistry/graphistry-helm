@@ -8,4 +8,17 @@ keywords:
   - 100x
   - visualizations
   - kubernetes
-  
+
+#dependencies:
+  #- name: graphistry-helm-resources
+  #  version: "0.3.5"
+  #  repository: https://graphistry.github.io/graphistry-helm/
+#  - name: dask
+#    version: "2022.8.*"
+#    repository: https://helm.dask.org
+#  - name: kube-prometheus-stack
+#    version: "40.0.*"
+#    repository: https://prometheus-community.github.io/helm-charts
+#  - name: dcgm-exporter
+#    version: "40.0.*"
+#    repository: https://nvidia.github.io/dcgm-exporter/helm-charts

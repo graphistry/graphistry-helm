@@ -7,13 +7,16 @@ metadata:
   - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
-    server: https://kubernetes.graphistry.svc
+    server: https://kubernetes.default.svc
     namespace: graphistry
   project: default
   source:
     path: charts/graphistry-helm
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: v0.3.5 #BRANCH OR HEAD WHEN IN MAIN
+    helm:
+      valueFiles:
+        - overrides/internal/eks-dev-values.yaml 
   syncPolicy:
     automated:
       prune: true

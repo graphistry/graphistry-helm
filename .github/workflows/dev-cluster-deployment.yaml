@@ -24,6 +24,12 @@ on:
       grafana:
         description: 'would you like to launch grafana? (true,false)'
         required: true
+      #argo:
+      #  description: 'would you like to install argo? (true,false)'
+      #  required: false
+      #deploy-with-argo:
+      #  description: 'would you like to deploy the cluster with argoCD? (true,false)'
+      #  required: false        
 jobs:
   check-dev-true:
       runs-on: ubuntu-latest
@@ -89,6 +95,16 @@ jobs:
       - name: setup the cluster
         if: "${{ !contains(github.event.inputs.scale-to-zero , 'true') }}"
         run:  docker-compose -f dev-compose/docker-compose.yml up cluster-setup
+
+# needs to only run once
+#      - name: setup argo
+#        if: "${{ contains(github.event.inputs.argo , 'true') }}"
+#        run:  docker-compose -f dev-compose/docker-compose.yml up deploy-argo
+
+# deploy graphistry-resources
+      - name: deploy graphistry resources
+        if: "${{ !contains(github.event.inputs.scale-to-zero , 'true') }}"
+        run: docker-compose -f dev-compose/docker-compose.yml up graphistry-resources
 
 # deploy to skinny dev cluster
       - name: deploy the dev cluster

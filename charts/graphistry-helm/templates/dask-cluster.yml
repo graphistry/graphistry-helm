@@ -44,7 +44,11 @@ spec:
           - name: POSTGRES_PORT
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: "{{.Values.postgres.host }}"
+            value: {{.Values.postgres.host | quote }}
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logs.LogLevel | quote }}  
         livenessProbe:
             exec:
               command:
@@ -110,7 +114,11 @@ spec:
           - name: POSTGRES_PORT
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: "{{.Values.postgres.host }}"
+            value: {{.Values.postgres.host | quote }}
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logs.LogLevel | quote }}  
         ports:
           - name: tcp-comm
             containerPort: 8786

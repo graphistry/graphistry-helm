@@ -57,6 +57,10 @@ spec:
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
             value: {{.Values.postgres.host | quote }}
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logs.LogLevel | quote }}  
           {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
           image: {{.Values.redis.repository}}:{{.Values.redis.tag}} #DockerHub
           {{ else }}

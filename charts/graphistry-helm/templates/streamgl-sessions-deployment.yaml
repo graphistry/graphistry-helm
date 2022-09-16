@@ -56,6 +56,10 @@ spec:
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
             value: {{.Values.postgres.host | quote }}
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logs.LogLevel | quote }}  
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglsessions.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.imagePullPolicy }}       
           livenessProbe:

@@ -82,7 +82,7 @@ spec:
           - name: POSTGRES_PORT
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: "{{.Values.postgres.host }}"
+            value: {{.Values.postgres.host | quote }}
 
           - name: K8S_NAMESPACE_SUFFIX
             value: .{{ .Release.Namespace }}.svc.cluster.local
@@ -94,6 +94,10 @@ spec:
             value: "1"
           - name: NGINX_RESOLVER
             value: kube-dns.kube-system.svc.cluster.local
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logs.LogLevel | quote }}  
    {{ if eq .Values.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal

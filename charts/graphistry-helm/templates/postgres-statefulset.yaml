@@ -41,7 +41,11 @@ spec:
           - name: POSTGRES_PORT
             value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: "{{.Values.postgres.host }}"
+            value: {{.Values.postgres.host | quote }}
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.logs.LogLevel | quote }}  
       {{ if eq .Values.devMode false }}
           image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.postgres.repository}}-{{.Values.tag}}-universal
       {{ else }}  

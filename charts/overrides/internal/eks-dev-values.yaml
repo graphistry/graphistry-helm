@@ -15,6 +15,11 @@ k8sDashboard:
   createServiceAccount: false  ## createServiceAccount: true only true on initial deployment
 tag: v2.39.28-admin
 nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
+logs:
+  LogLevel: DEBUG
+  GraphistryLogLevel: DEBUG
+
+
 
 #example values.yaml of an aws eks based deployment
 

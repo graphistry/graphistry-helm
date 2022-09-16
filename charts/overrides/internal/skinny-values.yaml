@@ -1,4 +1,3 @@
-
 domain: eks-skinny.grph.xyz   
 tls: true
 tlsEmail: "cody@graphistry.com" 
@@ -13,9 +12,18 @@ containerregistry:
 imagePullPolicy: Always
 imagePullSecrets: dockerhub-secret
 httpTesting: true
-storageClassParameters:
-    fsType: ext4
-    type: gp2
+logs:
+  LogLevel: INFO
+  GraphistryLogLevel: INFO
+tag: v2.39.28-admin
 
+graphistry-helm-resources:
+  storageClassParameters:
+      csi.storage.k8s.io/fstype: ext4
+      type: gp2
+
+      
+global:
+  provisioner: ebs.csi.aws.com
 
 #helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set tag=v2.39.17-koa-sso-new  --namespace graphistry --create-namespace

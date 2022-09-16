@@ -230,6 +230,11 @@ graphAppKitpassword:
 ## graphistry key for dev mode in pivot deployment
 graphistryKey:
 
+logs:
+  LogLevel: INFO
+  GraphistryLogLevel: INFO
+
+
 #environment variables 
  # can be set like helm install chart_name --name release_name \
  #--set env.DBUser="FOO" --set env.DBPassword="BAR"
@@ -260,10 +265,6 @@ env:
    value: dask-scheduler:8787
  - name: AIR_GAPPED
    value: "0"
- - name: GRAPHISTRY_LOG_LEVEL
-   value: INFO
- - name: LOG_LEVEL
-   value: INFO
  - name: PIVOT_PORT 
    value: "8080"
  - name: PORT

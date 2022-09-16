@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: deploy-cd
+  name: graphistry-resources-cd
   namespace: argo
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -11,9 +11,12 @@ spec:
     namespace: graphistry
   project: default
   source:
-    path: charts/argo-cd/apps/templates/graphistry-ci-templates
+    path: charts/graphistry-helm-resources
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: v0.3.5
+    targetRevision: v0.3.5 #BRANCH OR HEAD WHEN IN MAIN
+    helm:
+      valueFiles:
+        - ../values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true

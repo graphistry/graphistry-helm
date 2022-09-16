@@ -1,4 +1,4 @@
-{{- if eq .Values.multiNode true  }}
+{{- if eq .Values.global.multiNode true  }}
 
 kind: StorageClass
 apiVersion: storage.k8s.io/v1

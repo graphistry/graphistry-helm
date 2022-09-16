@@ -105,7 +105,7 @@ spec:
       serviceAccountName: job-robot
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}  
-{{ if eq .Values.multiNode false }}
+{{ if eq .Values.global.multiNode false }}
       nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
 {{- end }} 
 status: {}

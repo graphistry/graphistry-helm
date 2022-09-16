@@ -84,7 +84,7 @@ spec:
             claimName: data-mount
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}    
-{{ if eq .Values.multiNode false }}
+{{ if eq .Values.global.multiNode false }}
       nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
 {{- end }}    
 status:
@@ -116,7 +116,7 @@ spec:
 
 ---
 # longhorn storageclass setting reclaim policy to retain
-{{- if eq .Values.multiNode true  }}
+{{- if eq .Values.global.multiNode true  }}
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
 metadata:
@@ -143,7 +143,7 @@ metadata:
   name: postgres-data
   annotations:
     pv.kubernetes.io/bound-by-controller: "yes"
-{{- if eq .Values.multiNode true  }}
+{{- if eq .Values.global.multiNode true  }}
     volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
     volume.kubernetes.io/storage-provisioner: driver.longhorn.io
 
@@ -154,7 +154,7 @@ metadata:
   finalizers:
   - kubernetes.io/pvc-protection
 spec:
-{{- if eq .Values.multiNode true  }}
+{{- if eq .Values.global.multiNode true  }}
   accessModes:
     - ReadWriteMany
   storageClassName: postgres-longhorn-{{ .Release.Namespace }}

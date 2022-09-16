@@ -32,6 +32,38 @@ certmanager () {
 
 }
 
+dask_operator (){
+
+if [[ ! -z $(helm repo add dask https://helm.dask.org | grep "exists")   ]]; 
+then
+    echo "Dask Helm Repo already exists upgrading..."
+    helm repo update dask
+else
+    echo "Dask Helm Repo does not exist adding..."
+    helm repo add dask https://helm.dask.org
+fi
+
+helm upgrade -i dask-cluster-operator dask/dask --namespace dask-operator --create-namespace 
+}
+dask_operator
+
+
+argo_cd (){
+
+if [[ ! -z $(helm repo add argo-cd https://argoproj.github.io/argo-helm | grep "exists")   ]]; 
+then
+    echo "Argo-CD Helm Repo already exists upgrading..."
+    helm repo update argo-cd
+else
+    echo "Argo Helm Repo does not exist adding..."
+    helm repo add argo-cd https://argoproj.github.io/argo-helm
+fi
+helm dep update ../../charts/argo-cd
+helm upgrade -i argo-cd ../../charts/argo-cd/ --namespace argo --create-namespace 
+}
+
+
+
 nginx_ingress_controller () {
     echo "installing nginx ingress controller"
     if [[ $GRAFANA == "true" ]];

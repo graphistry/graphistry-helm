@@ -1,7 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  name: nexus-migration-job-{{ .Release.Revision }}
+  #name: nexus-migration-job-{{ .Release.Revision }}
+  name: nexus-migration-job
   labels:
     io.kompose.service: nexus-migration-job
 spec:
@@ -31,12 +32,11 @@ spec:
             - name: POSTGRES_PORT
               value: {{.Values.postgres.port | quote }}
             - name: POSTGRES_HOST
-              value: "{{.Values.postgres.host }}"
+              value: {{.Values.postgres.host | quote }}
             - name: GRAPHISTRY_LOG_LEVEL
               value: {{ .Values.logs.GraphistryLogLevel | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.logs.LogLevel | quote }}  
-
       restartPolicy: Never
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}

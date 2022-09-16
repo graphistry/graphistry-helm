@@ -1,8 +1,8 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-  #name: nexus-migration-job-{{ .Release.Revision }}
-  name: nexus-migration-job
+
+  name: nexus-migration-job-{{ .Release.Revision }}
   labels:
     io.kompose.service: nexus-migration-job
 spec:
@@ -37,6 +37,7 @@ spec:
               value: {{ .Values.logs.GraphistryLogLevel | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.logs.LogLevel | quote }}  
+
       restartPolicy: Never
       imagePullSecrets:
           - name: {{ .Values.imagePullSecrets }}

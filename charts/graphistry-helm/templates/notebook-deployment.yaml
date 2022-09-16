@@ -46,7 +46,7 @@ spec:
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 
         - "job"
-        - "nexus-migration-job-{{ .Release.Revision}}"
+        - "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
       - name: volume-mount-hack
         image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]

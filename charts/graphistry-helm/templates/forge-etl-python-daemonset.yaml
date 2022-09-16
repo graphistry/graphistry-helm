@@ -39,7 +39,7 @@ spec:
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 
         - "job"
-        - "nexus-migration-job-{{ .Release.Revision}}"
+        - "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
       containers:
         - env:
           - name: GRAPHISTRY_CPU_MODE

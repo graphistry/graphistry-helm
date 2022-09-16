@@ -2,7 +2,7 @@ apiVersion: batch/v1
 kind: Job
 metadata:
 
-  name: nexus-migration-job-{{ .Release.Revision }}
+  name: "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
   labels:
     io.kompose.service: nexus-migration-job
 spec:

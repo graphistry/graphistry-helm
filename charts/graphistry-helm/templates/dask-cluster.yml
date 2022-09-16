@@ -20,7 +20,7 @@ spec:
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 
         - "job"
-        - "nexus-migration-job-{{ .Release.Revision}}"
+        - "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
       containers:
       - name: dask-cuda-worker
         image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
@@ -90,7 +90,7 @@ spec:
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 
         - "job"
-        - "nexus-migration-job-{{ .Release.Revision}}"
+        - "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
       containers:
       - name: dask-scheduler
         image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskscheduler.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}

@@ -47,7 +47,7 @@ spec:
         imagePullPolicy: {{.Values.imagePullPolicy }} 
         args: 
         - "job"
-        - "nexus-migration-job-{{ .Release.Revision}}"
+        - "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
       {{ if eq .Values.devMode false }}        
       - name: nginx-init-streamgl-viz
         image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}

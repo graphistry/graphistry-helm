@@ -15,9 +15,9 @@ k8sDashboard:
   createServiceAccount: false  ## createServiceAccount: true only true on initial deployment
 tag: v2.39.28-admin
 nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
-logs:
-  LogLevel: DEBUG
-  GraphistryLogLevel: DEBUG
+#logs:
+#  LogLevel: DEBUG
+#  GraphistryLogLevel: DEBUG
 
 
 
@@ -46,5 +46,7 @@ graphistry-helm-resources:
       
 global:
   provisioner: ebs.csi.aws.com
-#helm upgrade -i prom ./charts/kube-prometheus-stack --values ./charts/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
-#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/eks-dev-values.yaml --set tag=v2.39.24-koa-sso-fix --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-29-0.us-east-2.compute.internal --namespace graphistry --create-namespace 
+
+
+#helm upgrade -i prom ./charts/kube-prometheus-stack --values ./charts/overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace 

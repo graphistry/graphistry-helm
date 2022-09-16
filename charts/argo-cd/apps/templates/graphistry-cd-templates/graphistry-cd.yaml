@@ -23,3 +23,6 @@ spec:
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
+
+##helm template charts/argo-cd/apps/ | kubectl apply -f -

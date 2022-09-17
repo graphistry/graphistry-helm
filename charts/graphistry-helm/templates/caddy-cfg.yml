@@ -7,11 +7,13 @@ metadata:
   name: caddy-config
 data:
   Caddyfile: |
-    :80 {
+    :80 { log;
     respond /caddy/health/ 200 {
         body "{\"success\": true}"
         close
-    }
-    reverse_proxy nginx:80
+      }
+    reverse_proxy nginx:80 {
+    trusted_proxies private_ranges
+      }
     }
  

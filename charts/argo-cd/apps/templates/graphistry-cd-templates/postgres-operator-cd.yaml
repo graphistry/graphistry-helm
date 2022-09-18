@@ -1,28 +1,27 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphistry-app-cd
+  name: dask-operator-cd
   namespace: argo
   finalizers:
   - resources-finalizer.argocd.argoproj.io
 spec:
   destination:
     server: https://kubernetes.default.svc
-    namespace: graphistry
+    namespace: postgres-operator
   project: default
   source:
-    path: charts/graphistry-helm
+    path: charts/postgres-operator
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: v0.3.5 #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
-        - ../values-overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+        - values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
-
 
 ##helm template charts/argo-cd/apps/ | kubectl apply -f -

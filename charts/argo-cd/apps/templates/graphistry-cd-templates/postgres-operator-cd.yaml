@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: dask-operator-cd
+  name: postgres-operator-cd
   namespace: argo
   finalizers:
   - resources-finalizer.argocd.argoproj.io

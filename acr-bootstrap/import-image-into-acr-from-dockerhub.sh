@@ -65,7 +65,7 @@ import_if_missing ()
   echo "... Finished handling $IMAGE"
 }
 
-import_nginx_ingress_into_acr(){
+import_into_acr(){
   IMAGE=$1
   TAG=$2
   echo "Importing image if missing: $IMAGE:$TAG from $SOURCE_REGISTRY"
@@ -108,9 +108,9 @@ import_if_missing "redis:6.2.6" "library"
 
 echo "Importing nginx ingress controller images into ACR"
 
-import_nginx_ingress_into_acr "$CONTROLLER_IMAGE" "$CONTROLLER_TAG"
-import_nginx_ingress_into_acr "$PATCH_IMAGE" "$PATCH_TAG"
-import_nginx_ingress_into_acr "$DEFAULTBACKEND_IMAGE" "$DEFAULTBACKEND_TAG"
+import_into_acr "$CONTROLLER_IMAGE" "$CONTROLLER_TAG"
+import_into_acr "$PATCH_IMAGE" "$PATCH_TAG"
+import_into_acr "$DEFAULTBACKEND_IMAGE" "$DEFAULTBACKEND_TAG"
 
 echo "importing k8s wait for container (initcontainer for graphistry) into acr "
 
@@ -120,4 +120,11 @@ import_if_missing "k8s-wait-for:latest" "groundnuty"
 echo " importing netshoot container for dns/http optional debugging"
 
 import_if_missing "netshoot:latest" "nicolaka"
+
+
+echo "importing dask operator into acr"
+
+SOURCE_REGISTRY=ghcr.io/dask
+
+import_into_acr "dask-kubernetes-operator" "2022.7.0"
 

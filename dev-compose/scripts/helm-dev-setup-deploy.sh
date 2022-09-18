@@ -43,7 +43,7 @@ else
     helm repo add dask https://helm.dask.org
 fi
 
-helm upgrade -i dask-cluster-operator dask/dask --namespace dask-operator --create-namespace 
+helm upgrade -i dask-cluster-operator dask/dask-kubernetes-operator --namespace dask-operator --create-namespace 
 }
 dask_operator
 

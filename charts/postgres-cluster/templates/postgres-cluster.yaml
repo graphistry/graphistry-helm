@@ -52,5 +52,4 @@ spec:
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   imagePullSecrets:
     - name: {{ .Values.global.imagePullSecrets  }}
-  supplementalGroups: [1000]
-  openshift: true
+

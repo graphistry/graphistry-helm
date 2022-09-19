@@ -37,7 +37,7 @@ spec:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
       repos:
-        - name: repo1
+        - name: postgres-backup
           volume:
             volumeClaimSpec:
             {{- if eq .Values.global.multiNode true  }}

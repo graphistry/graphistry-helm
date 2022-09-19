@@ -19,7 +19,7 @@ To learn more about the release, try:
   $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
   $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
 
-{{ if eq .Values.devMode false }} 
+{{ if eq .Values.global.devMode false }} 
 
 HOW TO:
 
@@ -186,7 +186,7 @@ kubectl get ingress -n {{ .Release.Namespace }}
 
 {{ else }}
 
-*** DEV MODE IS {{.Values.devMode }} ***
+*** DEV MODE IS {{.Values.global.devMode }} ***
   
 The cluster is currently running in Developers Mode with only a small number of containers running.
 

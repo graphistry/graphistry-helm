@@ -30,7 +30,7 @@ spec:
         resources:
           requests:
             storage: 4Gi  
-        #containers:
+      containers:
         securityContext:
           runAsNonRoot: false
   backups:

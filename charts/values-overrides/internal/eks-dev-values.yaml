@@ -39,11 +39,13 @@ graphistry-helm-resources:
       
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.28-admin
+  tag: v2.39.27-cody-postgres
   nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
+  #change log levels
   #logs:
   #  LogLevel: DEBUG
   #  GraphistryLogLevel: DEBUG
+  #multinode setting
   #multiNode: true
   imagePullPolicy: Always
   containerregistry:
@@ -51,8 +53,9 @@ global:
   imagePullSecrets: docker-secret-prod
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true
+  #graphistry tag for repos
   graphistry: graphistry
-  #postgres repository name 
+  #postgres settings
   postgres:
     repository: graphistry-postgres
     name: graphistry

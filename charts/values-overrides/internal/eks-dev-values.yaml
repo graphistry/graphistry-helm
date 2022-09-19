@@ -44,12 +44,13 @@ global:
   #logs:
   #  LogLevel: DEBUG
   #  GraphistryLogLevel: DEBUG
+  #multiNode: true
   imagePullPolicy: Always
   containerregistry:
     name: docker.io/graphistry
   imagePullSecrets: docker-secret-prod
   #dev mode for debugging with nexus, postgres and nginx
-  devMode: false
+  #devMode: true
   graphistry: graphistry
   #postgres repository name 
   postgres:

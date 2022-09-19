@@ -30,9 +30,6 @@ spec:
         resources:
           requests:
             storage: 4Gi  
-        selector:
-          matchLabels:
-            postgres-operator.crunchydata.com/data: postgres    
   backups:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
@@ -51,7 +48,7 @@ spec:
             {{- end }}
               resources:
                 requests:
-                  storage: 5Gi
+                  storage: 4Gi
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   imagePullSecrets:
     - name: {{ .Values.global.imagePullSecrets  }}

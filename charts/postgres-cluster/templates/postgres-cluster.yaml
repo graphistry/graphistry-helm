@@ -32,7 +32,7 @@ spec:
             storage: 4Gi  
         selector:
           matchLabels:
-            postgres-operator.crunchydata.com/data=postgres    
+            postgres-operator.crunchydata.com/data: postgres    
   backups:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1

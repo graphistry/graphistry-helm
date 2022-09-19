@@ -1,4 +1,4 @@
-{{ if eq .Values.devMode false }}
+{{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -37,31 +37,39 @@ spec:
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
-        {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
-        image: {{.Values.containerregistry.name}}/k8s-wait-for:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
-        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "job"
-        - "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
+        - "nexus-migration-job-{{- sha1sum .Values.global.tag | substr 0 8 }}"
       containers:
         - env:
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          - name: POSTGRES_PORT
-            value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: {{.Values.postgres.host | quote }}
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
           - name: GRAPHISTRY_LOG_LEVEL
-            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
-            value: {{ .Values.logs.LogLevel | quote }}  
-          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetl.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
-          imagePullPolicy: {{.Values.imagePullPolicy }}           
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+          image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.forgeetl.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}           
           livenessProbe:
             exec:
               command:
@@ -79,16 +87,16 @@ spec:
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount
-      restartPolicy: {{ .Values.restartPolicy }}
+      restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
       imagePullSecrets:
-          - name: {{ .Values.imagePullSecrets }} 
+          - name: {{ .Values.global.imagePullSecrets }} 
 {{ if eq .Values.global.multiNode false }}
-      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
 {{- end }} 
 status: {}
 

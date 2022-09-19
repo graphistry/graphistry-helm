@@ -1,0 +1,56 @@
+apiVersion: postgres-operator.crunchydata.com/v1beta1
+kind: PostgresCluster
+metadata:
+  name: {{.Values.global.postgres.host }}
+spec:
+  {{ if eq .Values.devMode false }}
+  image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
+  {{ else }}  
+  image: graphistry/{{.Values.global.postgres.repository}}:{{.Values.global.tag}}-universal-dev
+  {{ end }}    
+  port: {{ .Values.global.postgres.port }}
+  postgresVersion: 14
+  users:
+    - name: {{.Values.global.postgres.user }}
+      databases:
+        - {{.Values.global.postgres.name }}
+  instances:
+    - name: instance1
+      replicas: 1
+      dataVolumeClaimSpec:
+      {{- if eq .Values.global.multiNode true  }}
+        accessModes:
+          - "ReadWriteMany"
+        storageClassName: postgres-longhorn-{{ .Release.Namespace }}
+      {{- else }}
+        accessModes:
+          - "ReadWriteOnce"
+        storageClassName: retain-sc-{{ .Release.Namespace }}
+      {{- end }}
+        resources:
+          requests:
+            storage: 4Gi  
+        selector:
+          matchLabels:
+            io.kompose.service: postgres-data    
+  backups:
+    pgbackrest:
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      repos:
+        - name: repo1
+          volume:
+            volumeClaimSpec:
+            {{- if eq .Values.global.multiNode true  }}
+              accessModes:
+                - "ReadWriteMany"
+              storageClassName: postgres-longhorn-{{ .Release.Namespace }}
+            {{- else }}
+              accessModes:
+                - "ReadWriteOnce"
+              storageClassName: retain-sc-{{ .Release.Namespace }}
+            {{- end }}
+              resources:
+                requests:
+                  storage: 4Gi
+  imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+  imagePullSecrets: {{ .Values.global.imagePullSecrets | quote }}

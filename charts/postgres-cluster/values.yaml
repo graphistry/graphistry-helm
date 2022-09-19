@@ -1,0 +1,37 @@
+
+global:
+# multinode selector switch to determine if going multi/single node
+  multiNode: false
+  #container registry name
+  containerregistry:
+    name: acrgraphistryk8s.azurecr.io
+  #dev mode for debugging with nexus, postgres and nginx
+  devMode: false
+  #graphitry tag for the docker image
+  graphistry: graphistry
+  #postgres repository name 
+  postgres:
+    repository: graphistry-postgres
+    name: graphistry
+    user: graphistry
+  #port for postgres service to listen on
+    port: 5432
+  #hostname for postgres
+    host: postgres
+  #tag for the docker image
+  tag: latest
+  #image pull policy
+  imagePullPolicy: IfNotPresent #could also be Always
+  #restart policy
+  restartPolicy: Always
+  #image pull secrets name
+  imagePullSecrets: acr-secret
+#node selector to determine which node to deploy cluster to
+  nodeSelector: 
+  #{"accelerator": "nvidia"}
+  #--set nodeSelector."accelerator"=nvidia
+  #{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
+  #--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
+  logs:
+    LogLevel: INFO
+    GraphistryLogLevel: INFO

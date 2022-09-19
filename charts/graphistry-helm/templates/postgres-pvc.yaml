@@ -1,7 +1,10 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: data-mount
+  creationTimestamp: null
+  labels:
+    io.kompose.service: postgres-data
+  name: postgres-data
   annotations:
     pv.kubernetes.io/bound-by-controller: "yes"
 {{- if eq .Values.global.multiNode true  }}
@@ -18,15 +21,15 @@ spec:
 {{- if eq .Values.global.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: datamount-longhorn-{{ .Release.Namespace }}
+  storageClassName: postgres-longhorn-{{ .Release.Namespace }}
+
 {{- else }}
   accessModes:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
-{{- end }}  
-  volumeName: data-mount
-
+{{- end }}
+  volumeName: postgres-data
   resources:
-    requests: 
-      storage: 64Gi
+    requests:
+      storage: 4Gi
 status: {}

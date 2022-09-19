@@ -3,17 +3,9 @@ tlsEmail: "cody@graphistry.com"
 tls: true
 graphAppKitusername: 
 graphAppKitpassword: 
-imagePullPolicy: Always
-containerregistry:
-  name: docker.io/graphistry
-imagePullSecrets: docker-secret-prod
 metrics: true
 fwdHeaders: true
-tag: v2.39.28-admin
-nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
-#logs:
-#  LogLevel: DEBUG
-#  GraphistryLogLevel: DEBUG
+
 
   ## createServiceAccount: true only true on initial deployment
 k8sDashboard:
@@ -47,6 +39,26 @@ graphistry-helm-resources:
       
 global:
   provisioner: ebs.csi.aws.com
+  tag: v2.39.28-admin
+  nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
+  #logs:
+  #  LogLevel: DEBUG
+  #  GraphistryLogLevel: DEBUG
+  imagePullPolicy: Always
+  containerregistry:
+    name: docker.io/graphistry
+  imagePullSecrets: docker-secret-prod
+  #dev mode for debugging with nexus, postgres and nginx
+  devMode: false
+  graphistry: graphistry
+  #postgres repository name 
+  postgres:
+    repository: graphistry-postgres
+    name: graphistry
+    user: graphistry
+    port: 5432
+    host: postgres
+
 
 
 #helm upgrade -i prom ./charts/kube-prometheus-stack --values ./charts/overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run

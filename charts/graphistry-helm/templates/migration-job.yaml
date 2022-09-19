@@ -1,8 +1,7 @@
 apiVersion: batch/v1
 kind: Job
 metadata:
-
-  name: "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
+  name: "nexus-migration-job-{{- sha1sum .Values.global.tag | substr 0 8 }}"
   labels:
     io.kompose.service: nexus-migration-job
 spec:
@@ -15,13 +14,13 @@ spec:
     spec:
       containers:
       - name: nexus-migration-job
-     {{ if eq .Values.devMode false }}
-        image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+     {{ if eq .Values.global.devMode false }}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
       {{ else }}  
-        image: graphistry/{{.Values.nexusDev.repository}}:{{.Values.tag}}-universal-dev
+        image: graphistry/{{.Values.nexusDev.repository}}:{{.Values.global.tag}}-universal-dev
         
     {{ end }}         
-        imagePullPolicy: {{.Values.imagePullPolicy }}    
+        imagePullPolicy: {{.Values.global.imagePullPolicy }}    
         args: ["python", "manage.py" , "migrate"]
 
         env:
@@ -29,15 +28,23 @@ spec:
             - name: {{ .name  }}
               value: {{ .value | quote }}
    {{- end }}
-            - name: POSTGRES_PORT
-              value: {{.Values.postgres.port | quote }}
             - name: POSTGRES_HOST
-              value: {{.Values.postgres.host | quote }}
+              valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+            - name: POSTGRES_PORT
+              valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+            - name: POSTGRES_DB
+              valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+            - name: POSTGRES_USER
+              valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+            - name: POSTGRES_PASSWORD
+              valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+            - name: DATABASE_URL
+              valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
             - name: GRAPHISTRY_LOG_LEVEL
-              value: {{ .Values.logs.GraphistryLogLevel | quote }}
+              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
             - name: LOG_LEVEL
-              value: {{ .Values.logs.LogLevel | quote }}  
+              value: {{ .Values.global.logs.LogLevel | quote }}  
 
       restartPolicy: Never
       imagePullSecrets:
-          - name: {{ .Values.imagePullSecrets }}
+          - name: {{ .Values.global.imagePullSecrets }}

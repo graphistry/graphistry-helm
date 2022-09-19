@@ -1,9 +1,3 @@
-#node selector to determine which node to deploy cluster to
-nodeSelector: 
-#{"accelerator": "nvidia"}
-#--set nodeSelector."accelerator"=nvidia
-#{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
-#--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
 
 #ingress management - determines if ingress is going to be on internal load balancer 
 ingress:
@@ -22,8 +16,7 @@ ingressNamespace: ingress-nginx
 #max surge of pods in rolling updates
 maxSurge : "10%"
 
-#dev mode for debugging with nexus, postgres and nginx
-devMode: false
+
 
 #forwards backend proxy's headers to ingress controller
 fwdHeaders: false
@@ -77,9 +70,6 @@ jwtExpirationDelta : "3600"
 enableDjangoSilk : "False"
 
 
-#restart policy
-restartPolicy: Always
-
 #domain - set to  the node external ip
 #example: 18.116.94.149.nip.io - graphistry.18.116.94.149.nip.io
 domain: 
@@ -98,25 +88,10 @@ longhornDashboard: false
 
 
 
-#container registry name
-containerregistry:
-  name: acrgraphistryk8s.azurecr.io
-
-#image pull secrets name
-imagePullSecrets: acr-secret
-
-#image pull policy
-imagePullPolicy: IfNotPresent #could also be Always
-
 #cuda version
 cuda:
   version: "11.4"
 
-#tag for the docker image
-tag: latest
-
-#graphitry tag for the docker image
-graphistry: graphistry
 
 #caddy repository name
 caddy:
@@ -132,13 +107,7 @@ redis:
   repository: redis
   tag: 6.2.7
 
-#postgres repository name 
-postgres:
-  repository: graphistry-postgres
-#port for postgres service to listen on
-  port: 5432
-#hostname for postgres
-  host: postgres
+
 
 #streamgl-viz repository name 
 streamglviz:
@@ -225,9 +194,6 @@ graphAppKitpassword:
 ## graphistry key for dev mode in pivot deployment
 graphistryKey:
 
-logs:
-  LogLevel: INFO
-  GraphistryLogLevel: INFO
 
 
 #environment variables 
@@ -300,14 +266,6 @@ env:
    value: "yes"
  - name: PIVOT_CONFIG_FILES
    value: /opt/graphistry/apps/core/pivot/data/config/config.json
- - name: DATABASE_URL
-   value: postgres://graphistry:password@postgres:5432/graphistry
- - name: POSTGRES_DB
-   value: graphistry
- - name : POSTGRES_PASSWORD
-   value: password
- - name: POSTGRES_USER
-   value: graphistry
  - name: CLEAR_LOCAL_DATASET_CACHE_ON_STARTUP
    value: "false"
  - name: CLEAR_LOCAL_SESSION_CACHE_ON_STARTUP
@@ -437,3 +395,38 @@ global:
   provisioner: kubernetes.io/aws-ebs
 # multinode selector switch to determine if going multi/single node
   multiNode: false
+  #container registry name
+  containerregistry:
+    name: acrgraphistryk8s.azurecr.io
+  #dev mode for debugging with nexus, postgres and nginx
+  devMode: false
+  #graphitry tag for the docker image
+  graphistry: graphistry
+  postgres:
+  #postgres repository name   
+    repository: graphistry-postgres
+    #db name
+    name: graphistry
+    #db user
+    user: graphistry
+  #port for postgres service to listen on
+    port: 5432
+  #hostname for postgres
+    host: postgres
+  #tag for the docker image
+  tag: latest
+  #image pull policy
+  imagePullPolicy: IfNotPresent #could also be Always
+  #restart policy
+  restartPolicy: Always
+  #image pull secrets name
+  imagePullSecrets: acr-secret
+#node selector to determine which node to deploy cluster to
+  nodeSelector: 
+  #{"accelerator": "nvidia"}
+  #--set nodeSelector."accelerator"=nvidia
+  #{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
+  #--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
+  logs:
+    LogLevel: INFO
+    GraphistryLogLevel: INFO

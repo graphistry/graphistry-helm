@@ -39,18 +39,18 @@ spec:
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
-        {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
-        image: {{.Values.containerregistry.name}}/k8s-wait-for:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
-        imagePullPolicy: {{.Values.imagePullPolicy }} 
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "job"
-        - "nexus-migration-job-{{- sha1sum .Values.tag | substr 0 8 }}"
-      {{ if eq .Values.devMode false }}        
+        - "nexus-migration-job-{{- sha1sum .Values.global.tag | substr 0 8 }}"
+      {{ if eq .Values.global.devMode false }}        
       - name: nginx-init-streamgl-viz
-        image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: 
         - sh 
         - -c 
@@ -60,10 +60,10 @@ spec:
           mountPath: /tmp/build
       {{ end }}          
       - name: nginx-init-pivot
-        {{ if eq .Values.devMode false }}
-        image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.tag}}-{{.Values.cuda.version}}
+        {{ if eq .Values.global.devMode false }}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
       {{ else }}
-        image: graphistry/{{.Values.pivotDev.repository}}:{{.Values.tag}}-dev
+        image: graphistry/{{.Values.pivotDev.repository}}:{{.Values.global.tag}}-dev
     {{ end }}   
         command: 
         - sh 
@@ -79,11 +79,18 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
-          - name: POSTGRES_PORT
-            value: {{.Values.postgres.port | quote }}
           - name: POSTGRES_HOST
-            value: {{.Values.postgres.host | quote }}
-
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
           - name: K8S_NAMESPACE_SUFFIX
             value: .{{ .Release.Namespace }}.svc.cluster.local
           - name: LONGHORN_NAMESPACE
@@ -95,16 +102,16 @@ spec:
           - name: NGINX_RESOLVER
             value: kube-dns.kube-system.svc.cluster.local
           - name: GRAPHISTRY_LOG_LEVEL
-            value: {{ .Values.logs.GraphistryLogLevel | quote }}
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
-            value: {{ .Values.logs.LogLevel | quote }}  
-   {{ if eq .Values.devMode false }}
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+   {{ if eq .Values.global.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
-          image: {{.Values.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.tag}}-universal
+          image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.nginx.repository}}-{{.Values.global.tag}}-universal
     {{ else }}
-          image: graphistry/{{.Values.nginxDev.repository}}:{{.Values.tag}}-universal-dev
+          image: graphistry/{{.Values.nginxDev.repository}}:{{.Values.global.tag}}-universal-dev
     {{ end }}      
-          imagePullPolicy: {{.Values.imagePullPolicy }}          
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}          
           livenessProbe:
             exec:
               command:
@@ -124,7 +131,7 @@ spec:
             - containerPort: {{.Values.nginxPorts.portTwo}}
           resources: {}
           volumeMounts:
-        {{ if eq .Values.devMode true }}
+        {{ if eq .Values.global.devMode true }}
             - mountPath: /opt/graphistry/apps/core/viz/www/public
               name: viz-empty
         {{ else }}
@@ -145,7 +152,7 @@ spec:
             value: "4040"
           image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2
           args: ["-config-file", "/etc/prometheus-nginxlog-exporter/config.hcl"]
-          imagePullPolicy: {{.Values.imagePullPolicy }}
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}
           name: nginx-log-exporter
           ports:
             - containerPort: 4040
@@ -159,10 +166,10 @@ spec:
 
 {{- end }}
 
-      restartPolicy: {{ .Values.restartPolicy }}
+      restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
-        {{ if eq .Values.devMode true }}
+        {{ if eq .Values.global.devMode true }}
         - name: viz-empty
           emptyDir: {}
         {{ else }}
@@ -184,9 +191,9 @@ spec:
           configMap:
             name: exporter-config
       imagePullSecrets:
-          - name: {{ .Values.imagePullSecrets }}  
+          - name: {{ .Values.global.imagePullSecrets }}  
 {{ if eq .Values.global.multiNode false }}
-      nodeSelector: {{- .Values.nodeSelector | toYaml | nindent 8 }}
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
 {{- end }} 
 status: {}
 

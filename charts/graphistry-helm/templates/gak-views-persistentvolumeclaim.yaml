@@ -1,5 +1,5 @@
 
-{{ if eq .Values.devMode false }} 
+{{ if eq .Values.global.devMode false }} 
 
 {{ if eq .Values.graphAppKitPublic true }}
 
@@ -27,18 +27,17 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: datamount-longhorn-{{ .Release.Namespace }}
-
 {{- else }}
   accessModes:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
-
+{{- end }}
   resources:
     requests:
       storage: 4Gi
-status: {}
-{{- end }}
+  volumeName: gak-public
 
+status: {}      
 {{- end }}
 
 {{ if eq .Values.graphAppKitPrivate true }}
@@ -68,18 +67,17 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: datamount-longhorn-{{ .Release.Namespace }}
-
 {{- else }}
   accessModes:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
-
+{{- end }}
   resources:
     requests:
       storage: 4Gi
-status: {}
-{{- end }}
+  volumeName: gak-private
 
+status: {}      
 {{- end }}
 
 {{- end }}

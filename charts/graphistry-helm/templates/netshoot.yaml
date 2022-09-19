@@ -18,15 +18,15 @@ spec:
     spec:
       containers:
       - name: netshoot
-        {{- if eq .Values.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: nicolaka/netshoot:latest
         {{- else }}
-        image: {{.Values.containerregistry.name}}/nicolaka/netshoot:latest
+        image: {{.Values.global.containerregistry.name}}/nicolaka/netshoot:latest
         {{- end }}        
         command: ["/bin/bash"]
         args: ["-c", "while true; do ping localhost; sleep 60;done"]
       imagePullSecrets:
-          - name: {{ .Values.imagePullSecrets }} 
+          - name: {{ .Values.global.imagePullSecrets }} 
 {{ end }}
 
 

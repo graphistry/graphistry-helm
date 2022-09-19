@@ -29,10 +29,7 @@ spec:
       {{- end }}
         resources:
           requests:
-            storage: 4Gi  
-      containers:
-        securityContext:
-          runAsNonRoot: false
+            storage: 4Gi           
   backups:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
@@ -55,3 +52,4 @@ spec:
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   imagePullSecrets:
     - name: {{ .Values.global.imagePullSecrets  }}
+  supplementalGroups: [1000]

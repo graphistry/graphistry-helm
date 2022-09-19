@@ -3,7 +3,7 @@ kind: PostgresCluster
 metadata:
   name: {{.Values.global.postgres.host }}
 spec:
-  {{ if eq .Values.devMode false }}
+  {{ if eq .Values.global.devMode false }}
   image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
   {{ else }}  
   image: graphistry/{{.Values.global.postgres.repository}}:{{.Values.global.tag}}-universal-dev

@@ -53,3 +53,4 @@ spec:
   imagePullSecrets:
     - name: {{ .Values.global.imagePullSecrets  }}
   supplementalGroups: [1000]
+  openshift: true

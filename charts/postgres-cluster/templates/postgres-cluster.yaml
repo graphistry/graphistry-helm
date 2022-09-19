@@ -53,4 +53,4 @@ spec:
                 requests:
                   storage: 4Gi
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
-  imagePullSecrets: [{{ .Values.global.imagePullSecrets | quote }}]
+  imagePullSecrets: ["{{ .Values.global.imagePullSecrets  }}"]

@@ -27,7 +27,7 @@ spec:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
 {{- end }}
-  volumeName: pvc-26a73d9c-43cc-4601-b3ad-33a5b260ab74
+  #volumeName: pvc-26a73d9c-43cc-4601-b3ad-33a5b260ab74
   resources:
     requests:
       storage: 4Gi

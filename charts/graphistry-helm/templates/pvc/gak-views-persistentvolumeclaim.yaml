@@ -75,7 +75,7 @@ spec:
   resources:
     requests:
       storage: 4Gi
-  volumeName: pvc-feee5369-a219-4c3c-b80f-bf064fa03f29
+  #volumeName: pvc-feee5369-a219-4c3c-b80f-bf064fa03f29
 
 status: {}      
 {{- end }}

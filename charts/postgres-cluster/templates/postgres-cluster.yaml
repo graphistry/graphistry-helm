@@ -3,11 +3,12 @@ kind: PostgresCluster
 metadata:
   name: {{.Values.global.postgres.host }}
 spec:
-  {{ if eq .Values.global.devMode false }}
-  image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
-  {{ else }}  
-  image: graphistry/{{.Values.global.postgres.repository}}:{{.Values.global.tag}}-universal-dev
-  {{ end }}    
+  #{{ if eq .Values.global.devMode false }}
+  #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
+  #{{ else }}  
+  #image: graphistry/{{.Values.global.postgres.repository}}:{{.Values.global.tag}}-universal-dev
+  #{{ end }}    
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-13.8-1
   port: {{ .Values.global.postgres.port }}
   postgresVersion: 14
   users:
@@ -29,7 +30,10 @@ spec:
       {{- end }}
         resources:
           requests:
-            storage: 4Gi           
+            storage: 4Gi   
+      selector: 
+      matchLabels:
+        postgres-operator.crunchydata.com/instance-set: instance1        
   backups:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1

@@ -31,6 +31,9 @@ spec:
   resources:
     requests:
       storage: 4Gi
+  selector: 
+    matchLabels:
+      postgres-operator.crunchydata.com/instance-set: instance1
 status: {}
 {{ end }}
 

@@ -6,7 +6,7 @@ metadata:
     io.kompose.service: nexus-migration-job
 spec:
   backoffLimit: 1
-  ttlSecondsAfterFinished: 100
+  ttlSecondsAfterFinished: 0
   template:
     metadata:
       labels:
@@ -46,6 +46,6 @@ spec:
             - name: LOG_LEVEL
               value: {{ .Values.global.logs.LogLevel | quote }}  
 
-      restartPolicy: Never
+      restartPolicy: OnFailure
       imagePullSecrets:
           - name: {{ .Values.global.imagePullSecrets }}

@@ -13,7 +13,7 @@ spec:
   source:
     path: charts/argo-cd
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: v0.3.5 #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
   syncPolicy:
     automated:
       prune: true

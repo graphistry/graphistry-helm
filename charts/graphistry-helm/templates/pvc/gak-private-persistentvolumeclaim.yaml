@@ -1,0 +1,42 @@
+
+{{ if eq .Values.global.devMode false }} 
+
+{{ if eq .Values.graphAppKitPrivate true }}
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: gak-private
+  name: gak-private
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+{{- if eq .Values.global.multiNode true  }}
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+
+{{ else }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
+{{- end }}
+  finalizers:
+  - kubernetes.io/pvc-protection
+spec:
+{{- if eq .Values.global.multiNode true  }}
+  accessModes:
+    - ReadWriteMany
+  storageClassName: datamount-longhorn-{{ .Release.Namespace }}
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: retain-sc-{{ .Release.Namespace }}
+{{- end }}
+  resources:
+    requests:
+      storage: 4Gi
+  #volumeName: pvc-feee5369-a219-4c3c-b80f-bf064fa03f29
+
+status: {}      
+{{- end }}
+
+{{- end }}

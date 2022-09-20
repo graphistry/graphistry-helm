@@ -27,7 +27,7 @@ spec:
     - ReadWriteOnce
   storageClassName: uploadfiles-sc-{{ .Release.Namespace }}
 {{- end }}
-  #volumeName: uploads-files
+  volumeName: pvc-faf67155-37c8-407e-aefb-7cfcf9605c35
   resources:
     requests:
       storage: 40Gi

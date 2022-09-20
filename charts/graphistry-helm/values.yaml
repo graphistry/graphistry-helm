@@ -174,7 +174,9 @@ forgeetlpythonDev:
 #forge-etl repository name 
 forgeetl:
   repository: etl-server
-
+#sets the number of dask cuda workers
+dask:
+  workers: 1
 
 #dask-scheduler repository name 
 daskscheduler:

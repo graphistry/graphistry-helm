@@ -8,7 +8,7 @@ metadata:
 spec:
 
   worker:
-    replicas: 1
+    replicas: {{ .Values.dask.workers }}
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"

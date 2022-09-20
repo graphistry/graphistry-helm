@@ -31,9 +31,10 @@ spec:
         resources:
           requests:
             storage: 4Gi   
-      selector: 
-      matchLabels:
-        postgres-operator.crunchydata.com/instance-set: instance1        
+        selector: 
+          matchLabels:
+            postgres-operator.crunchydata.com/instance-set: instance1   
+  
   backups:
     pgbackrest:
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1

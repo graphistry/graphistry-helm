@@ -29,7 +29,7 @@ spec:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
 {{- end }}
-  volumeName: postgres-data
+  #volumeName: postgres-data
   resources:
     requests:
       storage: 4Gi

@@ -27,7 +27,7 @@ spec:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
 {{- end }}
-  volumeName: local-media-mount
+  #volumeName: local-media-mount
   resources:
     requests:
       storage: 4Gi

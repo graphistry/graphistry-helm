@@ -39,7 +39,7 @@ graphistry-helm-resources:
       
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.28-admin
+  tag: v2.39.27
   nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
   #change log levels
   #logs:

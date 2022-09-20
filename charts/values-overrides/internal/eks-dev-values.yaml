@@ -46,8 +46,8 @@ global:
 
   #change log levels
   logs:
-    LogLevel: TRACE
-    GraphistryLogLevel: TRACE
+    LogLevel: "TRACE"
+    GraphistryLogLevel: "TRACE"
 
   #multinode setting
   #multiNode: true

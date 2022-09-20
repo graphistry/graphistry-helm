@@ -15,6 +15,7 @@ spec:
     - name: {{.Values.global.postgres.user }}
       databases:
         - {{.Values.global.postgres.name }}
+      options: "REPLICATION"
   instances:
     - name: instance1
       replicas: 1

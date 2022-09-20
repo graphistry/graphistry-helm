@@ -12,7 +12,5 @@ data:
         body "{\"success\": true}"
         close
     }
-    reverse_proxy nginx:80{
-        trusted_proxies private_ranges
-                }
+    reverse_proxy nginx:80
     }

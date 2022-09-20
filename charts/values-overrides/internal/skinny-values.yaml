@@ -1,21 +1,13 @@
 domain: eks-skinny.grph.xyz   
 tls: true
 tlsEmail: "cody@graphistry.com" 
-devMode: true 
 nodeEnv: development 
 appEnvironment: development 
 djangoSettingsModule: "config.settings.dev" 
 graphistryCPUMode: "1" 
 djangoDebug: "True"
-containerregistry:
-  name: docker.io/graphistry
-imagePullPolicy: Always
-imagePullSecrets: dockerhub-secret
 httpTesting: true
-logs:
-  LogLevel: INFO
-  GraphistryLogLevel: INFO
-tag: v2.39.28-admin
+
 
 graphistry-helm-resources:
   storageClassParameters:
@@ -25,5 +17,13 @@ graphistry-helm-resources:
       
 global:
   provisioner: ebs.csi.aws.com
-
+  containerregistry:
+    name: docker.io/graphistry
+  imagePullPolicy: Always
+  imagePullSecrets: dockerhub-secret
+  logs:
+    LogLevel: INFO
+    GraphistryLogLevel: INFO
+  tag: v2.39.28-admin
+  devMode: true 
 #helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set tag=v2.39.17-koa-sso-new  --namespace graphistry --create-namespace

@@ -39,29 +39,29 @@ graphistry-helm-resources:
       
 global:
   provisioner: ebs.csi.aws.com
+
   tag: v2.39.27
+
   nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
+
   #change log levels
-  #logs:
-  #  LogLevel: DEBUG
-  #  GraphistryLogLevel: DEBUG
+  logs:
+    LogLevel: TRACE
+    GraphistryLogLevel: TRACE
+
   #multinode setting
   #multiNode: true
+
   imagePullPolicy: Always
+
   containerregistry:
     name: docker.io/graphistry
+
   imagePullSecrets: docker-secret-prod
+
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true
-  #graphistry tag for repos
-  graphistry: graphistry
-  #postgres settings
-  postgres:
-    repository: graphistry-postgres
-    name: graphistry
-    user: graphistry
-    port: 5432
-    host: postgres
+
 
 
 

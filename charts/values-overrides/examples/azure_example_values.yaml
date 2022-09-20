@@ -1,13 +1,15 @@
+#example values.yaml for a azure aks deployment with a private repository
 graphAppKitusername:
 graphAppKitpassword:
-containerregistry:
-  name: 
-imagePullSecrets: 
 ingressNamespace: default
-provisioner: disk.csi.azure.com
-storageClassParameters:
-  azure:
-    skuName: StandardSSD_LRS  
 
 
-#example values.yaml for a azure aks deployment with a private repository
+graphistry-helm-resources:
+    storageClassParameters:
+        skuName: StandardSSD_LRS  
+
+global:
+  provisioner: disk.csi.azure.com
+  containerregistry:
+    name: 
+  imagePullSecrets: 

@@ -22,3 +22,5 @@ spec:
       - CreateNamespace=true
 
 ##helm template charts/argo-cd/apps/ | kubectl apply -f -
+
+#helm upgrade -i argo ./charts/argo-cd  --namespace argo --create-namespace

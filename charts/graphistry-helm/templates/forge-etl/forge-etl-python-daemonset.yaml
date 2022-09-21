@@ -34,7 +34,7 @@ spec:
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "jeffvalore/k8s-when-ready:latest" #DockerHub
         {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-when-ready:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-when-ready:v0.1.0-alpha.6
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 

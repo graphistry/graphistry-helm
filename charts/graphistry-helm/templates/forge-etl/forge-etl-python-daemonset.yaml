@@ -32,15 +32,14 @@ spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "jeffvalore/k8s-when-ready:v0.1.0-alpha.6" #DockerHub
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-when-ready:v0.1.0-alpha.6
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - --type=service
-        - --namespace={{ .Release.Namespace }}
-        - --name=nexus
+        - "pod"
+        - "nexus"
       containers:
         - env:
           - name: GRAPHISTRY_CPU_MODE

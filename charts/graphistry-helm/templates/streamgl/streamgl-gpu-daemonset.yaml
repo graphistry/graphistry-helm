@@ -40,7 +40,7 @@ spec:
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "pod"
-        - "nexus"
+        - "-lapp=nexus"
       containers:
         - env:
    {{- range .Values.env }}

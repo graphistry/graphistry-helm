@@ -39,7 +39,7 @@ spec:
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "pod"
-        - "nexus"
+        - "-lapp=nexus"
       containers:
         - env:
           - name: GRAPHISTRY_CPU_MODE

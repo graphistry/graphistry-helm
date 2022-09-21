@@ -8,6 +8,7 @@ metadata:
   creationTimestamp: null
   labels:
     io.kompose.service: nexus
+    app: nexus
   name: nexus
 spec:
   replicas: 1
@@ -34,6 +35,17 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: nexus
     spec:
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "pod"
+        - "-lapp=postgres"
       containers:
         - env:
           - name: GRAPHISTRY_CPU_MODE

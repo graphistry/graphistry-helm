@@ -11,7 +11,7 @@ metadata:
   name: job-robot
 rules:
 - apiGroups: [""] # "" indicates the core API group
-  resources: ["pods"]
+  resources: ["pods","services"]
   verbs: ["get", "list", "watch"]
 - apiGroups: ["batch", "extensions"]
   resources: ["jobs"]

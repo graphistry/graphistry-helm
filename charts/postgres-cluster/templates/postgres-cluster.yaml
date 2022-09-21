@@ -2,9 +2,10 @@ apiVersion: postgres-operator.crunchydata.com/v1beta1
 kind: PostgresCluster
 metadata:
   name: {{.Values.global.postgres.host }}
-  labels:
-    app: postgres
 spec:
+  metadata:
+    labels:
+      app: postgres
   #{{ if eq .Values.global.devMode false }}
   #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
   #{{ else }}  
@@ -19,9 +20,6 @@ spec:
         - {{.Values.global.postgres.name }}
       options: "REPLICATION"
   instances:
-    metadata:
-      labels:
-        app: postgres
     - name: instance1
       replicas: 1
       dataVolumeClaimSpec:

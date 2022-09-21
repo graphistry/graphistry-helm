@@ -6,7 +6,7 @@ metadata:
     io.kompose.service: nexus-migration-job
 spec:
   backoffLimit: 3
-  ttlSecondsAfterFinished: 0
+  ttlSecondsAfterFinished: 60
   template:
     metadata:
       labels:

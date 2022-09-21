@@ -32,7 +32,12 @@ spec:
         resources:
           requests:
             storage: 4Gi   
-
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        pg_hba:
+          - "host all all 0.0.0.0/0 trust" # this line enabled logical replication with programmatic access
+          - "host all postgres 127.0.0.1/32 md5"
   
   backups:
     pgbackrest:

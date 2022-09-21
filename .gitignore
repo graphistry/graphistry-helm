@@ -138,3 +138,4 @@ charts/graphistry-helm/charts/graphistry-helm-resources-0.3.5.tgz
 *.lock
 charts/ingress-nginx/charts/ingress-nginx-4.2.5.tgz
 charts/ingress-nginx
+charts/graphistry-helm/templates/_helpers.tpl

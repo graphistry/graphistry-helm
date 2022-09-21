@@ -1,7 +1,7 @@
 {{- if eq .Values.global.devMode false }}
 
 
-{{ if eq .Values.graphAppKitPublic true }}
+{{ if eq .Values.graphAppKitPrivate true }}
 
 apiVersion: apps/v1
 kind: Deployment
@@ -12,13 +12,13 @@ metadata:
     kompose.version: 1.26.0 (40646f47)
   creationTimestamp: null
   labels:
-    io.kompose.service: graph-app-kit-public
-  name: graph-app-kit-public
+    io.kompose.service: graph-app-kit-private
+  name: graph-app-kit-private
 spec:
   replicas: 1
   selector:
     matchLabels:
-      io.kompose.service: graph-app-kit-public
+      io.kompose.service: graph-app-kit-private
   strategy:
 {{ if eq .Values.rollingUpdate true }}
     type: RollingUpdate
@@ -37,7 +37,7 @@ spec:
       creationTimestamp: null
       labels:
         io.kompose.network/grph: "true"
-        io.kompose.service: graph-app-kit-public
+        io.kompose.service: graph-app-kit-private
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
@@ -54,10 +54,10 @@ spec:
         #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: ["/bin/sh","-c"]
-        args: ['if [ ! -d "/opt/public/views" ]; then cp -r /apps/views /opt/public/views; else echo "Error: Directory /opt/public/views exists."; fi && if [ ! -d "/opt/public/css" ]; then cp -r /apps/css /opt/public/css; else echo "Error: Directory /opt/public/css exists."; fi && if [ ! -d "/opt/public/util" ]; then cp -r /apps/util /opt/public/util; else echo "Error: Directory /opt/public/util exists."; fi && if [ ! -d "/opt/public/components" ]; then cp -r /apps/components /opt/public/components; else echo "Error: Directory /opt/public/components exists."; fi && chmod -R 777 /opt/public/ && rm -rf /opt/public/lost+found']
+        args: ['if [ ! -d "/opt/private/views" ]; then cp -r /apps/views /opt/private/views; else echo "Error: Directory /opt/private/views exists."; fi && if [ ! -d "/opt/private/css" ]; then cp -r /apps/css /opt/private/css; else echo "Error: Directory /opt/private/css exists."; fi && if [ ! -d "/opt/private/util" ]; then cp -r /apps/util /opt/private/util; else echo "Error: Directory /opt/private/util exists."; fi  && if [ ! -d "/opt/private/components" ]; then cp -r /apps/components /opt/private/components; else echo "Error: Directory /opt/private/components exists."; fi && chmod -R 777 /opt/private/  && rm -rf /opt/private/lost+found']
         volumeMounts:
-        - name: gak-public
-          mountPath: /opt/public/     
+        - name: gak-private
+          mountPath: /opt/private/        
       containers:
         - env:
    {{- range .Values.streamlitEnv }}
@@ -84,30 +84,30 @@ spec:
                 - -c 
                 - 'curl -Lf http://localhost:8501/healthz'
 
-          name: graph-app-kit-public
+          name: graph-app-kit-private
           ports:
             - containerPort: 8501
           resources: {}
           volumeMounts:
             - mountPath: /apps/css
               subPath: css
-              name: gak-public
+              name: gak-private
             - mountPath: /apps/util
               subPath: util
-              name: gak-public
+              name: gak-private
             - mountPath: /apps/views
               subPath: views
-              name: gak-public
+              name: gak-private
 ####
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
         - name: gak-private
           persistentVolumeClaim:
-            claimName: gak-public
+            claimName: gak-private
         - name: gak-private
           persistentVolumeClaim:
-            claimName: gak-public
+            claimName: gak-private
       imagePullSecrets:
           - name: {{ .Values.global.imagePullSecrets }}    
 {{ if eq .Values.global.multiNode false }}
@@ -126,15 +126,15 @@ metadata:
     kompose.cmd: kompose --file ./compose/release.yml convert -c
     kompose.version: 1.26.0 (40646f47)
   labels:
-    io.kompose.service: graph-app-kit-public
-  name: graph-app-kit-public
+    io.kompose.service: graph-app-kit-private
+  name: graph-app-kit-private
 spec:
   ports:
     - name: "8501"
       port: 8501
       targetPort: 8501
   selector:
-    io.kompose.service: graph-app-kit-public
+    io.kompose.service: graph-app-kit-private
 
 {{- end }}
 {{- end }}

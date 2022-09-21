@@ -19,8 +19,8 @@ spec:
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "pod"
-        - "-lapp=nexus"
+        - "service"
+        - "nexus"
       containers:
       - name: dask-cuda-worker
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
@@ -97,8 +97,8 @@ spec:
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "pod"
-        - "-lapp=nexus"
+        - "service"
+        - "nexus"
       containers:
       - name: dask-scheduler
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.daskscheduler.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}

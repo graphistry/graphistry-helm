@@ -39,8 +39,8 @@ spec:
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "pod"
-        - "-lapp=nexus"
+        - "service"
+        - "nexus"
       containers:
         - env:
    {{- range .Values.env }}

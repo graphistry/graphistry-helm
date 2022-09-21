@@ -45,8 +45,8 @@ spec:
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "pod"
-        - "-lapp=nexus"
+        - "service"
+        - "nexus"
       - name: volume-mount-hack
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]

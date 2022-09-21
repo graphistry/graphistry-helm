@@ -48,8 +48,8 @@ spec:
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "pod"
-        - "-lapp=nexus"
+        - "service"
+        - "nexus"
       - name: graph-app-kit-init
         #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}

@@ -46,8 +46,8 @@ spec:
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "pod"
-        - "-lapp=nexus"
+        - "service"
+        - "nexus"
       {{ if eq .Values.global.devMode false }}        
       - name: nginx-init-streamgl-viz
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}

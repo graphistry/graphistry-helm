@@ -17,9 +17,9 @@ spec:
         - {{.Values.global.postgres.name }}
       options: "REPLICATION"
   instances:
-    metadata:
-      labels:
-        app: postgres
+      metadata:
+        labels:
+          app: postgres
     - name: instance1
       replicas: 1
       dataVolumeClaimSpec:

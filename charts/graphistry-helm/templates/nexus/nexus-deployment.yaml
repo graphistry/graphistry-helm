@@ -34,17 +34,6 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: nexus
     spec:
-      initContainers:
-      - name: "{{ lower .Chart.Name }}-init"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "job"
-        - "nexus-migration-job-{{- sha1sum .Values.global.tag | substr 0 8 }}"
       containers:
         - env:
           - name: GRAPHISTRY_CPU_MODE

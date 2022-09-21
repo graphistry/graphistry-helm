@@ -13,14 +13,15 @@ spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        image: "jeffvalore/k8s-when-ready:latest" #DockerHub
         {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-when-ready:latest
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "job"
-        - "nexus-migration-job-{{- sha1sum .Values.global.tag | substr 0 8 }}"
+        - --type=service
+        - --namespace={{ .Release.Namespace }}
+        - --name=nexus
       containers:
       - name: dask-cuda-worker
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
@@ -91,14 +92,15 @@ spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        image: "jeffvalore/k8s-when-ready:latest" #DockerHub
         {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-when-ready:latest
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "job"
-        - "nexus-migration-job-{{- sha1sum .Values.global.tag | substr 0 8 }}"
+        - --type=service
+        - --namespace={{ .Release.Namespace }}
+        - --name=nexus
       containers:
       - name: dask-scheduler
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.daskscheduler.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}

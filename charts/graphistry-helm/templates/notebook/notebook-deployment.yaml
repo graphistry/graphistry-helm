@@ -39,14 +39,15 @@ spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        image: "jeffvalore/k8s-when-ready:latest" #DockerHub
         {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-when-ready:latest
         {{- end }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
-        - "job"
-        - "nexus-migration-job-{{- sha1sum .Values.global.tag | substr 0 8 }}"
+        - --type=service
+        - --namespace={{ .Release.Namespace }}
+        - --name=nexus
       - name: volume-mount-hack
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]

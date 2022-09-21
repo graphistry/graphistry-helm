@@ -1,3 +1,4 @@
+{{- if eq .Values.job true }}
 apiVersion: batch/v1
 kind: Job
 metadata:
@@ -49,3 +50,6 @@ spec:
       restartPolicy: Never
       imagePullSecrets:
           - name: {{ .Values.global.imagePullSecrets }}
+
+{{- end }}
+

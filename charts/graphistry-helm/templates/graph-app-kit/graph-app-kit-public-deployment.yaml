@@ -102,10 +102,7 @@ spec:
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
-        - name: gak-private
-          persistentVolumeClaim:
-            claimName: gak-public
-        - name: gak-private
+        - name: gak-public
           persistentVolumeClaim:
             claimName: gak-public
       imagePullSecrets:

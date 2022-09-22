@@ -18,7 +18,7 @@ spec:
               service:
                 name: argo-argocd-server
                 port: 
-                name: https
+                  name: https
             path: /
             pathType: Prefix
   tls:

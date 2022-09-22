@@ -5,8 +5,8 @@ metadata:
   name: argo-ingress-{{ .Release.Namespace }}
   annotations:
     kubernetes.io/ingress.class: nginx
-    kubernetes.io/tls-acme: "true"
-    cert-manager.io/cluster-issuer: "letsencrypt-production-graphistry"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
   labels:
   name: argo-ingress-{{ .Release.Namespace }}
 spec:
@@ -17,8 +17,8 @@ spec:
           - backend:
               service:
                 name: argo-argocd-server
-                port:
-                  number: 80
+                port: 
+                name: https
             path: /
             pathType: Prefix
   tls:

@@ -1,0 +1,38 @@
+name: Generate chart Docs
+#description: 
+#  Triggers:
+#     - manual run
+#     - push to PR with label 'ci' and that job successfully running (and pushing to dockerhub)
+#  Results:
+#    - push VERSION as tag to graphistry/graph-app-kit if not already there
+#    - if VERSION tag already in gak repo, instead trigger gak repo dockerhubpublish
+
+on:
+  workflow_call:
+  workflow_dispatch:
+  workflow_run:
+    workflows: [Release Charts]
+    types:
+      - completed
+
+jobs:
+
+  cancel_outstanding:
+    name: Detect and cancel outstanding runs of this workflow
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Cancel Previous Runs
+        if: ${{ (github.event.label.name == 'Release Charts' && !contains(github.event.pull_request.labels.*.name, 'skip-cancel')) }}
+        uses: styfle/cancel-workflow-action@0.4.0
+        with:
+          access_token: ${{ github.token }}
+
+  docs-gen:
+    name: generate docs
+    #description: Public GPU env (VERSION_ENV -> VERSION)
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - name: checkout
+        uses: actions/checkout@v2

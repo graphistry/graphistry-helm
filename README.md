@@ -88,3 +88,5 @@ and then set the nodeSelector value to the hostname of the selected node along w
      --set domain = <FQDN or node external IP ex: example.com> \
      --set imagePullSecrets=<secrets_name>  (has to go last) 
 > **Note:** different labels can be used for the nodeSelector value, but some labels between the nodes may not be unique.
+
+[Default Overrides](docs/graphistry-helm-docs.rst)

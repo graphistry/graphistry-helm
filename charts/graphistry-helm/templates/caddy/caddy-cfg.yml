@@ -8,9 +8,11 @@ metadata:
 data:
   Caddyfile: |
     :80 {
-    respond /caddy/health/ 200 {
-        body "{\"success\": true}"
-        close
-    }
-    reverse_proxy nginx:80
+          respond /caddy/health/ 200 {
+                  body "{\"success\": true}"
+                  close
+          }
+          reverse_proxy nginx:80 {
+                  trusted_proxies private_ranges
+          }
     }

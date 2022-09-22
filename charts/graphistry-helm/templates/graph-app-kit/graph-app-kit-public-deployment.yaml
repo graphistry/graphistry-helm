@@ -39,17 +39,6 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: graph-app-kit-public
     spec:
-      initContainers:
-      - name: "{{ lower .Chart.Name }}-init"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "service"
-        - "nexus"
       - name: graph-app-kit-init
         #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}

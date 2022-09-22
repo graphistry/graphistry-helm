@@ -1,0 +1,34 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: argo-ingress-{{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "sessionid"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production-graphistry"
+    ingress.kubernetes.io/ssl-redirect: "true"
+  labels:
+  name: argo-ingress-{{ .Release.Namespace }}
+spec:
+  rules:
+    - host: eks-dev.grph.xyz
+      http:
+        paths:
+          - backend:
+              service:
+                name: argo-argocd-server
+                port:
+                  number: 443
+            path: /
+            pathType: Prefix
+  tls:
+  - hosts:
+    - cd.{{.Values.domain}}
+    secretName: letsencrypt-tls-graphistry
+
+

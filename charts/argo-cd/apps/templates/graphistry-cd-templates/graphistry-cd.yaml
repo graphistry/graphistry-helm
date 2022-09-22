@@ -9,7 +9,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: graphistry
-  project: graphistry
+  project: default
   source:
     path: charts/graphistry-helm
     repoURL: https://github.com/graphistry/graphistry-helm.git

@@ -9,7 +9,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: dask-operator
-  project: operators
+  project: default
   source:
     path: charts/dask-kubernetes-operator
     repoURL: https://github.com/graphistry/graphistry-helm.git

@@ -9,7 +9,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: graphistry
-  project: main-deploy
+  project: default
   source:
     path: charts/argo-cd/apps/templates/operators-cd-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git

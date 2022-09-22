@@ -24,6 +24,6 @@ spec:
   tls:
   - hosts:
     - cd.eks-dev.grph.xyz
-    secretName: letsencrypt-tls-graphistry
+    secretName: argocd-secret
 
 

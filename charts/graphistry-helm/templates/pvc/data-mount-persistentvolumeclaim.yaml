@@ -24,7 +24,7 @@ spec:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
 {{- end }}  
-  volumeName: {{ .Values.global.volumeName.dataMount }}
+  volumeName: {{ .Values.volumeName.dataMount }}
 
   resources:
     requests: 

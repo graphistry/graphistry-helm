@@ -34,7 +34,7 @@ spec:
   resources:
     requests:
       storage: 4Gi
-  volumeName: {{ .Values.global.volumeName.gakPrivate }}
+  volumeName: {{ .Values.volumeName.gakPrivate }}
 
 status: {}      
 {{- end }}

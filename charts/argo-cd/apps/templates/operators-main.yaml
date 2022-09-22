@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: postgres-deploy-cd
+  name: operators-deploy-cd
   namespace: argo-cd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -9,7 +9,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: graphistry
-  project: default
+  project: main-deploy
   source:
     path: charts/argo-cd/apps/templates/operators-cd-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git

@@ -9,7 +9,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: postgres-operator
-  project: default
+  project: operators
   source:
     path: charts/postgres-operator
     repoURL: https://github.com/graphistry/graphistry-helm.git

@@ -9,7 +9,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: graphistry
-  project: default
+  project: postgres
   source:
     path: charts/postgres-cluster
     repoURL: https://github.com/graphistry/graphistry-helm.git

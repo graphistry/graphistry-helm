@@ -9,7 +9,7 @@ spec:
   destination:
     server: https://kubernetes.default.svc
     namespace: kubernetes-dashboard
-  project: default
+  project: k8s-dashboard
   source:
     path: charts/k8s-dashboard
     repoURL: https://github.com/graphistry/graphistry-helm.git

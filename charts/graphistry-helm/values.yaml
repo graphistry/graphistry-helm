@@ -382,7 +382,8 @@ global:
   #restart policy
   restartPolicy: Always
   #image pull secrets name
-  imagePullSecrets: acr-secret
+  imagePullSecrets: []
+#    - name: docker-secret
 #node selector to determine which node to deploy cluster to
   nodeSelector: 
   #{"accelerator": "nvidia"}

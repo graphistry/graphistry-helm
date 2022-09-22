@@ -62,6 +62,11 @@ spec:
                 requests:
                   storage: 4Gi
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+  {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:
-    - name: {{ .Values.global.imagePullSecrets  }}
+    {{- toYaml . | nindent 3 }}
+  {{- end }}
+#  imagePullSecrets:
+#    - name: {{ .Values.global.imagePullSecrets  }}
+
 

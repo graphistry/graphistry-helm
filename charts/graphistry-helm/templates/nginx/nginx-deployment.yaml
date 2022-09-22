@@ -230,8 +230,12 @@ spec:
         - name: exporter-config
           configMap:
             name: exporter-config
+      {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
-          - name: {{ .Values.global.imagePullSecrets }}  
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+#      imagePullSecrets:
+#          - name: {{ .Values.global.imagePullSecrets }}  
 {{ if eq .Values.global.multiNode false }}
       nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
 {{- end }} 

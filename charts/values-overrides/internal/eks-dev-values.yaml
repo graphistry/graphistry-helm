@@ -30,34 +30,41 @@ prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
 
-
 graphistry-helm-resources:
   storageClassParameters:
       csi.storage.k8s.io/fstype: ext4
       type: gp2
 
+ingress-nginx:
+  controller:
+    metrics:
+      enabled: true 
+      serviceMonitor:
+        enabled: true 
+        additionalLabels:
+          release: "prometheus"
+
+
+cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
+  namespace: cert-manager
+  installCRDs: true
+  createCustomResource: true
       
 global:
   provisioner: ebs.csi.aws.com
-
   tag: v2.39.27
-
   nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
-
   #change log levels
-  logs:
-    LogLevel: "TRACE"
-    GraphistryLogLevel: "TRACE"
-
+  #logs:
+  #  LogLevel: "TRACE"
+  #  GraphistryLogLevel: "TRACE"
   #multinode setting
   #multiNode: true
-
   imagePullPolicy: Always
-
   containerregistry:
     name: docker.io/graphistry
-
-  imagePullSecrets: docker-secret-prod
+  imagePullSecrets: 
+    - name: docker-secret-prod
 
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true

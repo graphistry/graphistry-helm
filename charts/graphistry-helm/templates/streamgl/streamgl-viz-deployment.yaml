@@ -36,7 +36,17 @@ spec:
         io.kompose.service: streamgl-viz
     spec:
       initContainers:
-      - name: "{{ lower .Chart.Name }}-init"
+      - name: "streamgl-viz-wait-for-postgres"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "pod"
+        - "-lapp=postgres"
+      - name: "streamgl-viz-wait-for-redis"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
@@ -45,7 +55,7 @@ spec:
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
-        - "nexus"
+        - "redis"
       containers:
         - env:
           - name : NODE_ENV

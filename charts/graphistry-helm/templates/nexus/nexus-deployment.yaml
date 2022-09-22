@@ -35,6 +35,16 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: nexus
     spec:
+      - name: "nexus-wait-for-postgres"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "pod"
+        - "-lapp=postgres"
       containers:
         - env:
           - name: GRAPHISTRY_CPU_MODE

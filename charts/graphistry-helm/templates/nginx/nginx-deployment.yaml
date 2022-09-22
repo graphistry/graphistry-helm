@@ -38,7 +38,7 @@ spec:
         io.kompose.service: nginx
     spec:
       initContainers:
-      - name: "{{ lower .Chart.Name }}-init"
+      - name: "nginx-wait-for-forge-etl"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
@@ -47,7 +47,47 @@ spec:
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
-        - "nexus"
+        - "forge-etl"
+      - name: "nginx-wait-for-forge-etl-python"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "forge-etl-python"
+      - name: "nginx-wait-for-streamgl-gpu"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "streamgl-gpu"
+      - name: "nginx-wait-for-streamgl-sessions"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "streamgl-sessions"
+      - name: "nginx-wait-for-streamgl-vgraph-etl"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "streamgl-vgraph-etl"
       {{ if eq .Values.global.devMode false }}        
       - name: nginx-init-streamgl-viz
         image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}

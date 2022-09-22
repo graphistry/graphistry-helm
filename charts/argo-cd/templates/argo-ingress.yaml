@@ -28,7 +28,7 @@ spec:
             pathType: Prefix
   tls:
   - hosts:
-    - cd.{{.Values.domain}}
+    - cd.eks-dev.grph.xyz
     secretName: letsencrypt-tls-graphistry
 
 

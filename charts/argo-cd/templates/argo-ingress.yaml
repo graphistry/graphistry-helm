@@ -7,7 +7,6 @@ metadata:
     kubernetes.io/ingress.class: nginx
     kubernetes.io/tls-acme: "true"
     cert-manager.io/cluster-issuer: "letsencrypt-production-graphistry"
-    ingress.kubernetes.io/ssl-redirect: "true"
   labels:
   name: argo-ingress-{{ .Release.Namespace }}
 spec:

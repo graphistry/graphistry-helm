@@ -5,6 +5,8 @@ metadata:
   namespace: argo-cd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: postgres
 spec:
   destination:
     server: https://kubernetes.default.svc

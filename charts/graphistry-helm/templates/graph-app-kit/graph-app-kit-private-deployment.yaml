@@ -39,6 +39,7 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: graph-app-kit-private
     spec:
+      initContainers:
       - name: graph-app-kit-init
         #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}

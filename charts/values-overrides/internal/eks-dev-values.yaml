@@ -1,11 +1,13 @@
 domain: eks-dev.grph.xyz 
 tlsEmail: "cody@graphistry.com" 
 tls: true
-graphAppKitusername: 
-graphAppKitpassword: 
 metrics: true
 fwdHeaders: true
-
+volumeName:
+  dataMount: pvc-91ac0b15-f7c9-471c-a00d-ab6dfb59885f
+  localMediaMount: pvc-89de61bf-2d96-4613-9a24-fb19a93d2c43
+  gakPublic: pvc-97b39989-9cfa-4058-b489-fbcab0c3dc7f
+  gakPrivate: pvc-9afe0118-e483-4b90-85a5-79a7181071e5
 
   ## createServiceAccount: true only true on initial deployment
 k8sDashboard:

@@ -8,6 +8,12 @@ graphistryCPUMode: "1"
 djangoDebug: "True"
 httpTesting: true
 
+#volume pv names go here after initial deployment and provisioning
+volumeName:
+  dataMount: 
+  localMediaMount: 
+  gakPublic: 
+  gakPrivate: 
 
   ## createServiceAccount: true only true on initial deployment
 k8sDashboard:

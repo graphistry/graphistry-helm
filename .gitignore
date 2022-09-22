@@ -140,3 +140,4 @@ charts/ingress-nginx/charts/ingress-nginx-4.2.5.tgz
 charts/ingress-nginx
 charts/cert-manager
 charts/graphistry-helm/templates/_helpers.tpl
+charts/dask-kubernetes-operator/charts/dask-kubernetes-operator-2022.7.0.tgz

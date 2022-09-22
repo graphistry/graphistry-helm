@@ -2,6 +2,12 @@
 tls: false
 graphAppKitPublic: false
 graphAppKitPrivate: false
+#volume pv names go here after initial deployment and provisioning
+volumeName:
+  dataMount: 
+  localMediaMount: 
+  gakPublic: 
+  gakPrivate: 
 
 
 

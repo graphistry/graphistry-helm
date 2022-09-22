@@ -2,10 +2,13 @@ apiVersion: v2
 appVersion: 2022.4.1
 description: A helm chart for managing the deployment of the dask kubernetes operator
   and CRDs
-home: https://kubernetes.dask.org/
-icon: https://avatars3.githubusercontent.com/u/17131925?v=3&s=200
+
 name: dask-kubernetes-operator
-sources:
-- https://github.com/dask/dask-kubernetes/
+
 type: application
 version: 2022.7.0
+
+dependencies:
+  - name: dask-kubernetes-operator
+    version: 2022.7.0
+    repository: https://helm.dask.org

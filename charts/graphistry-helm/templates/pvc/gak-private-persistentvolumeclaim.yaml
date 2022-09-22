@@ -34,7 +34,7 @@ spec:
   resources:
     requests:
       storage: 4Gi
-  volumeName: pvc-9afe0118-e483-4b90-85a5-79a7181071e5
+  volumeName: {{ .Values.global.volumeName.gakPrivate }}
 
 status: {}      
 {{- end }}

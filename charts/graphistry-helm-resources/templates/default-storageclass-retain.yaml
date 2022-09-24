@@ -6,9 +6,9 @@ metadata:
     #storageclass.kubernetes.io/is-default-class: "true"
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}
   name: retain-sc-{{ .Release.Namespace }}
-{{- if .Values.storageClassParameters }}
+{{- if .Values.graphistryResources.storageClassParameters }}
 parameters:
-{{ toYaml .Values.storageClassParameters | indent 2 }}
+{{ toYaml .Values.graphistryResources.storageClassParameters | indent 2 }}
 {{- end }}
 provisioner: {{ .Values.global.provisioner }}
 reclaimPolicy: Retain

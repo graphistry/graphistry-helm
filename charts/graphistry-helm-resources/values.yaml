@@ -1,16 +1,13 @@
 
 global:
-  #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
-  provisioner: kubernetes.io/aws-ebs
-# multinode selector switch to determine if going multi/single node
-  multiNode: false
+  provisioner: kubernetes.io/aws-ebs #storage class provisioner .
+  multiNode: false # multinode selector switch to determine if going multi/single node
 
-graphistry-helm-resources:
-  #cloud provider storage class parameters - Each StorageClass has a set of parameters that are used to determine how the storage is provisioned.
-  storageClassParameters: 
+graphistryResources:
+  storageClassParameters: #cloud provider storage class parameters
     #aws types:
-    #  fsType: ext4
-    #  type: gp2
+     #fsType: ext4
+      #type: gp2
     #azure types:
     #  skuName: StandardSSD_LRS  
     #vmware types:

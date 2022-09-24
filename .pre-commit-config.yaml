@@ -3,7 +3,7 @@
   hooks:
     - id: frigate
       args:
-        - --output=docs/graphistry-helm-docs.rst
+        - --output=docs/source/graphistry-helm-docs.rst
         - --format=rst
         - --no-credits
         - --no-deps

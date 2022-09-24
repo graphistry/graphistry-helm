@@ -8,6 +8,25 @@ Helm Charts to deploy Graphistry to kubernetes for 100x visualizations
 
 
 
+These charts will deploy the base apps and resources for Graphistry
+
+.. tabs::
+
+  .. tab:: From source
+    .. code-block:: shell-session            
+              
+       git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+       helm install --name myname ./charts/graphistry-helm-resource --namespace graphistry --create-namespace 
+       helm install --name myname ./charts/graphistry-helm --namespace graphistry --create-namespace 
+
+  .. tab:: From Helm Repo
+    .. code-block:: shell-session            
+              
+       helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+       helm install graphistry-resources graphistry-helm/graphistry-helm-resources --namespace graphistry --create-namespace         
+       helm install g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
+
+
 Configuration
 -------------
 

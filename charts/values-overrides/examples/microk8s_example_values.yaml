@@ -35,7 +35,7 @@ prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
 
-#graphistry-helm-resources:
+#graphistryResources:
 #  storageClassParameters:
 
 

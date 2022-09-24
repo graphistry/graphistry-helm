@@ -12,3 +12,4 @@ Welcome to Graphistry Helm Charts's documentation!
    :hidden:
 
    graphistry-helm-docs
+   graphistry-resources-docs

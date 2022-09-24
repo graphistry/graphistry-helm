@@ -9,7 +9,7 @@ volumeName:
 
 
 
-graphistry-helm-resources:
+graphistryResources:
     storageClassParameters:
         skuName: StandardSSD_LRS  
 

@@ -38,7 +38,7 @@ prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
 
-graphistry-helm-resources:
+graphistryResources:
   storageClassParameters:
       csi.storage.k8s.io/fstype: ext4
       type: gp2

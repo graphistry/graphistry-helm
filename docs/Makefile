@@ -7,6 +7,8 @@ SPHINXOPTS    ?=
 SPHINXBUILD   ?= sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = build
+FRIGATE	      ?= frigate gen --no-credits --no-deps
+FRIGATE_OUTPUT = rst #can be html, md, rst
 
 # Put it first so that "make" without argument is like "make help".
 help:
@@ -18,3 +20,9 @@ help:
 # "make mode" option.  $(O) is meant as a shortcut for $(SPHINXOPTS).
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+# Generate the docs with frigate
+frigate:
+	$(FRIGATE) ../charts/graphistry-helm -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/graphistry-helm-docs.$(FRIGATE_OUTPUT) && \
+	$(FRIGATE) ../charts/graphistry-helm-resources -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/graphistry-resources-docs.$(FRIGATE_OUTPUT)
+

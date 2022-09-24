@@ -8,8 +8,14 @@ Welcome to Graphistry Helm Charts's documentation!
 
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 20
    :hidden:
 
    graphistry-helm-docs
    graphistry-resources-docs
+   dask-kubernetes-operator-docs
+   argo-cd-docs
+   cert-manager-docs
+   k8s-dashboard-docs
+   postgres-cluster-docs
+   postgres-operator-docs

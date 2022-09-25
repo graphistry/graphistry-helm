@@ -9,6 +9,7 @@ Welcome to Graphistry Helm Charts's documentation!
 
 .. toctree::
    :maxdepth: 20
+   :numbered:
    :hidden:
 
    graphistry-helm-docs

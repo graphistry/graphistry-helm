@@ -63,7 +63,7 @@ global:
   #multiNode: true
   imagePullPolicy: Always
   containerregistry:
-    name: docker.io/graphistry
+    name: docker.io
   imagePullSecrets: 
     - name: docker-secret-prod
 

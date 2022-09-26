@@ -63,7 +63,7 @@ global:
   provisioner: ebs.csi.aws.com
   imagePullPolicy: Always
   containerregistry:
-    name: docker.io/graphistry
+    name: docker.io
 
   imagePullSecrets: 
     - name: dockerhub-secret

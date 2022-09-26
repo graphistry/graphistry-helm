@@ -48,7 +48,7 @@ spec:
         - "service"
         - "streamgl-vgraph-etl"
       - name: volume-mount-hack
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.global.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]
         volumeMounts:
         - mountPath: /home/graphistry/notebooks

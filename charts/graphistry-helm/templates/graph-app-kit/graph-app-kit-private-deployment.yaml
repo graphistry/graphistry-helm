@@ -65,7 +65,7 @@ spec:
           - name: GRAPHISTRY_PASSWORD
             valueFrom: { secretKeyRef: { name: gak-secret, key: password } }
           #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}
           livenessProbe:
             exec:

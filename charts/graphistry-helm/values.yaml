@@ -7,6 +7,9 @@ ingress:
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
+
+graphistry: graphistry   #graphitry tag for the docker image
+
 #volume names
 volumeName: #volume names
   dataMount: #data-mount pvc volume name
@@ -209,7 +212,6 @@ global:  ## global settings for all charts
   #dev mode for debugging with nexus, postgres and nginx
   devMode: false   #dev mode for debugging with nexus, postgres and nginx
   #graphitry tag for the docker image
-  graphistry: graphistry   #graphitry tag for the docker image
   postgres:
     repository: graphistry-postgres   #postgres repository name   
     name: graphistry #db name

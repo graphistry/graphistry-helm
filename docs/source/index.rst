@@ -12,6 +12,7 @@ Welcome to Graphistry Helm Charts's documentation!
    :numbered:
    :hidden:
 
+   10mins-to-k8s
    graphistry-helm-docs
    graphistry-resources-docs
    dask-kubernetes-operator-docs

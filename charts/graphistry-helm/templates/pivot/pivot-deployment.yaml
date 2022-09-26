@@ -37,7 +37,7 @@ spec:
     spec:
       initContainers:
       - name: "pivot-wait-for-postgres"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -47,7 +47,7 @@ spec:
         - "pod"
         - "-lapp=postgres"
       - name: "pivot-wait-for-nexus"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -57,7 +57,7 @@ spec:
         - "service"
         - "nexus"
       - name: "pivot-wait-for-streamgl-vgraph-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -98,7 +98,7 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
-          image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}       
           livenessProbe:
             exec:

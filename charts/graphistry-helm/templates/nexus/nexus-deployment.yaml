@@ -37,7 +37,7 @@ spec:
     spec:
       initContainers:
       - name: "nexus-wait-for-postgres"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -89,9 +89,9 @@ spec:
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
      {{ if eq .Values.global.devMode false }}
-          image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
       {{ else }}  
-          image: graphistry/{{.Values.nexusDev.repository}}:{{.Values.global.tag}}-universal-dev
+          image: {{.Values.graphistry}}/{{.Values.nexusDev.repository}}:{{.Values.global.tag}}-universal-dev
     {{ end }}        
           imagePullPolicy: {{.Values.global.imagePullPolicy }}      
           livenessProbe:

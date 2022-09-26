@@ -16,10 +16,9 @@ graphistryResources:
 
   ## createServiceAccount: true only true on initial deployment
 k8sDashboard:
-  k8sDashboard: 
-    enabled: true
-    readonly: false
-    createServiceAccount: false
+  enabled: true
+  readonly: false
+  createServiceAccount: false
 
 #example values.yaml of an aws eks based deployment
 

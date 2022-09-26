@@ -4,12 +4,11 @@
 10 mins to k8s
 ======================
 
-
-
-
+This guide will walk you through the steps to deploy a basic Graphistry on Kubernetes without extra features. (TLS, argo, K8s-dashboard, prometheus stack,longhorn)
 
 Make Secrets
 -------------
+Contact a Graphistry Engineer to authorize to our dockerhub to pull the graphistry container images.
 
 .. code-block:: shell-session            
               
@@ -22,9 +21,102 @@ Make Secrets
 
 
 Install Nvidia Device Plugin (if needed)
--------------
+-----------------------------------------
 
 .. code-block:: shell-session            
               
-    
     kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+
+check to ensure the plugin was installed
+
+.. code-block:: shell-session            
+              
+    kubectl get nodes -ojson | jq .items[].status.capacity | grep nvidia.com/gpu
+
+Install Nginx Ingress Controller
+---------------------------------
+  .. tabs::
+
+    .. tab:: Local From Source
+      .. code-block:: shell-session            
+                
+         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+         helm upgrade -i ingress-nginx ./charts/ingress-nginx --namespace ingress-nginx --create-namespace 
+
+
+    .. tab:: From Ingress-Nginx Helm Repo
+      .. code-block:: shell-session            
+                
+         helm upgrade -i ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace
+
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+         helm upgrade -i ingress-nginx graphistry-helm/ingress-nginx --namespace ingress-nginx --create-namespace  
+
+Install Postgres Operator , CRDs, Postgres Cluster
+---------------------------------------------------
+  .. tabs::
+
+    .. tab:: Local from Source
+      .. code-block:: shell-session            
+                
+         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+         helm upgrade -i pgos ./charts/postgres-operator --namespace pgo --create-namespace 
+         helm upgrade -i  postgres-cluster ./charts/postgres-cluster --namespace graphistry --create-namespace 
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+         helm upgrade -i pgo graphistry-helm/pgo --namespace pgo --create-namespace 
+         helm upgrade -i postgrescluster graphistry-helm/postgres-cluster --namespace graphistry --create-namespace  
+
+
+
+Install Dask Operator and CRDs
+------------------------------
+  .. tabs::
+
+    .. tab:: Local from Source
+      .. code-block:: shell-session            
+                
+         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+         helm upgrade -i dask-operator ./charts/dask-kubernetes-operator --namespace dask-operator --create-namespace 
+
+
+    .. tab:: From Dask Helm Repo
+      .. code-block:: shell-session            
+                
+         helm upgrade -i dask-operator dask-kubernetes-operator --repo https://https://helm.dask.org/ --namespace dask-operator --create-namespace
+
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+         helm upgrade -i dask-operator graphistry-helm/dask-kubernetes-operator --namespace dask-operator --create-namespace  
+
+
+
+Install Graphistry
+-------------------
+
+
+  .. tabs::
+
+    .. tab:: Local from source
+      .. code-block:: shell-session            
+                
+         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+         helm upgrade -i  graphistry-resources ./charts/graphistry-helm-resources --namespace graphistry --create-namespace 
+         helm upgrade -i  g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+         helm upgrade -i graphistry-resources graphistry-helm/graphistry-resources --namespace graphistry --create-namespace         
+         helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 

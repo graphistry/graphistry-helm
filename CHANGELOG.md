@@ -21,3 +21,5 @@
 *   Removed the nexus migration job and replaced it with a strategy to rollout our deployment exactly 
     the same way as we do with our docker-compose version.
 
+*   Created Docs
+

@@ -1,0 +1,65 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/name: ai-engine
+    app.kubernetes.io/instance: {{ .Release.Name }}
+  name: ai-engine
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: ai-engine
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: ai-engine
+    spec:
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      nodeSelector:
+      {{- if .Values.nodeSelector }}
+      {{- toYaml .Values.nodeSelector | indent 8 }}
+      {{- else if .Values.platform.openshift }}
+        nvidia.com/gpu.present: "true"
+      {{- end }}
+      containers:
+      - name: {{ .Chart.Name }}
+        {{- with .Values.aiengine.args }}
+        args:
+        {{- toYaml . | nindent 8 }}
+        {{- end }}
+        image: "{{ .Values.aiengine.registry }}/{{ .Values.aiengine.image }}:{{ .Values.aiengine.version }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        {{- if .Values.aiengine.resources }}
+        resources: {{ toYaml .Values.aiengine.resources | nindent 10 }}
+        {{- end }}
+        {{- if .Values.platform.openshift }}
+        securityContext:
+          privileged: true
+        {{- end }}
+        volumeMounts:
+        - mountPath: /common/triton-model-repo
+          name: triton-model-path
+        - mountPath: /common/models
+          name: model-path
+      serviceAccountName: {{ template "morpheus-ai-engine.serviceAccountName" . }}
+      volumes:
+      - name: model-path
+        hostPath:
+          path: {{ .Values.hostCommonPath }}/models
+          type: DirectoryOrCreate
+      - name: triton-model-path
+        hostPath:
+          path: {{ .Values.hostCommonPath }}/triton-model-repo
+          type: DirectoryOrCreate

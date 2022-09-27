@@ -1,0 +1,85 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/instance: {{ .Release.Name }}
+    app.kubernetes.io/name: zookeeper
+  name: zookeeper
+spec:
+  replicas: {{ .Values.replicaCount }}
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: zookeeper
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: zookeeper
+    spec:
+      containers:
+      - command:
+        - sh
+        - -c
+        - /docker-entrypoint.sh zkServer.sh start-foreground
+        env:
+        - name: ZOO_4LW_COMMANDS_WHITELIST
+          value: stat, ruok, conf, isro
+        - name: SERVER_JVMFLAGS
+          value: -Xmx512M -Xms512M -Djava.rmi.server.hostname=127.0.0.1 -Dcom.sun.management.jmxremote=true
+            -Dcom.sun.management.jmxremote.rmi.port=7197 -Dcom.sun.management.jmxremote.local.only=true
+            -Dcom.sun.management.jmxremote.ssl=false
+        image: "{{ .Values.zookeeper.registry }}/{{ .Values.zookeeper.image }}:{{ .Values.zookeeper.version }}"
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        name: zoo
+        ports:
+        - containerPort: 2181
+          name: client
+          protocol: TCP
+        - containerPort: 2888
+          name: server
+          protocol: TCP
+        - containerPort: 3888
+          name: leader-election
+          protocol: TCP
+        - containerPort: 7073
+          name: metrics
+          protocol: TCP
+        resources:
+          limits:
+            cpu: "2"
+            memory: 2Gi
+          requests:
+            cpu: 10m
+            memory: 1Gi
+        {{- if .Values.platform.openshift }}
+        securityContext:
+          privileged: true
+        {{- end }}
+        volumeMounts:
+        - mountPath: /data
+          name: zookeeper-ds-storage
+        - mountPath: /datalog
+          name: zookeeper-ds-log-storage
+      {{- with .Values.imagePullSecrets }}
+      imagePullSecrets:
+      {{- toYaml . | nindent 8 }}
+      {{- end }}
+      restartPolicy: Always
+      serviceAccountName: {{ template "morpheus-ai-engine.serviceAccountName" . }}
+      volumes:
+      - hostPath:
+          path: /opt/zookeeper
+          type: ""
+        name: zookeeper-ds-storage
+      - hostPath:
+          path: /opt/zookeeper-logs
+          type: ""
+        name: zookeeper-ds-log-storage
+

@@ -5,6 +5,9 @@
 
 Welcome to Graphistry Helm Charts's documentation!
 ==================================================
+Welcome to Graphistry Helm Charts's documentation we will cover the basics to get a Graphistry cluster up and running on Kubernetes.
+We have sections for all of the charts we have in our Helm repo.
+
 
 
 .. toctree::
@@ -21,3 +24,4 @@ Welcome to Graphistry Helm Charts's documentation!
    k8s-dashboard-docs
    postgres-cluster-docs
    postgres-operator-docs
+   morpheus-docs

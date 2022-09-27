@@ -1,0 +1,21 @@
+{% extends "rst.jinja2" %}
+
+{% block title -%}
+{{ super() }}
+{%- endblock %}
+
+{% block description -%}
+{{ super() }}
+{%- endblock %}
+
+{% block credits %}
+{{ super() }}
+
+{%- endblock %}
+
+# {{ name }} - {{ version }}
+
+{{ description }}
+
+## Configuration options
+

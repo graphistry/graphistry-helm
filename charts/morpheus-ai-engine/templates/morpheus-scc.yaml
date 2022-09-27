@@ -1,0 +1,48 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+{{- if .Values.platform.openshift }}
+{{ if not (lookup "security.openshift.io/v1" "SecurityContextConstraints" .Release.Namespace "morpheus") }}
+apiVersion: security.openshift.io/v1
+kind: SecurityContextConstraints
+metadata:
+  name: morpheus
+allowHostDirVolumePlugin: true
+allowHostIPC: false
+allowHostNetwork: false
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegeEscalation: true
+allowPrivilegedContainer: true
+allowedCapabilities: null
+defaultAddCapabilities: null
+fsGroup:
+  type: RunAsAny
+groups: []
+readOnlyRootFilesystem: false
+requiredDropCapabilities:
+- MKNOD
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: RunAsAny
+users:
+- system:serviceaccount:{{ .Release.Namespace }}:{{ template "morpheus-ai-engine.serviceAccountName" . }}
+volumes:
+- configMap
+- downwardAPI
+- emptyDir
+- hostPath
+- nfs
+- persistentVolumeClaim
+- projected
+- secret
+{{ end }}
+{{- end }}

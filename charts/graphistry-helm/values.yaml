@@ -8,7 +8,7 @@ ingress:
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
 
-graphistry: graphistry   #graphitry tag for the docker image
+graphistry: graphistry   #graphistry tag for the docker image
 
 #volume names
 volumeName: #volume names

@@ -20,7 +20,6 @@ Parameter                                          Description                  
 ``global.multiNode``                                                                                                                                    ``false``                                         
 ``global.containerregistry.name``                                                                                                                       ``"acrgraphistryk8s.azurecr.io"``                 
 ``global.devMode``                                                                                                                                      ``false``                                         
-``global.graphistry``                                                                                                                                   ``"graphistry"``                                  
 ``global.postgres.repository``                                                                                                                          ``"graphistry-postgres"``                         
 ``global.postgres.name``                                                                                                                                ``"graphistry"``                                  
 ``global.postgres.user``                                                                                                                                ``"graphistry"``                                  

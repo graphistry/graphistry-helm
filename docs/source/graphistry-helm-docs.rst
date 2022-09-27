@@ -16,15 +16,15 @@ These charts will deploy the base apps and resources for Graphistry
     .. code-block:: shell-session            
               
        git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-       helm install --name myname ./charts/graphistry-helm-resource --namespace graphistry --create-namespace 
-       helm install --name myname ./charts/graphistry-helm --namespace graphistry --create-namespace 
+       helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources --namespace graphistry --create-namespace 
+       helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
 
   .. tab:: From Helm Repo
     .. code-block:: shell-session            
               
        helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-       helm install graphistry-resources graphistry-helm/graphistry-helm-resources --namespace graphistry --create-namespace         
-       helm install g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
+       helm upgrade -i graphistry-resources graphistry-helm/graphistry-resources --namespace graphistry --create-namespace         
+       helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
 
 
 Configuration
@@ -36,6 +36,7 @@ The following table lists the configurable parameters of the Graphistry-helm-cha
 Parameter                                          Description                                                                                          Default
 ================================================== ==================================================================================================== ==================================================
 ``ingress.management.annotations``                 ingress management - determines if ingress is going to be on internal load balance                   ``null``                                          
+``graphistry``                                     graphistry tag for the docker image                                                                  ``"graphistry"``                                  
 ``volumeName.dataMount``                           data-mount pvc volume name                                                                           ``null``                                          
 ``volumeName.localMediaMount``                     local-media-mount pvc volume name                                                                    ``null``                                          
 ``volumeName.gakPublic``                           gak-public pvc volume name                                                                           ``null``                                          
@@ -93,7 +94,6 @@ Parameter                                          Description                  
 ``global.multiNode``                               multinode selector switch to determine if going multi/single node                                    ``false``                                         
 ``global.containerregistry.name``                  container registry name                                                                              ``"acrgraphistryk8s.azurecr.io"``                 
 ``global.devMode``                                 dev mode for debugging with nexus, postgres and nginx                                                ``false``                                         
-``global.graphistry``                              graphitry tag for the docker image                                                                   ``"graphistry"``                                  
 ``global.postgres.repository``                     postgres repository name                                                                             ``"graphistry-postgres"``                         
 ``global.postgres.name``                           db name                                                                                              ``"graphistry"``                                  
 ``global.postgres.user``                           db user                                                                                              ``"graphistry"``                                  

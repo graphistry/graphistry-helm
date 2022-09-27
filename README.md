@@ -3,6 +3,9 @@
 [Helm](https://helm.sh) must be installed to use the charts.  Please refer to
 Helm's [documentation](https://helm.sh/docs) to get started.
 
+For morre information on the Graphistry Helm Chart, please see the
+[Graphistry Helm Chart Documentation](https://graphistry-helm.readthedocs.io/en/latest/index.html)
+
 Once Helm has been set up correctly, add the repo as follows:
 
     helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
@@ -20,4 +23,3 @@ To uninstall the chart:
     helm delete my-graphistry-chart
 
 
-[Graphistry Helm Chart Documentation](https://graphistry-helm.readthedocs.io/en/latest/index.html)

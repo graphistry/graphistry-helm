@@ -20,4 +20,4 @@ To uninstall the chart:
     helm delete my-graphistry-chart
 
 
-
+[Graphistry Helm Chart Documentation](https://graphistry-helm.readthedocs.io/en/latest/index.html)

@@ -9,6 +9,12 @@ volumeName:
   gakPublic: pvc-97b39989-9cfa-4058-b489-fbcab0c3dc7f
   gakPrivate: pvc-9afe0118-e483-4b90-85a5-79a7181071e5
 
+
+graphistryResources:
+  storageClassParameters:
+      csi.storage.k8s.io/fstype: ext4
+      type: gp2
+
   ## createServiceAccount: true only true on initial deployment
 k8sDashboard:
   enabled: true
@@ -31,10 +37,6 @@ prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
 
-graphistryResources:
-  storageClassParameters:
-      csi.storage.k8s.io/fstype: ext4
-      type: gp2
 
 ingress-nginx:
   controller:
@@ -62,8 +64,6 @@ global:
   #multinode setting
   #multiNode: true
   imagePullPolicy: Always
-  containerregistry:
-    name: docker.io
   imagePullSecrets: 
     - name: docker-secret-prod
 

@@ -55,8 +55,6 @@ cert-manager: #defined by either the name or alias of your dependency in Chart.y
 
 
 global:
-  containerregistry:
-    name: docker.io
   imagePullSecrets: 
     - name: dockerhub-secret
   provisioner: microk8s.io/hostpath

@@ -24,6 +24,13 @@ help:
 %: Makefile
 	@$(SPHINXBUILD) -M $@ "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
+
+
+#install requirements
+
+deps:
+	pip install -r requirements.txt
+
 # Generate the docs with frigate
 frigate:
 	$(FRIGATE) ../charts/graphistry-helm -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/graphistry-helm-docs.$(FRIGATE_OUTPUT) && \

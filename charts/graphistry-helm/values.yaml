@@ -208,7 +208,7 @@ global:  ## global settings for all charts
   multiNode: false # multinode selector switch to determine if going multi/single node
   #container registry name
   containerregistry:
-    name: acrgraphistryk8s.azurecr.io   #container registry name
+    name: docker.io #acrgraphistryk8s.azurecr.io   #container registry name
   #dev mode for debugging with nexus, postgres and nginx
   devMode: false   #dev mode for debugging with nexus, postgres and nginx
   #graphitry tag for the docker image

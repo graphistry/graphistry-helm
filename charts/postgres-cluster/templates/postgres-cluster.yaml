@@ -19,8 +19,8 @@ spec:
       databases:
         - {{.Values.global.postgres.name }}
       options: "REPLICATION"
-    password:
-      type: AlphaNumeric 
+      password:
+        type: AlphaNumeric 
   instances:
     - name: instance1
       replicas: 1

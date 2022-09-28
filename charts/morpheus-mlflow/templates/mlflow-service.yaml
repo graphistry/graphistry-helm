@@ -1,0 +1,33 @@
+# Copyright (c) 2021, NVIDIA CORPORATION.  All rights reserved.
+#
+# NVIDIA CORPORATION and its licensors retain all intellectual property
+# and proprietary rights in and to this software, related documentation
+# and any modifications thereto.  Any use, reproduction, disclosure or
+# distribution of this software and related documentation without an express
+# license agreement from NVIDIA CORPORATION is strictly prohibited.
+
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: mlflow
+  name: mlflow
+spec:
+  {{- if and .Values.loadBalancer.enabled }}
+  type: LoadBalancer
+  ports:
+  - name: default
+    port: 80
+    targetPort: 5000
+    protocol: TCP
+  {{- else }}
+  type: NodePort
+  ports:
+  - name: default
+    port: 5000
+    targetPort: 5000
+    nodePort: {{ .Values.dashboardPort }}
+    protocol: TCP
+  {{- end }}
+  selector:
+    app.kubernetes.io/name: mlflow

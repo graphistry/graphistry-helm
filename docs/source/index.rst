@@ -6,7 +6,7 @@
 Welcome to Graphistry Helm Charts's documentation!
 ==================================================
 Welcome to Graphistry Helm Charts's documentation we will cover the basics to get a Graphistry cluster up and running on Kubernetes.
-We have sections for all of the charts we have in our Helm repo.
+We have sections for most of the charts we have in our Helm repo. For a quick start please see the :doc:`10mins-to-k8s` section.
 
 
 

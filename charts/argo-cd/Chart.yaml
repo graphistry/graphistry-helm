@@ -17,6 +17,7 @@ long_description: |
         .. code-block:: shell-session            
                   
           git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+          cd graphistry-helm/charts/argo-cd && helm dep build
           helm upgrade -i argo-cd ./charts/argo-cd --namespace argo-cd --create-namespace 
   
 
@@ -24,7 +25,6 @@ long_description: |
         .. code-block:: shell-session            
                   
           helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-          cd graphistry-helm/charts/argo-cd && helm dep build
           helm upgrade -i argo-cd graphistry-helm/argo-cd --namespace argo-cd --create-namespace
           
 
@@ -39,16 +39,16 @@ long_description: |
 
   .. code-block:: shell-session    
 
-     kubectl port-forward svc/argo-cd-argocd-server 8080:443
+     kubectl port-forward svc/argo-cd-argocd-server 8080:443 -n argo-cd
 
 
-  Starting ArgoCD managing the app
-  ---------------------------------
+  Starting ArgoCDs managing of the apps
+  --------------------------------------
   To deploy our "app of apps" setup in argo, we need to create an Argo CD application. We created these application manifests so next is applying them to the cluster
 
   .. code-block:: shell-session
 
-      helm template apps/ | kubectl apply -f -
+      helm template charts/argo-cd/apps/ | kubectl apply -f -
 
 
   Letting Argo CD manage itself
@@ -62,4 +62,5 @@ long_description: |
       kubectl delete secret -l owner=helm,name=argo-cd
 
 
-#footnotes: | 
+footnotes: | 
+  ArgoCD is a Continuous Delivery System that is deployed within the Cluster that continuously polls a Git repository for changes to the desired state of the cluster. It then applies those changes to the cluster. It is a great tool for managing the deployment of Helm Charts.

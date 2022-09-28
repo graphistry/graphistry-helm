@@ -41,7 +41,8 @@ frigate:
 	$(FRIGATE) ../charts/k8s-dashboard -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/k8s-dashboard-docs.$(FRIGATE_OUTPUT) && \
 	$(FRIGATE) ../charts/postgres-cluster -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/postgres-cluster-docs.$(FRIGATE_OUTPUT) && \
 	$(FRIGATE) ../charts/postgres-operator -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/postgres-operator-docs.$(FRIGATE_OUTPUT) && \
-	$(FRIGATE) ../charts/morpheus-ai-engine -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/morpheus-docs.$(FRIGATE_OUTPUT) 
-#$(FRIGATE) ../charts/kube-prometheus-stack -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/kube-prometheus-stack-docs.$(FRIGATE_OUTPUT) 
-#$(FRIGATE) ../charts/ingress-nginx -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/ingress-nginx-docs.$(FRIGATE_OUTPUT) && \
+	$(FRIGATE) ../charts/morpheus-ai-engine -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/morpheus-docs.$(FRIGATE_OUTPUT) && \
+	$(FRIGATE) ../charts/morpheus-mlflow -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/morpheus-mlflow-docs.$(FRIGATE_OUTPUT)
+#$(FRIGATE) ../charts/ingress-nginx -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/ingress-nginx-docs.$(FRIGATE_OUTPUT) 
 #$(FRIGATE) ../charts/graphistry-jupyter-hub -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/graphistry-jupyter-hub-docs.$(FRIGATE_OUTPUT) && \
+#$(FRIGATE) ../charts/kube-prometheus-stack -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/kube-prometheus-stack-docs.$(FRIGATE_OUTPUT) 

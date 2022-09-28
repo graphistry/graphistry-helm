@@ -92,7 +92,7 @@ Parameter                                          Description                  
 ``graphistryKey``                                  graphistry key for dev mode in pivot deployment                                                      ``null``                                          
 ``global.provisioner``                             storage class provisioner.                                                                           ``"kubernetes.io/aws-ebs"``                       
 ``global.multiNode``                               multinode selector switch to determine if going multi/single node                                    ``false``                                         
-``global.containerregistry.name``                  container registry name                                                                              ``"acrgraphistryk8s.azurecr.io"``                 
+``global.containerregistry.name``                  acrgraphistryk8s.azurecr.io   #container registry name                                               ``"docker.io"``                                   
 ``global.devMode``                                 dev mode for debugging with nexus, postgres and nginx                                                ``false``                                         
 ``global.postgres.repository``                     postgres repository name                                                                             ``"graphistry-postgres"``                         
 ``global.postgres.name``                           db name                                                                                              ``"graphistry"``                                  

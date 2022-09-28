@@ -41,6 +41,7 @@ Install Nginx Ingress Controller
       .. code-block:: shell-session            
                 
          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+         cd charts/ingress-nginx && helm dep build
          helm upgrade -i ingress-nginx ./charts/ingress-nginx --namespace ingress-nginx --create-namespace 
 
 
@@ -75,6 +76,22 @@ Install Postgres Operator , CRDs, Postgres Cluster
          helm upgrade -i postgrescluster graphistry-helm/postgres-cluster --namespace graphistry --create-namespace  
 
 
+Configuring Postgres Cluster
+----------------------------
+
+After Cluster is deployed, find the pv that is created and add the following label to it. This will allow the cluster to bind the pv to the pod upon redeployment.
+      
+    .. code-block:: shell-session
+
+
+       kubectl get pv -n graphistry && kubectl label pv <pv name> pgo-postgres-cluster=graphistry-postgres        
+
+Change the postgres password if needed. The default password is randomly generated AlphaNumeric string.
+
+    .. code-block:: shell-session
+ 
+
+       kubectl patch secret -n postgres-operator postgres-pguser-graphistry -p '{"stringData":{"password":"<password>","verifier":""}}'
 
 Install Dask Operator and CRDs
 ------------------------------
@@ -84,6 +101,7 @@ Install Dask Operator and CRDs
       .. code-block:: shell-session            
                 
          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+         cd charts/dask-kubernetes-operator && helm dep build
          helm upgrade -i dask-operator ./charts/dask-kubernetes-operator --namespace dask-operator --create-namespace 
 
 
@@ -120,3 +138,45 @@ Install Graphistry
          helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
          helm upgrade -i graphistry-resources graphistry-helm/graphistry-resources --namespace graphistry --create-namespace         
          helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
+
+Configuring Graphistry
+----------------------
+
+It is recommended to create a values.yaml override file to configure the chart. The default values.yaml file can be found in the chart directory. Examples can be found in the ./charts/values-overrides directory.
+There are some Deployment specifc values which will need to be set, such as the global.provisioner, and graphistryResources.storageClassParameters, global.nodeSelector, and the global.Tag depending on your release. An example values.yaml can be 
+seen below. This is an example based on an AWS EKS deployment's values.yaml
+
+    .. code-block:: yaml
+
+        volumeName:
+            dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
+            localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
+            gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
+            gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
+
+
+        graphistryResources:
+            storageClassParameters:
+                csi.storage.k8s.io/fstype: ext4
+                type: gp2
+
+            
+        global:
+            provisioner: ebs.csi.aws.com
+            tag: v2.39.28-admin
+            nodeSelector: {"kubernetes.io/hostname": "ip-171-00-00-0.us-east-2.compute.internal"}
+            imagePullPolicy: Always
+            imagePullSecrets: 
+                - name: docker-secret-prod
+
+Once a values.yaml has been created it can be deployed with the following command:
+
+    .. code-block:: shell-session
+
+        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./values.yaml
+
+Once the deployment is complete, the Graphistry UI can be accessed from the caddy ingress endpoint. The ingress endpoint can be found by running the following command:
+
+    .. code-block:: shell-session
+
+        kubectl get ingress -n graphistry

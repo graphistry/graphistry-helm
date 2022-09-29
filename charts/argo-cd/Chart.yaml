@@ -62,5 +62,7 @@ long_description: |
       kubectl delete secret -l owner=helm,name=argo-cd
 
 
-footnotes: | 
-  ArgoCD is a Continuous Delivery System that is deployed within the Cluster that continuously polls a Git repository for changes to the desired state of the cluster. It then applies those changes to the cluster. It is a great tool for managing the deployment of Helm Charts.
+footnotes: |
+
+  For more information on ArgoCD visit the documentation: `ArgoCD Documentation <https://argo-cd.readthedocs.io/en/stable/>`_ 
+

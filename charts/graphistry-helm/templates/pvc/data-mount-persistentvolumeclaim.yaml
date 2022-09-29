@@ -24,8 +24,9 @@ spec:
     - ReadWriteOnce
   storageClassName: retain-sc-{{ .Release.Namespace }}
 {{- end }}  
+{{- if .Values.volumeName.dataMount }}
   volumeName: {{ .Values.volumeName.dataMount }}
-
+{{- end }}
   resources:
     requests: 
       storage: 64Gi

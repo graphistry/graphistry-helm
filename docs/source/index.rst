@@ -16,6 +16,7 @@ We have sections for most of the charts we have in our Helm repo. For a quick st
    :hidden:
 
    10mins-to-k8s
+   values-override
    graphistry-helm-docs
    graphistry-resources-docs
    dask-kubernetes-operator-docs
@@ -25,5 +26,5 @@ We have sections for most of the charts we have in our Helm repo. For a quick st
    postgres-cluster-docs
    postgres-operator-docs
    morpheus-docs
-   ingress-nginx-docs
    morpheus-mlflow-docs
+   ingress-nginx-docs

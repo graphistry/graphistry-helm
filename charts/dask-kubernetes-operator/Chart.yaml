@@ -38,3 +38,7 @@ long_description: |
                   
           helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
           helm upgrade -i dask-operator graphistry-helm/dask-kubernetes-operator --namespace dask-operator --create-namespace  
+
+footnotes: |
+
+  For more information on the dask operator visit the dask operator documentation: `Dask Operator Documentation <https://https://kubernetes.dask.org/en/latest/operator.html>`_ 

@@ -43,3 +43,10 @@ long_description: |
   
 
         kubectl patch secret -n postgres-operator postgres-pguser-graphistry -p '{"stringData":{"password":"<password>","verifier":""}}'
+
+
+footnotes: |
+
+  For more information on the CrunchyData Postgres Cluster visit the PGO documentation: `CrunchyData PGO Documentation <https://access.crunchydata.com/documentation/postgres-operator/latest/>`_ 
+
+

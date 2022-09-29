@@ -43,3 +43,9 @@ long_description: |
     domain: <domain you own> 
     tlsEmail: "<email to use for letsencrypt>" 
     tls: true
+
+footnotes: |
+
+  For more information on Cert-Manager visit the documentation: `Cert-Manager Documentation <https://cert-manager.io/docs/>`_ 
+
+

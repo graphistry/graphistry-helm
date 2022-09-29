@@ -38,6 +38,7 @@ Once cert manager is deployed you can enable TLS on the values.yaml override for
   tlsEmail: "<email to use for letsencrypt>" 
   tls: true
 
+
 Configuration
 -------------
 
@@ -51,6 +52,8 @@ Parameter                                          Description                  
 ``cert-manager.createCustomResource``                                                                                                                   ``true``                                          
 ================================================== ==================================================================================================== ==================================================
 
+
+For more information on Cert-Manager visit the documentation: `Cert-Manager Documentation <https://cert-manager.io/docs/>`_ 
 
 
 

@@ -62,3 +62,5 @@ to gather metrics with prometheus in the ingress-nginx values.yaml, or in the ma
 
 
 
+For more information on the Nginx Ingress Controller visit the documentation: `Nginx Ingress Controller Documentation <https://kubernetes.github.io/ingress-nginx/>`_ 
+

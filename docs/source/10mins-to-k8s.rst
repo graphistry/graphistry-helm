@@ -63,14 +63,14 @@ Install Postgres Operator , CRDs, Postgres Cluster
       .. code-block:: shell-session            
                 
          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-         helm upgrade -i pgo ./charts/postgres-operator --namespace pgo --create-namespace 
+         helm upgrade -i postgres-operator ./charts/postgres-operator --namespace postgres-operator --create-namespace 
          helm upgrade -i  postgres-cluster ./charts/postgres-cluster --namespace graphistry --create-namespace 
 
     .. tab:: From Graphistry Helm Repo
       .. code-block:: shell-session            
                 
          helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-         helm upgrade -i pgo graphistry-helm/pgo --namespace pgo --create-namespace 
+         helm upgrade -i postgres-operator graphistry-helm/pgo --namespace postgres-operator --create-namespace 
          helm upgrade -i postgrescluster graphistry-helm/postgres-cluster --namespace graphistry --create-namespace  
 
 

@@ -7,6 +7,26 @@ Morpheus-ai-engine
 A Helm chart for deploying the NVIDIA Morpheus AI Engine which includes the Triton Inference Server.
 
 
+Install Nvidia Morpheus
+---------------------------------------------------
+**NOTE:** Morpheus AI Engine requires you sign up for an NGC api key, you can sign up here for an api key: `Nvidia NGC <https://ngc.nvidia.com/signin>`_ 
+
+
+  .. tabs::
+
+    .. tab:: Local from Source
+      .. code-block:: shell-session            
+                
+        git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+        helm upgrade -i morpheus ./charts/morpheus-ai-engine --namespace morpheus --create-namespace 
+
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+        helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+        helm upgrade -i morpheus graphistry-helm/morpheus-ai-engine --namespace morpheus --create-namespace 
+
 
 Configuration
 -------------

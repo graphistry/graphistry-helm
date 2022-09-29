@@ -6,6 +6,36 @@ Kubernetes-dashboard
 
 A Helm chart for Kubernetes Dashboard
 
+Install Kubernetes Dashboard
+-----------------------------
+
+
+  .. tabs::
+
+    .. tab:: Local from source
+      .. code-block:: shell-session            
+                
+        git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+        helm upgrade -i  kubernetes-dashboard ./charts/k8s-dashboard --namespace kubernetes-dashboard --create-namespace 
+
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+        helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+        helm upgrade -i kubernetes-dashboard graphistry-helm/kubernetes-dashboard --namespace kubernetes-dashboard --create-namespace         
+
+To enable the Kubernetes Dashboard
+-----------------------------------
+
+Set the following values in your values.yaml file:
+
+  .. code-block:: yaml
+
+      k8sDashboard:
+          enabled: true
+          readonly: false
+          createServiceAccount: false  ## createServiceAccount: true only on initial deployment
 
 
 Configuration

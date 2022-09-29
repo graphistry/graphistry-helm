@@ -7,6 +7,24 @@ Graphistry-resources
 A chart to deploy graphistry resources 
 
 
+Install Graphistry Resources
+-----------------------------
+
+
+  .. tabs::
+
+    .. tab:: Local from source
+      .. code-block:: shell-session            
+                
+        git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+        helm upgrade -i  graphistry-resources ./charts/graphistry-helm-resources --namespace graphistry --create-namespace 
+
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+        helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+        helm upgrade -i graphistry-resources graphistry-helm/graphistry-resources --namespace graphistry --create-namespace         
 
 
 Configuration
@@ -22,6 +40,7 @@ Parameter                                          Description                  
 ``graphistryResources.storageClassParameters``     cloud provider storage class parameters                                                              ``null``                                          
 ================================================== ==================================================================================================== ==================================================
 
+See :doc:`values-override` for more details on how to configure the chart. 
 
 
 

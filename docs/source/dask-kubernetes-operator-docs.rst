@@ -7,6 +7,30 @@ Dask-operator
 A helm chart for managing the deployment of the dask kubernetes operator and CRDs
 
 
+Install Dask Operator and CRDs
+------------------------------
+  .. tabs::
+
+    .. tab:: Local from Source
+      .. code-block:: shell-session            
+                
+        git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+        cd charts/dask-kubernetes-operator && helm dep build
+        helm upgrade -i dask-operator ./charts/dask-kubernetes-operator --namespace dask-operator --create-namespace 
+
+
+    .. tab:: From Dask Helm Repo
+      .. code-block:: shell-session            
+                
+        helm upgrade -i dask-operator dask-kubernetes-operator --repo https://https://helm.dask.org/ --namespace dask-operator --create-namespace
+
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+        helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+        helm upgrade -i dask-operator graphistry-helm/dask-kubernetes-operator --namespace dask-operator --create-namespace  
+
 
 Configuration
 -------------

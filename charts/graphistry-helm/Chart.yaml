@@ -6,23 +6,23 @@ description: >
 
 long_description: | 
 
-  These charts will deploy the base apps and resources for Graphistry
 
-  .. tabs::
 
-    .. tab:: From source
-      .. code-block:: shell-session            
-                
-         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-         helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources --namespace graphistry --create-namespace 
-         helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
+  Install Graphistry
+  -------------------
+    .. tabs::
 
-    .. tab:: From Helm Repo
-      .. code-block:: shell-session            
-                
-         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-         helm upgrade -i graphistry-resources graphistry-helm/graphistry-resources --namespace graphistry --create-namespace         
-         helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
+      .. tab:: From source
+        .. code-block:: shell-session            
+                  
+          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+          helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
+
+      .. tab:: From Helm Repo
+        .. code-block:: shell-session            
+                  
+          helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/       
+          helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
 
 
 
@@ -67,4 +67,5 @@ keywords:
 #    version: "v1.9.1"
 #    repository: file://../cert-manager
 
-#footnotes: | 
+footnotes: | 
+  See :doc:`values-override` for more details on how to configure the chart. 

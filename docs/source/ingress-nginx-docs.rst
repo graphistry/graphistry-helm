@@ -40,9 +40,9 @@ The following table lists the configurable parameters of the Ingress-nginx chart
 ============================================================================ ==================================================================================================== ==================================================
 Parameter                                                                    Description                                                                                          Default
 ============================================================================ ==================================================================================================== ==================================================
-``ingress-nginx.controller.metrics.enabled``                                                                                                                                      ``true``                                          
-``ingress-nginx.controller.metrics.serviceMonitor.enabled``                                                                                                                       ``true``                                          
-``ingress-nginx.controller.metrics.serviceMonitor.additionalLabels.release``                                                                                                      ``"prometheus"``                                  
+``ingress-nginx.controller.metrics.enabled``                                     Enables Prometheus metrics                                                                       ``true``                                          
+``ingress-nginx.controller.metrics.serviceMonitor.enabled``                      Enables the Service Monitor                                                                      ``true``                                          
+``ingress-nginx.controller.metrics.serviceMonitor.additionalLabels.release``     Adds a label to the Service Monitor                                                              ``"prometheus"``                                  
 ============================================================================ ==================================================================================================== ==================================================
 
 

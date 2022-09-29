@@ -6,6 +6,22 @@ Pgo
 
 Installer for PGO, the open source Postgres Operator from Crunchy Data
 
+Install Postgres Operator and CRDs
+---------------------------------------------------
+  .. tabs::
+
+    .. tab:: Local from Source
+      .. code-block:: shell-session            
+                
+        git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+        helm upgrade -i pgo ./charts/postgres-operator --namespace pgo --create-namespace 
+
+
+    .. tab:: From Graphistry Helm Repo
+      .. code-block:: shell-session            
+                
+        helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+        helm upgrade -i pgo graphistry-helm/pgo --namespace pgo --create-namespace 
 
 
 Configuration

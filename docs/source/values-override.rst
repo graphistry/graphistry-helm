@@ -81,7 +81,7 @@ Here is an example of a values.yaml for all of the individual services taken fro
               - name: docker-secret-prod
 
 
-For more information on configuration options for each chart, see the Configuration section in each corresponding chapter for the charts.
+For more information on configuration options for each chart, see the Configuration section in each corresponding chapter.
 
 
 

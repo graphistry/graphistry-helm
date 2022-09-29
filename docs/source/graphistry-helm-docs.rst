@@ -8,23 +8,23 @@ Helm Charts to deploy Graphistry to kubernetes for 100x visualizations
 
 
 
-These charts will deploy the base apps and resources for Graphistry
 
-.. tabs::
 
-  .. tab:: From source
-    .. code-block:: shell-session            
-              
-       git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-       helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources --namespace graphistry --create-namespace 
-       helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
+Install Graphistry
+-------------------
+  .. tabs::
 
-  .. tab:: From Helm Repo
-    .. code-block:: shell-session            
-              
-       helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-       helm upgrade -i graphistry-resources graphistry-helm/graphistry-resources --namespace graphistry --create-namespace         
-       helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
+    .. tab:: From source
+      .. code-block:: shell-session            
+                
+        git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
+
+    .. tab:: From Helm Repo
+      .. code-block:: shell-session            
+                
+        helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/       
+        helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
 
 
 Configuration
@@ -110,6 +110,7 @@ Parameter                                          Description                  
 ``streamlitEnv``                                   graph-app-kit (streamlit) environment variables                                                      ``[{"name": "LOG_LEVEL", "value": "DEBUG"}, {"name": "BASE_PATH", "value": null}, {"name": "BASE_URL", "value": "http://localhost:8501"}, {"name": "ST_PUBLIC_PORT", "value": 8501}, {"name": "GRAPH_VIEWS", "value": "/apps/views"}, {"name": "COMPOSE_PROJECT_NAME", "value": null}, {"name": "VERSION_BASE", "value": "v2.32.4"}, {"name": "NEPTUNE_READER_PROTOCOL", "value": null}, {"name": "NEPTUNE_READER_HOST", "value": null}, {"name": "NEPTUNE_READER_PORT", "value": null}, {"name": "NEPTUNE_KEY_PATH", "value": null}, {"name": "NEPTUNE_TUNNEL_HOST", "value": null}, {"name": "NEPTUNE_TUNNEL_USER", "value": null}, {"name": "TIGERGRAPH_HOST", "value": null}, {"name": "TIGERGRAPH_USERNAME", "value": null}, {"name": "TIGERGRAPH_PASSWORD", "value": null}, {"name": "TIGERGRAPH_GRAPHNAME", "value": null}, {"name": "TIGERGRAPH_SECRET", "value": null}]``
 ================================================== ==================================================================================================== ==================================================
 
+See :doc:`values-override` for more details on how to configure the chart. 
 
 
 

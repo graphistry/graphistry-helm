@@ -1,5 +1,5 @@
 apiVersion: v2
-name: pgo
+name: postgres-operator
 description: Installer for PGO, the open source Postgres Operator from Crunchy Data
 
 type: application
@@ -16,14 +16,19 @@ long_description: |
         .. code-block:: shell-session            
                   
           git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-          helm upgrade -i pgo ./charts/postgres-operator --namespace pgo --create-namespace 
+          helm upgrade -i postgres-operator ./charts/postgres-operator --namespace postgres-operator --create-namespace 
  
 
       .. tab:: From Graphistry Helm Repo
         .. code-block:: shell-session            
                   
           helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-          helm upgrade -i pgo graphistry-helm/pgo --namespace pgo --create-namespace 
+          helm upgrade -i postgres-operator graphistry-helm/pgo --namespace postgres-operator --create-namespace 
 
+
+
+footnotes: |
+
+  For more information on the CrunchyData Postgres Operator visit the PGO documentation: `CrunchyData PGO Documentation <https://access.crunchydata.com/documentation/postgres-operator/latest/>`_ 
 
 

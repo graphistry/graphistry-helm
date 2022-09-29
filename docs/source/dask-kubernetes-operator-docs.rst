@@ -59,6 +59,8 @@ Parameter                                          Description                  
 ================================================== ==================================================================================================== ==================================================
 
 
+For more information on the dask operator visit the dask operator documentation: `Dask Operator Documentation <https://https://kubernetes.dask.org/en/latest/operator.html>`_ 
+
 
 
 

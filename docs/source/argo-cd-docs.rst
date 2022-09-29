@@ -72,7 +72,8 @@ Parameter                                          Description                  
 ``argo-cd.server.config.repositories``                                                                                                                  ``"- type: helm\n  name: argo-cd\n  url: https://argoproj.github.io/argo-helm\n"``
 ================================================== ==================================================================================================== ==================================================
 
-ArgoCD is a Continuous Delivery System that is deployed within the Cluster that continuously polls a Git repository for changes to the desired state of the cluster. It then applies those changes to the cluster. It is a great tool for managing the deployment of Helm Charts.
+
+For more information on ArgoCD visit the documentation: `ArgoCD Documentation <https://argo-cd.readthedocs.io/en/stable/>`_ 
 
 
 

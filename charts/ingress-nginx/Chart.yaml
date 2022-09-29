@@ -34,3 +34,9 @@ long_description: |
                   
           helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
           helm upgrade -i ingress-nginx graphistry-helm/ingress-nginx --namespace ingress-nginx --create-namespace  
+
+footnotes: |
+
+  For more information on the Nginx Ingress Controller visit the documentation: `Nginx Ingress Controller Documentation <https://kubernetes.github.io/ingress-nginx/>`_ 
+
+

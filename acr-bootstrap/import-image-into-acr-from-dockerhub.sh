@@ -128,3 +128,22 @@ SOURCE_REGISTRY=ghcr.io/dask
 
 import_into_acr "dask-kubernetes-operator" "2022.7.0"
 
+echo "postgres operator into acr"
+
+SOURCE_REGISTRY=registry.developers.crunchydata.com/crunchydata
+
+import_into_acr "crunchy-pgbackrest" "ubi8-2.40-1"
+
+import_into_acr "crunchy-postgres" "ubi8-14.5-1"
+
+import_into_acr "postgres-operator" "ubi8-5.2.0-0"
+
+import_into_acr "postgres-operator-upgrade" "ubi8-5.2.0-0"
+
+#import_into_acr "crunchy-upgrade" "ubi8-5.2.0-0"
+
+#import_into_acr "crunchy-postgres-exporter" "ubi8-5.2.0-0"
+
+#import_into_acr "crunchy-pgbouncer" "ubi8-1.17-1"
+
+#import_into_acr "crunchy-pgadmin4" "ubi8-4.30-4"

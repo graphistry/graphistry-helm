@@ -9,8 +9,6 @@ global:
     name: acrgraphistryk8s.azurecr.io
   #dev mode for debugging with nexus, postgres and nginx
   devMode: false
-  #graphitry tag for the docker image
-  graphistry: graphistry
   #postgres repository name 
   postgres:
     repository: graphistry-postgres
@@ -27,7 +25,8 @@ global:
   #restart policy
   restartPolicy: Always
   #image pull secrets name
-  imagePullSecrets: acr-secret
+  imagePullSecrets: []
+  #  - name: docker-secret
 #node selector to determine which node to deploy cluster to
   nodeSelector: 
   #{"accelerator": "nvidia"}

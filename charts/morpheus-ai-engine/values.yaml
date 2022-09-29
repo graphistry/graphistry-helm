@@ -1,0 +1,73 @@
+# Default values for morpheus-ai-engine
+# This is a YAML-formatted file.
+# Declare variables to be passed into your templates.
+
+replicaCount: 1
+
+ngc:
+  username: "$oauthtoken"
+  apiKey: ""
+  org: ""
+  team: ""
+
+aiengine:
+  registry: "nvcr.io/nvidia"
+  image: tritonserver
+  version: 22.06-py3
+  # don't use command due to nvidia_entrypoint.sh!
+  args:
+    - tritonserver
+    - --model-repository
+    - /common/triton-model-repo
+    - --model-control-mode
+    - explicit
+  # ensure triton gets at least one GPU
+  # and make it Pending the driver install
+  # assumes GPU device plugin
+  resources:
+    limits:
+      nvidia.com/gpu: 1
+  # use the following if we aren't using GPU device plugin
+  # resources: {}
+
+broker:
+  registry: "docker.io"
+  image: bitnami/kafka
+  version: 2.7.0
+  brokerPort: 30092
+
+zookeeper:
+  registry: "docker.io"
+  image: zookeeper
+  version: 3.6.3
+
+hostCommonPath: /opt/morpheus/common
+
+# use 'Always' for development
+imagePullPolicy: IfNotPresent
+ 
+imagePullSecrets: 
+- name: nvidia-registrykey-secret
+# for Fleet Command deployments
+# - name: imagepullsecret
+
+# we need privileged pods to
+# use hostPaths on OpenShift
+serviceAccount:
+  create: false
+  name: morpheus
+
+platform:
+  openshift: false
+
+# deploy a LB (AWS) instead
+# of a NodePort
+loadBalancer:
+  enabled: false
+
+# use a nodeSelector with
+# OpenShift for GPU affinity
+# default is nil for
+# non GPU Operator/NFD use case
+# see engine and sdk deployments
+nodeSelector: {}

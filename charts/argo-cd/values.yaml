@@ -1,5 +1,5 @@
 argo-cd:
-  dex:
+  dex: #dex component is used for integration with external auth providers
     enabled: false
   server:
     config:

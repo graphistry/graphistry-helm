@@ -1,0 +1,131 @@
+{{- if eq .Values.global.devMode false }}
+
+
+{{ if eq .Values.graphAppKitPrivate true }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: graph-app-kit-private
+  name: graph-app-kit-private
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: graph-app-kit-private
+  strategy:
+{{ if eq .Values.rollingUpdate true }}
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{ .Values.maxSurge }}
+      maxUnavailable: "0%"
+{{ else }}
+    type: Recreate
+{{- end }}
+  template:
+    metadata:
+      annotations:
+        autoheal: "true"
+        kompose.cmd: kompose --file ./compose/release.yml convert -c
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: graph-app-kit-private
+    spec:
+      initContainers:
+      - name: graph-app-kit-init
+        #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
+        command: ["/bin/sh","-c"]
+        args: ['if [ ! -d "/opt/private/views" ]; then cp -r /apps/views /opt/private/views; else echo "Error: Directory /opt/private/views exists."; fi && if [ ! -d "/opt/private/css" ]; then cp -r /apps/css /opt/private/css; else echo "Error: Directory /opt/private/css exists."; fi && if [ ! -d "/opt/private/util" ]; then cp -r /apps/util /opt/private/util; else echo "Error: Directory /opt/private/util exists."; fi  && if [ ! -d "/opt/private/components" ]; then cp -r /apps/components /opt/private/components; else echo "Error: Directory /opt/private/components exists."; fi && chmod -R 777 /opt/private/  && rm -rf /opt/private/lost+found']
+        volumeMounts:
+        - name: gak-private
+          mountPath: /opt/private/        
+      containers:
+        - env:
+   {{- range .Values.streamlitEnv }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          - name: GRAPHISTRY_PROTOCOL
+            value: "http"
+          - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
+            value: ""
+          - name: GRAPHISTRY_SERVER
+            value: "nginx"
+          - name: GRAPHISTRY_USERNAME
+            valueFrom: { secretKeyRef: { name: gak-secret, key: username } }
+          - name: GRAPHISTRY_PASSWORD
+            valueFrom: { secretKeyRef: { name: gak-secret, key: password } }
+          #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command:
+                - sh 
+                - -c 
+                - 'curl -Lf http://localhost:8501/healthz'
+
+          name: graph-app-kit-private
+          ports:
+            - containerPort: 8501
+          resources: {}
+          volumeMounts:
+            - mountPath: /apps/css
+              subPath: css
+              name: gak-private
+            - mountPath: /apps/util
+              subPath: util
+              name: gak-private
+            - mountPath: /apps/views
+              subPath: views
+              name: gak-private
+####
+      restartPolicy: {{ .Values.global.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: gak-private
+          persistentVolumeClaim:
+            claimName: gak-private
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+#      imagePullSecrets:
+#          - name: {{ .Values.global.imagePullSecrets }}    
+{{ if eq .Values.global.multiNode false }}
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+{{- end }} 
+status: {}
+
+---
+#service
+
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  labels:
+    io.kompose.service: graph-app-kit-private
+  name: graph-app-kit-private
+spec:
+  ports:
+    - name: "8501"
+      port: 8501
+      targetPort: 8501
+  selector:
+    io.kompose.service: graph-app-kit-private
+
+{{- end }}
+{{- end }}

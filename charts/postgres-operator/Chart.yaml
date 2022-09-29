@@ -6,3 +6,24 @@ type: application
 # The version below should match the version on the PostgresCluster CRD
 version: 0.6.0
 appVersion: 5.2.0
+
+long_description: | 
+  Install Postgres Operator and CRDs
+  ---------------------------------------------------
+    .. tabs::
+
+      .. tab:: Local from Source
+        .. code-block:: shell-session            
+                  
+          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+          helm upgrade -i pgo ./charts/postgres-operator --namespace pgo --create-namespace 
+ 
+
+      .. tab:: From Graphistry Helm Repo
+        .. code-block:: shell-session            
+                  
+          helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+          helm upgrade -i pgo graphistry-helm/pgo --namespace pgo --create-namespace 
+
+
+

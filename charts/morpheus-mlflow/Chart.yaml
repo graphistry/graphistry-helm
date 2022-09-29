@@ -1,0 +1,30 @@
+apiVersion: v2
+appVersion: "22.06"
+description: A Helm chart for deploying the MLflow server and deployment plugin.
+name: morpheus-mlflow
+type: application
+version: "22.06"
+
+long_description: | 
+
+  Install Nvidia Morpheus MLFlow Plugin
+  ---------------------------------------------------
+    **NOTE:**  Morpheus AI Engine must be installed first. Please see :doc:`morpheus-docs` for more details on how to install.
+
+    .. tabs::
+
+      .. tab:: Local from Source
+        .. code-block:: shell-session            
+                  
+          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+          helm upgrade -i morpheus-mlflow ./charts/morpheus-mlflow --namespace morpheus --create-namespace 
+ 
+
+      .. tab:: From Graphistry Helm Repo
+        .. code-block:: shell-session            
+                  
+          helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+          helm upgrade -i morpheus-mlflow graphistry-helm/morpheus-mlflow --namespace morpheus --create-namespace 
+
+
+

@@ -1,0 +1,8 @@
+#ingress-nginx:
+#  controller: #controller variables
+#    metrics:  #this enables prometheus metrics and service monitor
+#      enabled: true 
+#      serviceMonitor: #this enables prometheus service monitor
+#        enabled: true 
+#        additionalLabels: #this adds a label to the service monitor
+#          release: "prometheus"

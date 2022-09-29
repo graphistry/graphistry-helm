@@ -1,0 +1,158 @@
+{{ if eq .Values.global.devMode false }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notebook
+  name: notebook
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: notebook
+  strategy:
+{{ if eq .Values.rollingUpdate true }}
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{.Values.maxSurge}}
+      maxUnavailable: "0%"
+{{ else }}
+    type: Recreate
+{{- end }}
+  template:
+    metadata:
+      annotations:
+        autoheal: "true"
+        kompose.cmd: kompose --file ./compose/release.yml convert -c
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: notebook
+    spec:
+      initContainers:
+      - name: "notebook-wait-for-streamgl-vgraph-etl"
+        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "streamgl-vgraph-etl"
+      - name: volume-mount-hack
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]
+        volumeMounts:
+        - mountPath: /home/graphistry/notebooks
+          subPath: notebooks
+          name: data-mount
+      containers:
+        - env:
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          - name: POSTGRES_HOST
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.notebook.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}          
+          livenessProbe:
+            exec:
+              command:
+                - sh 
+                - -c 
+                - 'curl -f -s -o /dev/null http://localhost:8888/notebook/api'
+            failureThreshold: 3
+            initialDelaySeconds: 60
+            periodSeconds: 120
+            timeoutSeconds: 30
+          name: notebook
+          ports:
+
+            - containerPort: 8888
+          resources: {}
+          volumeMounts:
+            - mountPath: /home/graphistry/notebooks
+              subPath: notebooks
+              name: data-mount
+            - mountPath: /home/graphistry/dask-shared
+              subPath: dask-shared
+              name: data-mount
+            - mountPath: /opt/graphistry/data
+              subPath: data
+              name: data-mount
+            - mountPath: /home/graphistry/graph-app-kit-public/
+              name: gak-public
+            - mountPath: /home/graphistry/graph-app-kit-private/
+              name: gak-private
+            
+      restartPolicy: {{ .Values.global.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
+        - name: gak-public
+          persistentVolumeClaim:
+            claimName: gak-public
+        - name: gak-private
+          persistentVolumeClaim:
+            claimName: gak-private
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+#      imagePullSecrets:
+#          - name: {{ .Values.global.imagePullSecrets }}  
+{{ if eq .Values.global.multiNode false }}
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+{{- end }} 
+status: {}
+
+
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: notebook
+  name: notebook
+spec:
+  ports:
+    - name: "8888"
+      port: 8888
+      targetPort: 8888
+  selector:
+    io.kompose.service: notebook
+status:
+  loadBalancer: {}
+
+{{- end }}

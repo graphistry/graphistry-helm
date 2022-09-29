@@ -1,0 +1,29 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: argo-ingress-{{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/backend-protocol: "HTTPS"
+  labels:
+  name: argo-ingress-{{ .Release.Namespace }}
+spec:
+  rules:
+    - host: cd.eks-dev.grph.xyz
+      http:
+        paths:
+          - backend:
+              service:
+                name: argo-argocd-server
+                port: 
+                  name: https
+            path: /
+            pathType: Prefix
+  tls:
+  - hosts:
+    - cd.eks-dev.grph.xyz
+    secretName: argocd-secret
+
+

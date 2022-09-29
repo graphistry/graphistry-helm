@@ -3,6 +3,9 @@ kind: PostgresCluster
 metadata:
   name: {{.Values.global.postgres.host }}
 spec:
+  metadata:
+    labels:
+      app: postgres
   #{{ if eq .Values.global.devMode false }}
   #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
   #{{ else }}  
@@ -15,6 +18,9 @@ spec:
     - name: {{.Values.global.postgres.user }}
       databases:
         - {{.Values.global.postgres.name }}
+      options: "REPLICATION"
+      password:
+        type: AlphaNumeric 
   instances:
     - name: instance1
       replicas: 1
@@ -31,7 +37,15 @@ spec:
         resources:
           requests:
             storage: 4Gi   
-
+        selector:
+          matchLabels:
+            pgo-postgres-cluster: graphistry-postgres
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        pg_hba:
+          - "host all all 0.0.0.0/0 trust" # this line enabled logical replication with programmatic access
+          - "host all postgres 127.0.0.1/32 md5"
   
   backups:
     pgbackrest:
@@ -53,6 +67,11 @@ spec:
                 requests:
                   storage: 4Gi
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+  {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:
-    - name: {{ .Values.global.imagePullSecrets  }}
+    {{- toYaml . | nindent 3 }}
+  {{- end }}
+#  imagePullSecrets:
+#    - name: {{ .Values.global.imagePullSecrets  }}
+
 

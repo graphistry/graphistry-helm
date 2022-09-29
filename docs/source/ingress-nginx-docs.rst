@@ -46,7 +46,19 @@ Parameter                                                                    Des
 ============================================================================ ==================================================================================================== ==================================================
 
 
+To enable the Service Monitor, you must have Prometheus Operator installed in your cluster. Here are the values you can set to configure the Service Monitor 
+to gather metrics with prometheus in the ingress-nginx values.yaml, or in the master values.yaml for all of your charts:
 
+    .. code-block:: yaml
+
+        ingress-nginx:
+            controller:
+                metrics:
+                enabled: true 
+                serviceMonitor:
+                    enabled: true 
+                    additionalLabels:
+                    release: "prometheus"
 
 
 

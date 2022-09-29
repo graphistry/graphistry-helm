@@ -23,7 +23,6 @@ k8sDashboard:
 
 #example values.yaml of an aws eks based deployment
 
-
 grafana:
   grafana.ini:
       server:
@@ -36,7 +35,6 @@ grafana:
 prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
-
 
 ingress-nginx:
   controller:

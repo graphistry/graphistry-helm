@@ -139,11 +139,37 @@ Install Graphistry
 
 **NOTE:** graphistry resources must be installed first as this contains the storageclasses that the PVCs rely on in the graphistry-helm deployment.
 
+Create a Secret for Graph App Kit (OPTIONAL)
+---------------------------------------------
+If you have a Graph App Kit enabled, you can create a secret to use it.
+
+
+.. code-block:: yaml            
+    :caption: gak-secret.yaml        
+
+    apiVersion: v1
+    kind: Secret
+    metadata:  
+      name: gak-secret
+      namespace: graphistry
+    type: Opaque
+    stringData:
+      username: <username here>
+      password: <password here>
+      
+Create the secret above as gak-secret.yaml and run the following command to create the secret:
+
+.. code-block:: shell-session            
+    
+    kubectl apply -f gak-secret.yaml  
+
+Once you have Created the user provided in the secret in Graphistry, Graph App Kit will display dashboards.
+
 Configuring Graphistry
 ----------------------
 
 It is recommended to create a values.yaml override file to configure the chart. The default values.yaml file can be found in the chart directory. Examples can be found in the ./charts/values-overrides directory.
-There are some Deployment specifc values which will need to be set, such as the global.provisioner, and graphistryResources.storageClassParameters, global.nodeSelector, and the global.Tag depending on your release. An example values.yaml can be 
+There are some Deployment specifc values which will need to be set, such as the **global.provisioner**, and **graphistryResources.storageClassParameters**, **global.nodeSelector**, and the **global.Tag** depending on your release. An example values.yaml can be 
 seen below. This is an example based on an AWS EKS deployment's values.yaml
 
     .. code-block:: yaml
@@ -180,3 +206,33 @@ Once the deployment is complete, the Graphistry UI can be accessed from the cadd
     .. code-block:: shell-session
 
         kubectl get ingress -n graphistry
+
+
+Volume Binding
+--------------
+After initial deployment , the PVCs (**gak-private,gak-public,data-mount,local-media-mount**) for graphistry will have PVs
+dynamically provisioned for them by the storageclasses that graphistry-resources deploy, and the pods will bind to them
+automatically. If the cluster is redeployed, the PVs will be released and the pods will not be able to bind to them. To fix this, 
+the PVCs must include the volumename from the PV that was provisioned for it. 
+Find the volume name by running the following command:
+
+    .. code-block:: shell-session
+
+        kubectl get pv -n graphistry
+
+This will return a list of PVs that were provisioned for the PVCs. The volumename can be found in the output of the command 
+corresponding to the PVC. Add the name to your values.yaml file under the volumeName section. An example values.yaml can be:
+
+    .. code-block:: yaml
+
+        volumeName:
+            dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
+            localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
+            gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
+            gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
+
+Once you have updated your values.yaml file the deployment can be redeployed/upgraded and the Pods will bind to the PVs automatically.
+
+    .. code-block:: shell-session
+
+        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./<your-values.yaml>

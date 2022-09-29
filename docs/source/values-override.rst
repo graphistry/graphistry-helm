@@ -19,10 +19,10 @@ Here is an example of a values.yaml for all of the individual services taken fro
         metrics: true
         fwdHeaders: true
         volumeName:
-        dataMount: pvc-91ac0b15-f7c9-471c-a00d-ab6dfb59885f
-        localMediaMount: pvc-89de61bf-2d96-4613-9a24-fb19a93d2c43
-        gakPublic: pvc-97b39989-9cfa-4058-b489-fbcab0c3dc7f
-        gakPrivate: pvc-9afe0118-e483-4b90-85a5-79a7181071e5
+            dataMount: pvc-91ac0b15-f7c9-471c-a00d-ab6dfb59885f
+            localMediaMount: pvc-89de61bf-2d96-4613-9a24-fb19a93d2c43
+            gakPublic: pvc-97b39989-9cfa-4058-b489-fbcab0c3dc7f
+            gakPrivate: pvc-9afe0118-e483-4b90-85a5-79a7181071e5
 
         ##values for graphistry-resources
         graphistryResources:
@@ -52,7 +52,7 @@ Here is an example of a values.yaml for all of the individual services taken fro
             prometheusSpec:
                 serviceMonitorSelectorNilUsesHelmValues: false
 
-        ##values for ingress-nginx ingress controller
+        ##values for ingress-nginx ingress controller when prometheus is installed
         ingress-nginx:
             controller:
                 metrics:
@@ -79,6 +79,18 @@ Here is an example of a values.yaml for all of the individual services taken fro
             imagePullPolicy: Always
             imagePullSecrets: 
               - name: docker-secret-prod
+
+Mandatory Values
+----------------
+
+Some of the global values are mandatory to work correctly.  These are:
+
+* **global.imagePullSecrets**
+* **global.provisioner**
+* **global.nodeSelector**
+* **graphistryResources.storageClassParameters**
+* **global.tag**
+
 
 
 For more information on configuration options for each chart, see the Configuration section in each corresponding chapter.

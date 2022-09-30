@@ -9,6 +9,9 @@ spec:
         - podSelector:
             matchLabels:
               io.kompose.network/grph: "true"
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: ingress-nginx
   podSelector:
     matchLabels:
       io.kompose.network/grph: "true"

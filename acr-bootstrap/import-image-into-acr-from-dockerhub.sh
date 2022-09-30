@@ -147,3 +147,5 @@ import_into_acr "postgres-operator-upgrade" "ubi8-5.2.0-0"
 #import_into_acr "crunchy-pgbouncer" "ubi8-1.17-1"
 
 #import_into_acr "crunchy-pgadmin4" "ubi8-4.30-4"
+SOURCE_REGISTRY=quay.io/martinhelmich
+#import_into_acr "prometheus-nginxlog-exporter" "v1.9.2"

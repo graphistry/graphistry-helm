@@ -139,3 +139,5 @@ charts/eks-dev-values.yaml
 charts/graphistry-helm/templates/_helpers.tpl
 
 *.tgz
+
+.terraform

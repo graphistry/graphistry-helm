@@ -4,6 +4,14 @@
 terraform {
   required_version = "~> 1.0"
 
+  backend "s3" {
+    bucket         = "graphistry-tf-state"
+    key            = "terraform.tfstate"
+    region         = "us-east-1"
+  }
+
+
+
   required_providers {
     aws = {
       source  = "hashicorp/aws"
@@ -11,7 +19,7 @@ terraform {
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "~> 2.5"
+      version = "~> 2.5.1"
     }
     kubectl = {
       source  = "gavinbunney/kubectl"
@@ -21,11 +29,12 @@ terraform {
 }
 
 provider "aws" {
-  region = "us-east-1"
+
+  region = var.availability_zone_name
 }
 
 locals {
-  cluster_name = "karpenter-demo"
+  cluster_name = var.cluster_name
 
   # Used to determine correct partition (i.e. - `aws`, `aws-gov`, `aws-cn`, etc.)
   partition = data.aws_partition.current.partition
@@ -94,13 +103,26 @@ module "vpc" {
   }
 }
 
+provider "kubectl" {
+  apply_retry_count      = 5
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+  load_config_file       = false
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1alpha1"
+    command     = "aws"
+    args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
+  }
+}
+
 provider "helm" {
   kubernetes {
     host                   = module.eks.cluster_endpoint
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
     exec {
-      api_version = "client.authentication.k8s.io/v1"
+      api_version = "client.authentication.k8s.io/v1alpha1"
       command     = "aws"
       args        = ["eks", "get-token", "--cluster-name", local.cluster_name]
     }
@@ -136,6 +158,70 @@ resource "helm_release" "karpenter" {
     value = aws_iam_instance_profile.karpenter.name
   }
 }
+resource "helm_release" "argo" {
+  name       = "argo-cd"
+  chart      = "../../charts/argo-cd"
+  namespace  = "argo-cd"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/argo-cd/values.yaml")}"
+  ]
+}
+
+data "helm_template" "argo_instance" {
+  name       = "argo-cd"
+  chart      = "../../charts/argo-cd/apps/"
+}
+
+resource "local_file" "argo_manifests" {
+  for_each = data.helm_template.argo_instance.manifests
+  filename = "./${each.key}"
+  content  = each.value
+}
+
+
+output "argo_instance_manifests" {
+  value = data.helm_template.argo_instance.manifests
+}
+
+resource "kubectl_manifest" "argo_apps" {
+  for_each = "${data.helm_template.argo_instance.manifests}" 
+  yaml_body = each.value
+  depends_on = [
+        helm_release.argo
+    ]
+}
+
+resource "kubectl_manifest" "karpenter_provisioner" {
+  yaml_body = <<-YAML
+  apiVersion: karpenter.sh/v1alpha5
+  kind: Provisioner
+  metadata:
+    name: default
+  spec:
+    requirements:
+      - key: karpenter.sh/capacity-type
+        operator: In
+        values: ["spot"]
+    limits:
+      resources:
+        cpu: 1000
+    provider:
+      subnetSelector:
+        karpenter.sh/discovery: ${local.cluster_name}
+      securityGroupSelector:
+        karpenter.sh/discovery: ${local.cluster_name}
+      tags:
+        karpenter.sh/discovery: ${local.cluster_name}
+    ttlSecondsAfterEmpty: 30
+  YAML
+
+  depends_on = [
+    helm_release.karpenter
+  ]
+} 
+
 
 module "eks" {
   # https://registry.terraform.io/modules/terraform-aws-modules/eks/aws/latest
@@ -189,14 +275,15 @@ module "eks" {
       sed -i '/^set -o errexit/a\\nsource /etc/profile.d/bootstrap.sh' /etc/eks/bootstrap.sh
       sed -i 's/KUBELET_EXTRA_ARGS=$2/KUBELET_EXTRA_ARGS="$2 $KUBELET_EXTRA_ARGS"/' /etc/eks/bootstrap.sh
       EOT
-      instance_types = var.instance_types.types
+
+      instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
       create_security_group = false
 
       # Ensure enough capacity to run 2 Karpenter pods
-      min_size     = var.cluster_size.min_size
-      max_size     = var.cluster_size.max_size
-      desired_size = var.cluster_size.desired_size
+      min_size     = var.cluster_size["min_size"]
+      max_size     = var.cluster_size["max_size"]
+      desired_size = var.cluster_size["desired_size"]
 
       iam_role_additional_policies = [
         # Required by Karpenter

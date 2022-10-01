@@ -5,6 +5,8 @@ metadata:
   namespace: argo-cd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: cert-manager
 spec:
   destination:
     server: https://kubernetes.default.svc
@@ -16,7 +18,7 @@ spec:
     targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
-        - ../values-overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+        - values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true

@@ -158,6 +158,30 @@ resource "helm_release" "karpenter" {
     value = aws_iam_instance_profile.karpenter.name
   }
 }
+resource "helm_release" "ingress-nginx" {
+  count = var.enable-ingress-nginx ? 1 : 0
+  name       = "ingress-nginx"
+  chart      = "../../charts/ingress-nginx"
+  namespace  = "ingress-nginx"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/ingress-nginx/values.yaml")}"
+  ]
+}
+
+resource "helm_release" "cert-manager" {
+  count = var.enable-cert-manager ? 1 : 0
+  name       = "cert-manager"
+  chart      = "../../charts/cert-manager"
+  namespace  = "cert-manager"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/cert-manager/values.yaml")}"
+  ]
+}
+
 resource "helm_release" "argo" {
   name       = "argo-cd"
   chart      = "../../charts/argo-cd"
@@ -172,12 +196,6 @@ resource "helm_release" "argo" {
 data "helm_template" "argo_instance" {
   name       = "argo-cd"
   chart      = "../../charts/argo-cd/apps/"
-}
-
-resource "local_file" "argo_manifests" {
-  for_each = data.helm_template.argo_instance.manifests
-  filename = "./${each.key}"
-  content  = each.value
 }
 
 

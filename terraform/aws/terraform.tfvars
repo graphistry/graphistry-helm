@@ -7,3 +7,5 @@ addons = [
    #{"name":"vpc-cni", "version":"v1.7.10-eksbuild.2"},
     {"name":"aws-ebs-csi-driver","version":"v1.10.0-eksbuild.1"}
         ]
+enable-ingress-nginx = true
+enable-cert-manager = true

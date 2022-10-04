@@ -159,7 +159,7 @@ resource "helm_release" "karpenter" {
   }
 }
 resource "helm_release" "ingress-nginx" {
-  count = var.enable-ingress-nginx ? 1 : 0
+  count      = var.enable-ingress-nginx ? 1 : 0
   name       = "ingress-nginx"
   chart      = "../../charts/ingress-nginx"
   namespace  = "ingress-nginx"
@@ -171,7 +171,7 @@ resource "helm_release" "ingress-nginx" {
 }
 
 resource "helm_release" "cert-manager" {
-  count = var.enable-cert-manager ? 1 : 0
+  count      = var.enable-cert-manager ? 1 : 0
   name       = "cert-manager"
   chart      = "../../charts/cert-manager"
   namespace  = "cert-manager"

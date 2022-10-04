@@ -26,6 +26,19 @@ variable "cluster_size" {
     }
 }
 
+variable "enable-cert-manager" {
+  description = "If set to true, it will create a cert-manager namespace and install cert-manager"
+  type = bool
+  default = false
+}
+
+
+variable "enable-ingress-nginx" {
+  description = "If set to true, it will create a ingress-nginx namespace and install ingres-nginx controller"
+  type = bool
+  default = false
+}
+
 variable "addons" {
   type = list(object({
     name    = string
@@ -52,16 +65,3 @@ variable "addons" {
   ]
 }
 
-
-variable "enable-cert-manager" {
-  description = "If set to true, it will create a cert-manager namespace and install cert-manager"
-  type = bool
-  default = false
-}
-
-
-variable "enable-ingress-nginx" {
-  description = "If set to true, it will create a ingress-nginx namespace and install ingres-nginx controller"
-  type = bool
-  default = false
-}

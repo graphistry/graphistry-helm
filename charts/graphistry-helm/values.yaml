@@ -63,6 +63,8 @@ graphAppKitPublic: true # graph app kit public - determines if public dashboard 
 # graph app kit private - determines if private dashboard is going to be deployed
 graphAppKitPrivate: true # graph app kit private - determines if private dashboard is going to be deployed
 
+networkPolicy: #network policy for for deployment, this limits traffic
+#  strict: true
 
 
 # rolling update deployment strategy switch (postgres and nexus are exempt)

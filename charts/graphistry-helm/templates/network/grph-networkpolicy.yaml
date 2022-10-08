@@ -1,9 +1,11 @@
+{{ if .Values.NetworkPolicy }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   creationTimestamp: null
   name: grph
 spec:
+{{ if eq  .Values.NetworkPolicy.strict true }} }} 
   ingress:
     - from:
         - podSelector:
@@ -12,6 +14,14 @@ spec:
         - namespaceSelector:
             matchLabels:
               kubernetes.io/metadata.name: ingress-nginx
+{{ else }} 
+  ingress:
+  - {}
+  egress:
+  - {}
+{{ end }}
   podSelector:
     matchLabels:
       io.kompose.network/grph: "true"
+
+{{ end }}

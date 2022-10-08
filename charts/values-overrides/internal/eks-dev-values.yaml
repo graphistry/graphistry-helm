@@ -61,6 +61,8 @@ global:
   #  GraphistryLogLevel: "TRACE"
   #multinode setting
   #multiNode: true
+  networkPolicy:
+    strict: true
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod

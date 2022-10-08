@@ -1,11 +1,11 @@
-{{ if .Values.NetworkPolicy }}
+{{ if .Values.networkPolicy }}
 apiVersion: networking.k8s.io/v1
 kind: NetworkPolicy
 metadata:
   creationTimestamp: null
   name: grph
 spec:
-{{ if eq  .Values.NetworkPolicy.strict true }} }} 
+{{ if eq  .Values.networkPolicy.strict true }} }} 
   ingress:
     - from:
         - podSelector:

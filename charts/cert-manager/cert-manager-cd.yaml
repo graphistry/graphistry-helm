@@ -5,6 +5,8 @@ metadata:
   namespace: argo-cd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: cert-manager
 spec:
   destination:
     server: https://kubernetes.default.svc
@@ -13,10 +15,10 @@ spec:
   source:
     path: charts/cert-manager
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: skinny-nightly #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
-        - ../values-overrides/internal/skinny-values.yaml # resolved against source.repoURL and source.path
+        - values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true

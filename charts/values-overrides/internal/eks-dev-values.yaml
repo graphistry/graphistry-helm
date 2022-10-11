@@ -1,7 +1,7 @@
 domain: eks-dev.grph.xyz 
 tlsEmail: "cody@graphistry.com" 
 tls: true
-metrics: true
+metrics: false
 fwdHeaders: true
 volumeName:
   dataMount: 
@@ -61,10 +61,12 @@ global:
   #  GraphistryLogLevel: "TRACE"
   #multinode setting
   #multiNode: true
+  networkPolicy:
+    strict: true
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod
-
+  postgresVolumeLabel: graphistry-postgres
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true
 

@@ -22,13 +22,13 @@ volumeName:
 
 graphistryResources:
   storageClassParameters:
-      csi.storage.k8s.io/fstype: ext4
+      fsType: ext4
       type: gp2
 
 
       
 global:
-  provisioner: ebs.csi.aws.com
+  provisioner: kubernetes.io/aws-ebs
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: dockerhub-secret

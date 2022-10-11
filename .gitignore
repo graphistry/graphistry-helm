@@ -145,3 +145,4 @@ terraform/aws/terraform.tfstate
 terraform/aws/terraform.tfstate.backup
 terraform/aws/.terraform.tfstate.lock.info
 
+cluster-config/cluster-config.yaml

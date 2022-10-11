@@ -6,7 +6,7 @@ appEnvironment: development
 djangoSettingsModule: "config.settings.dev" 
 graphistryCPUMode: "1" 
 djangoDebug: "True"
-httpTesting: true
+
 
 #volume pv names go here after initial deployment and provisioning
 volumeName:

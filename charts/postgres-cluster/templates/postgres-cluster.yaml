@@ -37,9 +37,11 @@ spec:
         resources:
           requests:
             storage: 4Gi   
+{{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
-            pgo-postgres-cluster: graphistry-postgres
+            pgo-postgres-cluster: {{ .Values.global.postgresVolumeLabel }}
+{{ end }}
   patroni:
     dynamicConfiguration:
       postgresql:

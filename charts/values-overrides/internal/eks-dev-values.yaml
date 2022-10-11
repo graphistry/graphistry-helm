@@ -1,7 +1,7 @@
 domain: eks-dev.grph.xyz 
 tlsEmail: "cody@graphistry.com" 
 tls: true
-metrics: true
+metrics: false
 fwdHeaders: true
 volumeName:
   dataMount: 
@@ -27,7 +27,7 @@ grafana:
   grafana.ini:
       server:
         domain: eks-dev.grph.xyz
-        root_url: https://eks-dev.grph.xyz/k8s/grafana
+        root_url: https://eks-dev.grph.xyz/grafana
         serve_from_sub_path: true
       auth.anonymous:
         enabled: true
@@ -61,10 +61,12 @@ global:
   #  GraphistryLogLevel: "TRACE"
   #multinode setting
   #multiNode: true
+  networkPolicy:
+    strict: true
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod
-
+  postgresVolumeLabel: graphistry-postgres
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true
 

@@ -38,6 +38,7 @@ spec:
         io.kompose.service: nginx
     spec:
       initContainers:
+      {{ if eq .Values.global.devMode false }} 
       - name: "nginx-wait-for-forge-etl"
         {{- if eq .Values.global.containerregistry.name "docker.io" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
@@ -87,8 +88,7 @@ spec:
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
-        - "streamgl-vgraph-etl"
-      {{ if eq .Values.global.devMode false }}        
+        - "streamgl-vgraph-etl"       
       - name: nginx-init-streamgl-viz
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: 
@@ -137,6 +137,8 @@ spec:
             value: .longhorn-system.svc.cluster.local
           - name: K8S_DASHBOARD_NAMESPACE
             value: .kubernetes-dashboard.svc.cluster.local
+          - name: GRAFANA_SERVICE_NAME
+            value: prometheus-community-grafana.prometheus.svc.cluster.local
           - name: IS_K8S
             value: "1"
           - name: NGINX_RESOLVER

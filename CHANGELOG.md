@@ -23,3 +23,8 @@
 
 *   Created Docs
 
+*   Added volume names to automatically bind PVC to PV after provisioning upon redeployment
+
+*   Added a volume selector to postgres cluster to bind the PVC to the PV after provisioning upon redeployment
+
+*   made network policy optional, with a strict mode and default mode set to false as default (No policy in use by default).

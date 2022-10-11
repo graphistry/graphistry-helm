@@ -158,6 +158,7 @@ Parameter                                          Description                  
 ``nexusPort.portTwo``                              ports for nexus service to listen on                                                                 ``8080``                                          
 ``graphAppKitPublic``                              graph app kit public - determines if public dashboard is going to be deployed                        ``true``                                          
 ``graphAppKitPrivate``                             graph app kit private - determines if private dashboard is going to be deployed                      ``true``                                          
+``networkPolicy``                                  network policy for for deployment, this limits traffic                                               ``null``                                          
 ``rollingUpdate``                                  rolling update deployment strategy switch                                                            ``false``                                         
 ``sessionCookieAge``                               django session cookie timeout (seconds)                                                              ``"1209600"``                                     
 ``jwtExpirationDelta``                             django drf-jwt, jwt token timeout (seconds)                                                          ``"3600"``                                        

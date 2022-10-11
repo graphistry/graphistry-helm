@@ -139,3 +139,4 @@ charts/eks-dev-values.yaml
 charts/graphistry-helm/templates/_helpers.tpl
 
 *.tgz
+cluster-config/cluster-config.yaml

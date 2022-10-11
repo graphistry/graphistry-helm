@@ -2,6 +2,8 @@ argo-cd:
   dex: #dex component is used for integration with external auth providers
     enabled: false
   server:
+    extraArgs:
+      - --insecure
     config:
       repositories: |
         - type: helm

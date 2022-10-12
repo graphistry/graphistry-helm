@@ -193,6 +193,8 @@ dask:
 #dask-scheduler repository name 
 daskscheduler:
   repository: etl-server-python #dask-scheduler repository name 
+  location: "dask-scheduler:8786" #dask-scheduler location
+
 
 
 #dask-cuda-worker repository name 
@@ -255,8 +257,6 @@ env: #environment variables
    value: 64 MiB
  - name: DASK_CUDF_CSV_CHUNKSIZE
    value: 64 MiB
- - name: REMOTE_DASK
-   value: dask-scheduler:8786
  - name: REMOTE_DASK_DIAGNOSTICS
    value: dask-scheduler:8787
  - name: AIR_GAPPED

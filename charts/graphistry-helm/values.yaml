@@ -199,6 +199,7 @@ daskscheduler:
 daskcudaworker:
   repository: etl-server-python #dask-cuda-worker repository name
 
+forgeWorkers: "4" #sets the number of forge workers
 
 ## graphistry key for dev mode in pivot deployment
 graphistryKey: ## graphistry key for dev mode in pivot deployment
@@ -252,8 +253,6 @@ env: #environment variables
    value: 64 MiB
  - name: DASK_CUDF_CSV_CHUNKSIZE
    value: 64 MiB
- - name: FORGE_NUM_WORKERS
-   value: "4"
  - name: REMOTE_DASK
    value: dask-scheduler:8786
  - name: REMOTE_DASK_DIAGNOSTICS

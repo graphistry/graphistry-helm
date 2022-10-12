@@ -28,3 +28,5 @@
 *   Added a volume selector to postgres cluster to bind the PVC to the PV after provisioning upon redeployment
 
 *   made network policy optional, with a strict mode and default mode set to false as default (No policy in use by default).
+
+*   Added ability to configure Forge ETL python resource limits and number of workers

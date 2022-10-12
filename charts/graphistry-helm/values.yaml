@@ -199,7 +199,9 @@ daskscheduler:
 daskcudaworker:
   repository: etl-server-python #dask-cuda-worker repository name
 
-forgeWorkers: "4" #sets the number of forge workers
+forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
+
+forgeMemory: 4Gi #sets the amount of memory to limit on forge etl python
 
 ## graphistry key for dev mode in pivot deployment
 graphistryKey: ## graphistry key for dev mode in pivot deployment

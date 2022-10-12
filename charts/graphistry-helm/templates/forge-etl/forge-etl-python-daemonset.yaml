@@ -59,7 +59,7 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           - name: REMOTE_DASK
-            value: {{.Value.daskscheduler.location | quote }}
+            value: {{.Values.daskscheduler.location | quote }}
           - name: FORGE_NUM_WORKERS
             value: {{.Values.forgeWorkers | quote }}
           - name: POSTGRES_HOST

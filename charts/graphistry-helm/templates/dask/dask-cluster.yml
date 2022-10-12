@@ -41,6 +41,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: REMOTE_DASK
+            value: {{.Value.daskscheduler.location | quote }}
           - name: POSTGRES_HOST
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
           - name: POSTGRES_PORT
@@ -123,6 +125,8 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          - name: REMOTE_DASK
+            value: {{.Value.daskscheduler.location | quote }}
           - name: POSTGRES_HOST
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
           - name: POSTGRES_PORT

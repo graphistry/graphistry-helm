@@ -75,4 +75,4 @@ global:
 
 
 #helm upgrade -i prom ./charts/kube-prometheus-stack --values ./charts/overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
-#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace 
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace --dry-run 

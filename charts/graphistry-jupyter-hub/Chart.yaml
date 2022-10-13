@@ -25,7 +25,7 @@ appVersion: "1.16.0"
 
 dependencies:
   - name: jupyterhub
-    version: "2.0.0-beta.1.git.5783.h867f4331"
+    version: "2.0.0"
     repository: https://jupyterhub.github.io/helm-chart
     condition: kubeStateMetrics.enabled
 

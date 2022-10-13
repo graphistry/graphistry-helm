@@ -27,8 +27,8 @@ k8sDashboard:
 grafana:
   grafana.ini:
       server:
-        domain: eks-dev.grph.xyz
-        root_url: https://eks-dev.grph.xyz/grafana
+        domain: "eks-dev.grph.xyz"
+        root_url: "https://eks-dev.grph.xyz/grafana"
         serve_from_sub_path: true
       auth.anonymous:
         enabled: true
@@ -72,5 +72,5 @@ global:
 
 
 
-#helm upgrade -i prom ./charts/kube-prometheus-stack --values ./charts/overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
+#helm upgrade -i prometheus-community ./charts/kube-prometheus-stack --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
 #helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace --dry-run 

@@ -26,4 +26,4 @@ global:
   logs: #log levels
     LogLevel: INFO
     GraphistryLogLevel: INFO
-  postgresVolumeLabel:  
+  postgresVolumeLabel:  #postgres volume label

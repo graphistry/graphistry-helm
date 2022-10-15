@@ -25,6 +25,6 @@ spec:
 
 ##helm template charts/argo-cd/apps/ | kubectl apply -f -
 
-#helm upgrade -i argo ./charts/argo-cd  --namespace argo --create-namespace
+#helm upgrade -i argo-cd ./charts/argo-cd  --namespace argo-cd --create-namespace
 
 #kubectl port-forward -n argo-cd svc/argo-cd-argocd-server 8080:443

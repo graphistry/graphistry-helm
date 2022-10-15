@@ -8,7 +8,8 @@ volumeName:
   localMediaMount: pvc-89de61bf-2d96-4613-9a24-fb19a93d2c43
   gakPublic: pvc-97b39989-9cfa-4058-b489-fbcab0c3dc7f
   gakPrivate: pvc-9afe0118-e483-4b90-85a5-79a7181071e5
-
+networkPolicy:
+  strict: true
 
 graphistryResources:
   storageClassParameters:
@@ -26,8 +27,8 @@ k8sDashboard:
 grafana:
   grafana.ini:
       server:
-        domain: eks-dev.grph.xyz
-        root_url: https://eks-dev.grph.xyz/k8s/grafana
+        domain: "eks-dev.grph.xyz"
+        root_url: "https://eks-dev.grph.xyz/grafana"
         serve_from_sub_path: true
       auth.anonymous:
         enabled: true
@@ -61,8 +62,6 @@ global:
   #  GraphistryLogLevel: "TRACE"
   #multinode setting
   #multiNode: true
-  networkPolicy:
-    strict: true
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod
@@ -73,5 +72,5 @@ global:
 
 
 
-#helm upgrade -i prom ./charts/kube-prometheus-stack --values ./charts/overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
-#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace 
+#helm upgrade -i prometheus-community ./charts/kube-prometheus-stack --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace --dry-run 

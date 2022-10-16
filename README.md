@@ -1,7 +1,7 @@
 # graphistry-helm
 Run Graphistry in Kubernetes using this live helm repository and supporting automation scripts & documentation 
 
-For contributing to this repository as a developer, see [DEVELOP.md](DEVELOP.md)
+See [CHANGELOG.md](CHANGELOG.md) for version history. For contributing to this repository as a developer, see [DEVELOP.md](DEVELOP.md)
 
 ## Private docker image repositories
 

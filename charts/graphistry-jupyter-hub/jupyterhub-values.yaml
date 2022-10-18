@@ -64,7 +64,4 @@ imagePullSecrets: ["docker-prod"]
 
 
 
-#  helm upgrade -i daniels-nb ./charts/graphistry-jupyter-hub \
-#    --values ./charts/graphistry-jupyter-hub/jupyterhub-values.yaml \
-#    --namespace daniel \
-#    --create-namespace
+# helm upgrade -i daniels-nb ./charts/graphistry-jupyter-hub --values ./charts/graphistry-jupyter-hub/jupyterhub-values.yaml --namespace daniel --create-namespace

@@ -31,22 +31,21 @@ singleuser:
       volumeNameTemplate: volume-{username}
       storageAccessModes: [ReadWriteOnce]
   memory:
-    limit: 2G
-    guarantee: 1G 
+    limit: 4G
+    guarantee: 2G 
   defaultUrl: /user/{username}/lab
   profileList:
     - display_name: "Graphistry GPU Server"
       description: "Spawns a notebook server with access to a GPU and a conda environment for Graphistry Dev"
       default: True
       kubespawner_override:
-        image: graphistry/graphistry:jupyter-notebook-v2.39.24-11.4
+        image: graphistry/graphistry:jupyter-notebook-v2.39.27-11.4
         http_timeout: 90
         start_timeout: 90
         image_pull_policy: IfNotPresent
-        image_pull_secrets: ["docker-prod"]
         default_url: /user/{username}/lab
         notebook_dir: /home/graphistry/notebooks
-        cmd: ["/bin/bash", "-c" ,"source activate rapids && pip install jupyterhub==3.0.0b1 && jupyterhub-singleuser"]        
+        cmd: ["/bin/bash", "-c" ,"source activate rapids && pip install --user jupyterhub==3.0.0 && jupyterhub-singleuser"]        
         #cmd: ["/bin/bash", "-c" ,"source activate rapids && mamba install --freeze-installed --yes -c rapidsai -c nvidia -c anaconda -c conda-forge -c wakari jupyterhub==3.0.0b1 && jupyterhub-singleuser"]        
         uid: 1000
         gid: 1000
@@ -61,11 +60,8 @@ cull:
   concurrency: 10 # --concurrency
   maxAge: 0 # --max-age
 
+imagePullSecrets: ["docker-prod"]
 
 
 
-
-#  helm upgrade -i daniels-nb ./charts/graphistry-jupyter-hub \
-#    --values ./charts/graphistry-jupyter-hub/jupyterhub-values.yaml \
-#    --namespace daniel --version 2.0.0-beta.1.git.5783.h867f4331 \
-#    --create-namespace
+# helm upgrade -i daniels-nb ./charts/graphistry-jupyter-hub --values ./charts/graphistry-jupyter-hub/jupyterhub-values.yaml --namespace daniel --create-namespace

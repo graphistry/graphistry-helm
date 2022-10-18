@@ -68,7 +68,7 @@ Parameter                                          Description                  
 ``global.nodeSelector``                            node selector to determine which node to deploy cluster to                                           ``null``                                          
 ``global.logs.LogLevel``                                                                                                                                ``"INFO"``                                        
 ``global.logs.GraphistryLogLevel``                                                                                                                      ``"INFO"``                                        
-``global.postgresVolumeLabel``                                                                                                                          ``null``                                          
+``global.postgresVolumeLabel``                     postgres volume label                                                                                ``null``                                          
 ================================================== ==================================================================================================== ==================================================
 
 

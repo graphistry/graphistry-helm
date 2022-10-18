@@ -10,3 +10,4 @@ addons = [
 enable-ingress-nginx = true
 enable-cert-manager = true
 key_pair_name = "cody-key"
+enable-ssh = true

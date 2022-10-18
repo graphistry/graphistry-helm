@@ -52,7 +52,7 @@ resource "aws_eks_addon" "addons" {
 
 resource "aws_iam_instance_profile" "karpenter" {
   name = "KarpenterNodeInstanceProfile-${local.cluster_name}"
-  role = module.eks.eks_managed_node_groups["initial"].iam_role_name
+  role = module.eks.eks_managed_node_groups["nodegroup"].iam_role_name
 }
 
 module "karpenter_irsa" {
@@ -64,7 +64,7 @@ module "karpenter_irsa" {
 
   karpenter_controller_cluster_id = module.eks.cluster_id
   karpenter_controller_node_iam_role_arns = [
-    module.eks.eks_managed_node_groups["initial"].iam_role_arn
+    module.eks.eks_managed_node_groups["nodegroup"].iam_role_arn
   ]
 
   oidc_providers = {
@@ -248,6 +248,9 @@ module "eks" {
 
   cluster_name    = local.cluster_name
   cluster_version = "1.23"
+  
+  cluster_endpoint_private_access = true
+  cluster_endpoint_public_access  = var.enable-ssh
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
@@ -265,6 +268,7 @@ module "eks" {
       source_cluster_security_group = true
     }
     ingress_nodes_ssh_port = {
+      count                         = var.enable-ssh ? 1 : 0
       name                          = "ssh"
       description                   = "Allow SSH access to nodes"
       protocol                      = "tcp"
@@ -272,7 +276,8 @@ module "eks" {
       to_port                       = 22
       type                          = "ingress"
       source_cluster_security_group = true
-    }    
+
+    }   
   }
 
   node_security_group_tags = {
@@ -287,8 +292,7 @@ module "eks" {
   # This ensures core services such as VPC CNI, CoreDNS, etc. are up and running
   # so that Karpenter can be deployed and start managing compute capacity as required
   eks_managed_node_groups = {
-
-    initial = {
+    nodegroup = {
         # See issue https://github.com/awslabs/amazon-eks-ami/issues/844
       pre_bootstrap_user_data = <<-EOT
       #!/bin/bash
@@ -312,7 +316,7 @@ module "eks" {
       sed -i '/^set -o errexit/a\\nsource /etc/profile.d/bootstrap.sh' /etc/eks/bootstrap.sh
       sed -i 's/KUBELET_EXTRA_ARGS=$2/KUBELET_EXTRA_ARGS="$2 $KUBELET_EXTRA_ARGS"/' /etc/eks/bootstrap.sh
       EOT
-      key_name = "${var.key_pair_name}"
+      key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
       create_security_group = false
@@ -332,5 +336,6 @@ module "eks" {
         "karpenter.sh/discovery/${local.cluster_name}" = local.cluster_name
       }
     }
+
   }
 }

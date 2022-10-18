@@ -29,6 +29,7 @@ Configuring Postgres Cluster
 ----------------------------
 
 After Cluster is deployed, find the pv that is created and add the following label to it. This will allow the cluster to bind the pv to the pod upon redeployment.
+Once that is completed add the label to your values.yaml file under postgresVolumeLabel. This will allow the cluster to bind the pv to the pod upon redeployment.
       
     .. code-block:: shell-session
 
@@ -51,22 +52,23 @@ The following table lists the configurable parameters of the Postgrescluster cha
 ================================================== ==================================================================================================== ==================================================
 Parameter                                          Description                                                                                          Default
 ================================================== ==================================================================================================== ==================================================
-``global.provisioner``                                                                                                                                  ``"kubernetes.io/aws-ebs"``                       
-``global.multiNode``                                                                                                                                    ``false``                                         
+``global.provisioner``                             storage class provisioner                                                                            ``"kubernetes.io/aws-ebs"``                       
+``global.multiNode``                               multinode selector switch to determine if going multi/single node                                    ``false``                                         
 ``global.containerregistry.name``                                                                                                                       ``"acrgraphistryk8s.azurecr.io"``                 
-``global.devMode``                                                                                                                                      ``false``                                         
-``global.postgres.repository``                                                                                                                          ``"graphistry-postgres"``                         
-``global.postgres.name``                                                                                                                                ``"graphistry"``                                  
-``global.postgres.user``                                                                                                                                ``"graphistry"``                                  
-``global.postgres.port``                                                                                                                                ``5432``                                          
-``global.postgres.host``                                                                                                                                ``"postgres"``                                    
-``global.tag``                                                                                                                                          ``"latest"``                                      
-``global.imagePullPolicy``                         could also be Always                                                                                 ``"IfNotPresent"``                                
-``global.restartPolicy``                                                                                                                                ``"Always"``                                      
-``global.imagePullSecrets``                                                                                                                             ``[]``                                            
-``global.nodeSelector``                                                                                                                                 ``null``                                          
+``global.devMode``                                 dev mode for debugging with nexus, postgres and nginx                                                ``false``                                         
+``global.postgres.repository``                     postgres repository name                                                                             ``"graphistry-postgres"``                         
+``global.postgres.name``                           postgres db name                                                                                     ``"graphistry"``                                  
+``global.postgres.user``                           postgres db user                                                                                     ``"graphistry"``                                  
+``global.postgres.port``                           port for postgres service to listen on                                                               ``5432``                                          
+``global.postgres.host``                           hostname for postgres                                                                                ``"postgres"``                                    
+``global.tag``                                     tag for the docker image                                                                             ``"latest"``                                      
+``global.imagePullPolicy``                         image pull policy could also be Always                                                               ``"IfNotPresent"``                                
+``global.restartPolicy``                           restart policy                                                                                       ``"Always"``                                      
+``global.imagePullSecrets``                        image pull secrets name                                                                              ``[]``                                            
+``global.nodeSelector``                            node selector to determine which node to deploy cluster to                                           ``null``                                          
 ``global.logs.LogLevel``                                                                                                                                ``"INFO"``                                        
 ``global.logs.GraphistryLogLevel``                                                                                                                      ``"INFO"``                                        
+``global.postgresVolumeLabel``                     postgres volume label                                                                                ``null``                                          
 ================================================== ==================================================================================================== ==================================================
 
 

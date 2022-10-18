@@ -20,10 +20,8 @@ graphistryResources:
 
 
 global:
-  tag: v2.39.28-admin
   provisioner: disk.csi.azure.com
   containerregistry:
     name: 
   imagePullSecrets: 
     - name: dockerhub-secret
-  postgresVolumeLabel:   

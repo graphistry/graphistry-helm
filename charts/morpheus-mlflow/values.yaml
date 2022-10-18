@@ -13,7 +13,7 @@ ngc:
 mlflow:
   registry: "nvcr.io/nvidia/morpheus"
   image: mlflow-triton-plugin
-  version: 1.28.0
+  version: 1.24.0
   # make the MLflow deployment Pending of
   # where the AI Engine is scheduled
   withEngine: false

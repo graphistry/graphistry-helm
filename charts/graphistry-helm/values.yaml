@@ -63,8 +63,6 @@ graphAppKitPublic: true # graph app kit public - determines if public dashboard 
 # graph app kit private - determines if private dashboard is going to be deployed
 graphAppKitPrivate: true # graph app kit private - determines if private dashboard is going to be deployed
 
-networkPolicy: #network policy for for deployment, this limits traffic
-#  strict: true
 
 
 # rolling update deployment strategy switch (postgres and nexus are exempt)
@@ -193,17 +191,12 @@ dask:
 #dask-scheduler repository name 
 daskscheduler:
   repository: etl-server-python #dask-scheduler repository name 
-  location: "dask-scheduler:8786" #dask-scheduler location
-
 
 
 #dask-cuda-worker repository name 
 daskcudaworker:
   repository: etl-server-python #dask-cuda-worker repository name
 
-forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
-
-forgeMemory: 4Gi #sets the amount of memory to limit on forge etl python
 
 ## graphistry key for dev mode in pivot deployment
 graphistryKey: ## graphistry key for dev mode in pivot deployment
@@ -257,6 +250,10 @@ env: #environment variables
    value: 64 MiB
  - name: DASK_CUDF_CSV_CHUNKSIZE
    value: 64 MiB
+ - name: FORGE_NUM_WORKERS
+   value: "4"
+ - name: REMOTE_DASK
+   value: dask-scheduler:8786
  - name: REMOTE_DASK_DIAGNOSTICS
    value: dask-scheduler:8787
  - name: AIR_GAPPED

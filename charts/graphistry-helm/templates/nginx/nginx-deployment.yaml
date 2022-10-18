@@ -38,7 +38,6 @@ spec:
         io.kompose.service: nginx
     spec:
       initContainers:
-      {{ if eq .Values.global.devMode false }} 
       - name: "nginx-wait-for-forge-etl"
         {{- if eq .Values.global.containerregistry.name "docker.io" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
@@ -88,7 +87,8 @@ spec:
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
-        - "streamgl-vgraph-etl"       
+        - "streamgl-vgraph-etl"
+      {{ if eq .Values.global.devMode false }}        
       - name: nginx-init-streamgl-viz
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: 
@@ -137,8 +137,6 @@ spec:
             value: .longhorn-system.svc.cluster.local
           - name: K8S_DASHBOARD_NAMESPACE
             value: .kubernetes-dashboard.svc.cluster.local
-          - name: GRAFANA_SERVICE_NAME
-            value: prometheus-community-grafana.prometheus.svc.cluster.local
           - name: IS_K8S
             value: "1"
           - name: NGINX_RESOLVER
@@ -146,11 +144,7 @@ spec:
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
-            value: {{ .Values.global.logs.LogLevel | quote }} 
-          {{if eq .Values.metrics true }} 
-          - name: EXTRA_NGINX_LOGS
-            value: access_log syslog:server=127.0.0.1:5531,tag=nginx,severity=info custom;
-          {{ end }}
+            value: {{ .Values.global.logs.LogLevel | quote }}  
    {{ if eq .Values.global.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.global.tag}}-universal

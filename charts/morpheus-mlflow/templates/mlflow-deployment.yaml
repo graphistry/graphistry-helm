@@ -41,7 +41,7 @@ spec:
       {{- end }}
       containers:
       - name: {{ .Chart.Name }}
-        args: [ "/bin/sh", "-c", "mlflow server -h 0.0.0.0 --backend-store-uri sqlite:////tmp/mlflow-db.sqlite --default-artifact-root /mlflow/artifacts --static-prefix /morpheus/mlflow" ]
+        args: [ "/bin/sh", "-c", "mlflow server -h 0.0.0.0 --backend-store-uri sqlite:////tmp/mlflow-db.sqlite --default-artifact-root /mlflow/artifacts" ]
         env:
         - name: TRITON_MODEL_REPO
           value: /common/triton-model-repo

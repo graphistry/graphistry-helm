@@ -144,7 +144,11 @@ spec:
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
-            value: {{ .Values.global.logs.LogLevel | quote }}  
+            value: {{ .Values.global.logs.LogLevel | quote }} 
+          {{if eq .Values.metrics true }} 
+          - name: EXTRA_NGINX_LOGS
+            value: access_log syslog:server=127.0.0.1:5531,tag=nginx,severity=info custom;
+          {{ end }}
    {{ if eq .Values.global.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.global.tag}}-universal

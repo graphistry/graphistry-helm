@@ -42,6 +42,18 @@ variable "enable-ingress-nginx" {
   default = false
 }
 
+variable "enable-grafana" {
+  description = "If set to true, it will create a prometheus namespace and install prometheus and grafana"
+  type = bool
+  default = false
+}
+
+variable "enable-morpheus" {
+  description = "If set to true, it will create a morpheus namespace and install morpheus & mlflow"
+  type = bool
+  default = false
+}
+
 variable "enable-ssh" {
   description = "If set to true, it will create a ingress-nginx namespace and install ingres-nginx controller"
   type = bool

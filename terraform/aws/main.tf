@@ -34,7 +34,7 @@ provider "aws" {
 }
 
 locals {
-  cluster_name = var.cluster_name
+  cluster_name = "${var.cluster_name}"
 
   # Used to determine correct partition (i.e. - `aws`, `aws-gov`, `aws-cn`, etc.)
   partition = data.aws_partition.current.partition
@@ -166,7 +166,42 @@ resource "helm_release" "ingress-nginx" {
   create_namespace = true
 
   values = [
-    "${file("../../charts/ingress-nginx/values.yaml")}"
+    "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
+  ]
+}
+resource "helm_release" "grafana-stack" {
+  count      = var.enable-grafana ? 1 : 0
+  name       = "prometheus"
+  chart      = "../../charts/kube-prometheus-stack"
+  namespace  = "prometheus"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
+  ]
+}
+
+resource "helm_release" "morpheus" {
+  count      = var.enable-morpheus ? 1 : 0
+  name       = "morpheus"
+  chart      = "../../charts/morpheus-ai-engine"
+  namespace  = "morpheus"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/morpheus-ai-engine/values.yaml")}"
+  ]
+}
+
+resource "helm_release" "morpheus-mlflow" {
+  count      = var.enable-morpheus ? 1 : 0
+  name       = "morpheus-mlflow"
+  chart      = "../../charts/morpheus-mlflow"
+  namespace  = "morpheus"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/morpheus-mlflow/values.yaml")}"
   ]
 }
 
@@ -178,7 +213,7 @@ resource "helm_release" "cert-manager" {
   create_namespace = true
 
   values = [
-    "${file("../../charts/cert-manager/values.yaml")}"
+    "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
   ]
 }
 
@@ -249,8 +284,8 @@ module "eks" {
   cluster_name    = local.cluster_name
   cluster_version = "1.23"
   
-  cluster_endpoint_private_access = true
-  cluster_endpoint_public_access  = var.enable-ssh
+  cluster_endpoint_private_access = var.enable-ssh == true ? true : null
+  cluster_endpoint_public_access  = var.enable-ssh == true ? true : null
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets

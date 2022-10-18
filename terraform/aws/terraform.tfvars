@@ -9,5 +9,8 @@ addons = [
         ]
 enable-ingress-nginx = true
 enable-cert-manager = true
+enable-grafana = true
+enable-morpheus = true
+
 key_pair_name = "cody-key"
 enable-ssh = true

@@ -1,8 +1,11 @@
 variable "cluster_name" {
   description = "the cluster name"
   type    = string
-  default = "karpenter-demo"
+  default = "eks-dev-terraform"
 }
+
+variable "key_pair_name" {}
+
 
 variable "availability_zone_name" {
   description = "the availability zone names"

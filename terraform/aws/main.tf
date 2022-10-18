@@ -264,22 +264,15 @@ module "eks" {
       type                          = "ingress"
       source_cluster_security_group = true
     }
-    ingress = {
-        cidr_blocks = [
-          "0.0.0.0/0"
-        ]
-    from_port = 22
-        to_port = 22
-        protocol = "tcp"
-      }
-    // Terraform removes the default rule
-      egress = {
-      from_port = 0
-      to_port = 0
-      protocol = "-1"
-      cidr_blocks = ["0.0.0.0/0"]
-    }
-    
+    ingress_nodes_ssh_port = {
+      name                          = "ssh"
+      description                   = "Allow SSH access to nodes"
+      protocol                      = "tcp"
+      from_port                     = 22
+      to_port                       = 22
+      type                          = "ingress"
+      source_cluster_security_group = true
+    }    
   }
 
   node_security_group_tags = {
@@ -319,7 +312,7 @@ module "eks" {
       sed -i '/^set -o errexit/a\\nsource /etc/profile.d/bootstrap.sh' /etc/eks/bootstrap.sh
       sed -i 's/KUBELET_EXTRA_ARGS=$2/KUBELET_EXTRA_ARGS="$2 $KUBELET_EXTRA_ARGS"/' /etc/eks/bootstrap.sh
       EOT
-
+      key_name = "${var.key_pair_name}"
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
       create_security_group = false

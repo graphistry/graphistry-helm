@@ -55,7 +55,7 @@ cert-manager: #defined by either the name or alias of your dependency in Chart.y
 global:
   provisioner: ebs.csi.aws.com
   tag: v2.39.30-koa-site-org
-  nodeSelector: {"graphistryNodeNumber": "true"}
+  nodeSelector: {"graphistryNodeGroupNumber": "1"}
   #change log levels
   #logs:
   #  LogLevel: "TRACE"

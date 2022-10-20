@@ -380,7 +380,7 @@ module "eks" {
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
       ]
       labels = {
-        graphistryNodeNumber = "1"
+        graphistryNodeGroupNumber = "1"
       }
 
       tags = {

@@ -6,12 +6,12 @@ appEnvironment: development
 djangoSettingsModule: "config.settings.dev" 
 graphistryCPUMode: "1" 
 djangoDebug: "True"
-httpTesting: true
+
 
 #volume pv names go here after initial deployment and provisioning
 volumeName:
-  dataMount: 
-  localMediaMount: 
+  dataMount: pvc-23155f4b-b930-4d6f-92be-b35c17817658
+  localMediaMount: pvc-338325a1-c9fb-4c75-bfc4-66dd7c0fd6a1
   gakPublic: 
   gakPrivate: 
 
@@ -22,13 +22,13 @@ volumeName:
 
 graphistryResources:
   storageClassParameters:
-      csi.storage.k8s.io/fstype: ext4
+      fsType: ext4
       type: gp2
 
 
       
 global:
-  provisioner: ebs.csi.aws.com
+  provisioner: kubernetes.io/aws-ebs
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: dockerhub-secret

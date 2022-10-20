@@ -4,9 +4,7 @@ variable "cluster_name" {
   default = "eks-dev-terraform"
 }
 
-
 variable "key_pair_name" {}
-
 
 variable "availability_zone_name" {
   description = "the availability zone names"
@@ -84,10 +82,10 @@ variable "addons" {
 #      name    = "coredns"
 #      version = "v1.8.4-eksbuild.1"
 #    },
-    {
-      name    = "aws-ebs-csi-driver"
-      version = "v1.10.0-eksbuild.1"
-    }
+#    {
+#      name    = "aws-ebs-csi-driver"
+#      version = "v1.10.0-eksbuild.1"
+#    }
   ]
 }
 

@@ -158,7 +158,8 @@ resource "helm_release" "karpenter" {
 }
 
 resource "helm_release" "ingress-nginx" {
-  count      = var.enable-ingress-nginx ? 1 : 0 && var.enable-grafana ? 0 : 1
+  count      = var.enable-ingress-nginx && !var.enable-grafana ? 1 : 0
+
   name       = "ingress-nginx"
   chart      = "../../charts/ingress-nginx"
   namespace  = "ingress-nginx"
@@ -170,7 +171,8 @@ resource "helm_release" "ingress-nginx" {
 }
 
 resource "helm_release" "ingress-nginx-grafana" {
-  count      = var.enable-ingress-nginx ? 1 : 0 && var.enable-grafana ? 1 : 0
+  count      =  var.enable-ingress-nginx  && var.enable-grafana ? 1 : 0
+  #count      = var.enable-ingress-nginx ? 1 : 0 && var.enable-grafana ? 1 : 0
   name       = "ingress-nginx"
   chart      = "../../charts/ingress-nginx"
   namespace  = "ingress-nginx"
@@ -193,7 +195,7 @@ resource "helm_release" "grafana-stack" {
   ]
 }
 
-resource "helm_release" "morpheus" {
+resource "helm_release" "morpheus-ai-engine" {
   count      = var.enable-morpheus ? 1 : 0 
   name       = "morpheus"
   chart      = "../../charts/morpheus-ai-engine"
@@ -380,7 +382,7 @@ module "eks" {
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
       ]
       labels = {
-        graphistryNodeGroupNumber = "1"
+        accelerator: "nvidia"
       }
 
       tags = {

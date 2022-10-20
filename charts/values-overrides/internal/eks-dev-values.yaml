@@ -55,7 +55,7 @@ cert-manager: #defined by either the name or alias of your dependency in Chart.y
 global:
   provisioner: ebs.csi.aws.com
   tag: v2.39.30-koa-site-org
-  nodeSelector: {"kubernetes.io/hostname": "ip-10-0-2-181.ec2.internal"}
+  nodeSelector: {"kubernetes.io/hostname": "ip-172-31-29-0.us-east-2.compute.internal"}
   #change log levels
   #logs:
   #  LogLevel: "TRACE"

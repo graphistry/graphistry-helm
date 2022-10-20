@@ -4,6 +4,7 @@ variable "cluster_name" {
   default = "eks-dev-terraform"
 }
 
+
 variable "key_pair_name" {}
 
 
@@ -35,6 +36,10 @@ variable "enable-cert-manager" {
   default = false
 }
 
+variable "ngc_api_key" {
+  type = string
+  description = "value of NGC api key"
+}
 
 variable "enable-ingress-nginx" {
   description = "If set to true, it will create a ingress-nginx namespace and install ingres-nginx controller"

@@ -34,7 +34,7 @@ provider "aws" {
 }
 
 locals {
-  cluster_name = "${var.cluster_name}"
+  cluster_name = var.cluster_name
 
   # Used to determine correct partition (i.e. - `aws`, `aws-gov`, `aws-cn`, etc.)
   partition = data.aws_partition.current.partition
@@ -44,7 +44,7 @@ data "aws_partition" "current" {}
 
 resource "aws_eks_addon" "addons" {
   for_each          = { for addon in var.addons : addon.name => addon }
-  cluster_name      = local.cluster_name
+  cluster_name      = module.eks.cluster_id
   addon_name        = each.value.name
   addon_version     = each.value.version
   resolve_conflicts = "OVERWRITE"
@@ -158,8 +158,21 @@ resource "helm_release" "karpenter" {
     value = aws_iam_instance_profile.karpenter.name
   }
 }
+
 resource "helm_release" "ingress-nginx" {
-  count      = var.enable-ingress-nginx ? 1 : 0
+  count      = var.enable-ingress-nginx ? 1 : 0 && var.enable-grafana ? 0 : 1
+  name       = "ingress-nginx"
+  chart      = "../../charts/ingress-nginx"
+  namespace  = "ingress-nginx"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/ingress-nginx/values.yaml")}"
+  ]
+}
+
+resource "helm_release" "ingress-nginx-grafana" {
+  count      = var.enable-ingress-nginx ? 1 : 0 && var.enable-grafana ? 1 : 0
   name       = "ingress-nginx"
   chart      = "../../charts/ingress-nginx"
   namespace  = "ingress-nginx"
@@ -169,6 +182,7 @@ resource "helm_release" "ingress-nginx" {
     "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
   ]
 }
+
 resource "helm_release" "grafana-stack" {
   count      = var.enable-grafana ? 1 : 0
   name       = "prometheus"
@@ -182,7 +196,7 @@ resource "helm_release" "grafana-stack" {
 }
 
 resource "helm_release" "morpheus" {
-  count      = var.enable-morpheus ? 1 : 0
+  count      = var.enable-morpheus ? 1 : 0 
   name       = "morpheus"
   chart      = "../../charts/morpheus-ai-engine"
   namespace  = "morpheus"
@@ -191,6 +205,10 @@ resource "helm_release" "morpheus" {
   values = [
     "${file("../../charts/morpheus-ai-engine/values.yaml")}"
   ]
+  set {
+    name  = "ngc.apiKey"
+    value = var.ngc_api_key
+  }
 }
 
 resource "helm_release" "morpheus-mlflow" {
@@ -203,6 +221,10 @@ resource "helm_release" "morpheus-mlflow" {
   values = [
     "${file("../../charts/morpheus-mlflow/values.yaml")}"
   ]
+  set {
+    name  = "ngc.apiKey"
+    value = var.ngc_api_key
+  }
 }
 
 resource "helm_release" "cert-manager" {

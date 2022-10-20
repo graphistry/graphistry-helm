@@ -15,7 +15,7 @@ spec:
   source:
     path: charts/argo-cd/apps/templates/operators-cd-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: skinny-nightly #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
   syncPolicy:
     automated:
       prune: true

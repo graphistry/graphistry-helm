@@ -200,9 +200,6 @@ resource "helm_release" "morpheus" {
   namespace  = "morpheus"
   create_namespace = true
 
-  values = [
-    "${file("../../charts/morpheus-ai-engine/values.yaml")}"
-  ]
   set {
     name  = "ngc.apiKey"
     value = var.ngc_api_key
@@ -216,9 +213,6 @@ resource "helm_release" "morpheus-mlflow" {
   namespace  = "morpheus"
   create_namespace = true
 
-  values = [
-    "${file("../../charts/morpheus-mlflow/values.yaml")}"
-  ]
   set {
     name  = "ngc.apiKey"
     value = var.ngc_api_key
@@ -394,3 +388,6 @@ module "eks" {
 
   }
 }
+
+#if enable-morpheus is set to true apply terraform as below
+#terraform apply -var=ngc_api_key="<api key here>"

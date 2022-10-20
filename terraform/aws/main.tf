@@ -379,6 +379,9 @@ module "eks" {
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
       ]
+      labels = {
+        graphistryNodeNumber = "1"
+      }
 
       tags = {
         # This will tag the launch template created for use by Karpenter

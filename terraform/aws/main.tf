@@ -157,6 +157,7 @@ resource "helm_release" "karpenter" {
   }
 }
 
+
 resource "helm_release" "ingress-nginx" {
   count      = var.enable-ingress-nginx && !var.enable-grafana ? 1 : 0
 
@@ -204,7 +205,7 @@ resource "helm_release" "morpheus-ai-engine" {
 
   set {
     name  = "ngc.apiKey"
-    value = var.ngc_api_key
+    value = var.ngc-api-key
   }
 }
 
@@ -217,7 +218,7 @@ resource "helm_release" "morpheus-mlflow" {
 
   set {
     name  = "ngc.apiKey"
-    value = var.ngc_api_key
+    value = var.ngc-api-key
   }
 }
 
@@ -249,6 +250,30 @@ data "helm_template" "argo_instance" {
   chart      = "../../charts/argo-cd/apps/"
 }
 
+data "template_file" "docker_config_script" {
+  template = "${file("${path.module}/config.json")}"
+  vars = {
+    docker-username           = "${var.docker-username}"
+    docker-password           = "${var.docker-password}"
+    docker-server             = "${var.docker-server}"
+    auth                      = base64encode("${var.docker-username}:${var.docker-password}")
+  }
+}
+
+resource "kubernetes_secret" "docker-registry" {
+  depends_on = [
+        kubectl_manifest.argo_apps
+    ]
+  metadata {
+    name = "docker-secret-prod"
+  }
+
+  data = {
+    ".dockerconfigjson" = "${data.template_file.docker_config_script.rendered}"
+  }
+
+  type = "kubernetes.io/dockerconfigjson"
+}
 
 output "argo_instance_manifests" {
   value = data.helm_template.argo_instance.manifests
@@ -290,6 +315,7 @@ resource "kubectl_manifest" "karpenter_provisioner" {
     helm_release.karpenter
   ]
 } 
+
 
 
 module "eks" {
@@ -370,6 +396,7 @@ module "eks" {
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
       create_security_group = false
+      #iam_role_attach_cni_policy = true
 
       # Ensure enough capacity to run 2 Karpenter pods
       min_size     = var.cluster_size["min_size"]
@@ -379,8 +406,8 @@ module "eks" {
       iam_role_additional_policies = [
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
-        "arn:${local.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
-        "arn:${local.partition}:iam::aws:policy/AmazonEKS_CNI_Policy"        
+        "arn:${local.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",   
+        "arn:${local.partition}:iam::aws:policy/AmazonEKS_CNI_Policy"     
       ]
       labels = {
         accelerator: "nvidia"
@@ -396,4 +423,6 @@ module "eks" {
 }
 
 #if enable-morpheus is set to true apply terraform as below
-#terraform apply -var=ngc_api_key="<api key here>"
+#terraform apply -var=ngc-api-key="<api key here>" -var=docker-username="<your docker username>" -var=docker-password="<your docker password>"
+#when node comes up run : 
+#kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=1

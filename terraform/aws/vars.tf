@@ -34,7 +34,7 @@ variable "enable-cert-manager" {
   default = false
 }
 
-variable "ngc_api_key" {
+variable "ngc-api-key" {
   type = string
   description = "value of NGC api key"
 }
@@ -88,4 +88,20 @@ variable "addons" {
 #    }
   ]
 }
+
+variable "docker-password" {
+  description = "docker password"
+  type    = string
+
+}
+variable "docker-username" {
+  description = "docker username"
+  type    = string
+}
+variable "docker-server" {
+  description = "the docker server"
+  type    = string
+  default = "docker.io"
+}
+
 

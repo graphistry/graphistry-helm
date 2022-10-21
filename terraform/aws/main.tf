@@ -349,7 +349,6 @@ module "eks" {
       #!/bin/bash
       set -ex
       cat <<-EOF > /etc/profile.d/bootstrap.sh
-      export CONTAINER_RUNTIME="containerd"
       export USE_MAX_PODS=false
       export KUBELET_EXTRA_ARGS="--max-pods=110"
       EOF
@@ -379,7 +378,9 @@ module "eks" {
 
       iam_role_additional_policies = [
         # Required by Karpenter
-        "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore"
+        "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
+        "arn:${local.partition}:iam::aws:policy/service-role/AmazonEBSCSIDriverPolicy",
+        "arn:${local.partition}:iam::aws:policy/AmazonEKS_CNI_Policy"        
       ]
       labels = {
         accelerator: "nvidia"

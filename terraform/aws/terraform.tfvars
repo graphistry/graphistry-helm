@@ -8,7 +8,7 @@ cluster_size = {"min_size": 1, "max_size": 3, "desired_size": 1}
 addons = [
     #{"name":"kube-proxy", "version":"v1.21.2-eksbuild.2"},
     #{"name":"coredns", "version":"v1.8.4-eksbuild.1"},
-   #{"name":"vpc-cni", "version":"v1.7.10-eksbuild.2"},
+    {"name":"vpc-cni", "version":"v1.7.10-eksbuild.2"},
     {"name":"aws-ebs-csi-driver","version":"v1.10.0-eksbuild.1"}
         ]
 ###enable various deployment addons ####

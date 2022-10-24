@@ -24,3 +24,5 @@ enable-ssh = true
 #terraform apply -var=ngc_api_key="<api key here>"
 #else set enable-morpheus to false and apply terraform as below
 #terraform apply
+
+###terraform destroy -target=module.vpc

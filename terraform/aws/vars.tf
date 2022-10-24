@@ -12,6 +12,12 @@ variable "availability_zone_name" {
   default = "us-east-1"
 }
 
+variable "disk_size" {
+  description = "size of disk"
+  type    = number
+  default = 200
+}
+
 variable "instance_types" {
   description = "the instance types"
   type    = list

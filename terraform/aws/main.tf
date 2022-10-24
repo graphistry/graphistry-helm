@@ -23,6 +23,10 @@ terraform {
       source  = "gavinbunney/kubectl"
       version = "~> 1.14"
     }
+    kubernetes = {
+      source  = "hashicorp/kubernetes"
+      version = "~> 2.14.0"
+    }
   }
 }
 
@@ -80,7 +84,7 @@ module "vpc" {
   version = "3.12.0"
 
   name = local.cluster_name
-  cidr = "10.0.0.0/16"
+  cidr = "10.0.0.0/28"
 
   azs             = ["us-east-1a", "us-east-1b", "us-east-1c"]
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
@@ -108,9 +112,20 @@ provider "kubectl" {
   load_config_file       = false
 
   exec {
-    api_version = "client.authentication.k8s.io/v1alpha1"
+    api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
+  }
+}
+provider "kubernetes" {
+  host                   = module.eks.cluster_endpoint
+  cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
+
+  exec {
+    api_version = "client.authentication.k8s.io/v1beta1"
+    command     = "aws"
+    # This requires the awscli to be installed locally where Terraform is executed
+    args = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
   }
 }
 
@@ -120,7 +135,7 @@ provider "helm" {
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
     exec {
-      api_version = "client.authentication.k8s.io/v1alpha1"
+      api_version = "client.authentication.k8s.io/v1beta1"
       command     = "aws"
       args        = ["eks", "get-token", "--cluster-name", local.cluster_name]
     }
@@ -185,6 +200,9 @@ resource "helm_release" "ingress-nginx-grafana" {
 }
 
 resource "helm_release" "grafana-stack" {
+  depends_on = [
+        kubectl_manifest.argo_apps
+    ]
   count      = var.enable-grafana ? 1 : 0
   name       = "prometheus"
   chart      = "../../charts/kube-prometheus-stack"
@@ -197,6 +215,9 @@ resource "helm_release" "grafana-stack" {
 }
 
 resource "helm_release" "morpheus-ai-engine" {
+  depends_on = [
+        kubectl_manifest.argo_apps
+    ]
   count      = var.enable-morpheus ? 1 : 0 
   name       = "morpheus"
   chart      = "../../charts/morpheus-ai-engine"
@@ -210,6 +231,10 @@ resource "helm_release" "morpheus-ai-engine" {
 }
 
 resource "helm_release" "morpheus-mlflow" {
+  depends_on = [
+        kubectl_manifest.argo_apps,
+        helm_release.morpheus-ai-engine
+    ]
   count      = var.enable-morpheus ? 1 : 0
   name       = "morpheus-mlflow"
   chart      = "../../charts/morpheus-mlflow"
@@ -223,6 +248,10 @@ resource "helm_release" "morpheus-mlflow" {
 }
 
 resource "helm_release" "cert-manager" {
+  depends_on = [
+        kubectl_manifest.argo_apps
+    ]
+
   count      = var.enable-cert-manager ? 1 : 0
   name       = "cert-manager"
   chart      = "../../charts/cert-manager"
@@ -245,10 +274,6 @@ resource "helm_release" "argo" {
   ]
 }
 
-data "helm_template" "argo_instance" {
-  name       = "argo-cd"
-  chart      = "../../charts/argo-cd/apps/"
-}
 
 data "template_file" "docker_config_script" {
   template = "${file("${path.module}/config.json")}"
@@ -262,10 +287,12 @@ data "template_file" "docker_config_script" {
 
 resource "kubernetes_secret" "docker-registry" {
   depends_on = [
+
         kubectl_manifest.argo_apps
     ]
   metadata {
     name = "docker-secret-prod"
+    namespace = "graphistry"
   }
 
   data = {
@@ -274,6 +301,13 @@ resource "kubernetes_secret" "docker-registry" {
 
   type = "kubernetes.io/dockerconfigjson"
 }
+
+
+data "helm_template" "argo_instance" {
+  name       = "argo-cd"
+  chart      = "../../charts/argo-cd/apps/"
+}
+
 
 output "argo_instance_manifests" {
   value = data.helm_template.argo_instance.manifests
@@ -402,7 +436,7 @@ module "eks" {
       min_size     = var.cluster_size["min_size"]
       max_size     = var.cluster_size["max_size"]
       desired_size = var.cluster_size["desired_size"]
-
+      disk_size    = var.disk_size
       iam_role_additional_policies = [
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
@@ -426,3 +460,7 @@ module "eks" {
 #terraform apply -var=ngc-api-key="<api key here>" -var=docker-username="<your docker username>" -var=docker-password="<your docker password>"
 #when node comes up run : 
 #kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=1
+
+##delete terraform state file for some reason or other..
+#terraform state rm $(terraform state list | grep aws_instance)
+#terraform state list | cut -f 1 -d '[' | xargs -L 0 terraform state rm

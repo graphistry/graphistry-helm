@@ -1,5 +1,5 @@
 ###the cluster name
-cluster_name = "demo-tf-cluster"
+cluster_name = "eks-dev-tf-cluster"
 ##cluster availability zone
 availability_zone_name = "us-east-1"
 ###change cluster size

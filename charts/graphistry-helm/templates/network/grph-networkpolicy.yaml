@@ -5,7 +5,7 @@ metadata:
   creationTimestamp: null
   name: grph
 spec:
-{{ if eq .Values.networkPolicy.strict true }} }} 
+{{ if eq .Values.networkPolicy.strict true }} 
   ingress:
     - from:
         - podSelector:

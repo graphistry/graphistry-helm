@@ -122,7 +122,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
   exec {
-    api_version = "client.authentication.k8s.io/v1alpha1"
+    api_version = "client.authentication.k8s.io/v1beta1"
     command     = "aws"
     # This requires the awscli to be installed locally where Terraform is executed
     args = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
@@ -173,7 +173,8 @@ resource "helm_release" "karpenter" {
 }
 resource "null_resource" "patch_aws_cni" {
   depends_on = [
-     module.eks.node_group_id
+     module.eks.node_group_id,
+     helm_release.argo
   ]
 
   provisioner "local-exec" {
@@ -481,7 +482,8 @@ module "eks" {
 
 #if enable-morpheus is set to true apply terraform as below
 #terraform apply -var=ngc-api-key="<api key here>" -var=docker-username="<your docker username>" -var=docker-password="<your docker password>"
-#when node comes up run : 
+#when node comes up run : (fixed with null_resource) can check via:
+#kubectl describe ds aws-node -n kube-system
 #kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=1
 
 ##delete terraform state file for some reason or other..

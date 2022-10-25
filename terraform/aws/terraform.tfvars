@@ -26,3 +26,4 @@ enable-ssh = true
 #terraform apply
 
 ###terraform destroy -target=module.vpc
+### will fail to destory unless manually delete load balancer

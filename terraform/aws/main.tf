@@ -112,7 +112,7 @@ provider "kubectl" {
   load_config_file       = false
 
   exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
+    api_version = "client.authentication.k8s.io/v1alpha1"
     command     = "aws"
     args        = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
   }
@@ -122,7 +122,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
   exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
+    api_version = "client.authentication.k8s.io/v1alpha1"
     command     = "aws"
     # This requires the awscli to be installed locally where Terraform is executed
     args = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
@@ -135,7 +135,7 @@ provider "helm" {
     cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
     exec {
-      api_version = "client.authentication.k8s.io/v1beta1"
+      api_version = "client.authentication.k8s.io/v1alpha1"
       command     = "aws"
       args        = ["eks", "get-token", "--cluster-name", local.cluster_name]
     }
@@ -171,7 +171,17 @@ resource "helm_release" "karpenter" {
     value = aws_iam_instance_profile.karpenter.name
   }
 }
-
+resource "null_resource" "patch_aws_cni" {
+  triggers = {
+    cluster_id = module.eks.cluster_id
+  }
+  provisioner "local-exec" {
+    command = <<EOF
+# do all those commands to get kubectl and auth info, then run:
+kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=1
+EOF
+  }
+}
 
 resource "helm_release" "ingress-nginx" {
   count      = var.enable-ingress-nginx && !var.enable-grafana ? 1 : 0
@@ -285,10 +295,15 @@ data "template_file" "docker_config_script" {
   }
 }
 
+resource "kubernetes_namespace" "create_graphistry_namespace" {
+  metadata {
+    name = "graphistry"
+  }
+}
+
 resource "kubernetes_secret" "docker-registry" {
   depends_on = [
-
-        kubectl_manifest.argo_apps
+        kubernetes_namespace.create_graphistry_namespace
     ]
   metadata {
     name = "docker-secret-prod"
@@ -317,7 +332,9 @@ resource "kubectl_manifest" "argo_apps" {
   for_each = "${data.helm_template.argo_instance.manifests}" 
   yaml_body = each.value
   depends_on = [
-        helm_release.argo
+        helm_release.argo,
+        kubernetes_secret.docker-registry
+
     ]
 }
 
@@ -365,6 +382,7 @@ module "eks" {
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
+  cluster_security_group_id = module.eks.node_security_group_id
 
   # Required for Karpenter role below
   enable_irsa = true
@@ -426,17 +444,20 @@ module "eks" {
       sed -i '/^set -o errexit/a\\nsource /etc/profile.d/bootstrap.sh' /etc/eks/bootstrap.sh
       sed -i 's/KUBELET_EXTRA_ARGS=$2/KUBELET_EXTRA_ARGS="$2 $KUBELET_EXTRA_ARGS"/' /etc/eks/bootstrap.sh
       EOT
-      key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
+
+      #key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
+
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
       create_security_group = false
-      #iam_role_attach_cni_policy = true
+
 
       # Ensure enough capacity to run 2 Karpenter pods
       min_size     = var.cluster_size["min_size"]
       max_size     = var.cluster_size["max_size"]
       desired_size = var.cluster_size["desired_size"]
       disk_size    = var.disk_size
+
       iam_role_additional_policies = [
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",
@@ -450,6 +471,11 @@ module "eks" {
       tags = {
         # This will tag the launch template created for use by Karpenter
         "karpenter.sh/discovery/${local.cluster_name}" = local.cluster_name
+      }
+      remote_access = {
+        count                     = var.enable-ssh ? 1 : 0
+        source_security_group_ids = var.enable-ssh == true ? [module.eks.node_security_group_id] : []
+        ec2_ssh_key               = var.enable-ssh == true ? var.key_pair_name : null
       }
     }
 

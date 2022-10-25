@@ -147,6 +147,7 @@ resource "helm_release" "k8s-device-plugin" {
   chart = "nvidia-device-plugin"
   version = "0.12.3"
   namespace = "nvidia-device-plugin"
+  create_namespace = true
 }
 
 resource "helm_release" "karpenter" {

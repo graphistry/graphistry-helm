@@ -150,6 +150,15 @@ resource "helm_release" "k8s-device-plugin" {
   create_namespace = true
 }
 
+resource "helm_release" "gpu-prometheus" {
+  count      = var.enable-grafana ? 1 : 0
+  name       = "gpu-exporter"
+  repository = "https://nvidia.github.io/dcgm-exporter/helm-charts"
+  chart      = "dcgm-exporter"
+  namespace  = "kube-system"
+}
+
+
 resource "helm_release" "karpenter" {
   namespace        = "karpenter"
   create_namespace = true

@@ -9,7 +9,7 @@ addons = [
     #{"name":"kube-proxy", "version":"v1.21.2-eksbuild.2"},
     #{"name":"coredns", "version":"v1.8.4-eksbuild.1"},
     #{"name":"vpc-cni", "version":"v3.9.0-eksbuild.2"},
-    {"name":"aws-ebs-csi-driver","version":"v1.10.0-eksbuild.1"}
+    {"name":"aws-ebs-csi-driver","version":"v1.11.4-eksbuild.1"}
         ]
 ###enable various deployment addons ####
 enable-ingress-nginx = true

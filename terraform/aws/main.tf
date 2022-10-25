@@ -468,7 +468,7 @@ module "eks" {
       desired_size = var.cluster_size["desired_size"]
       disk_size    = var.disk_size
       create_launch_template = false 
-      launch_template_name   = "" 
+      launch_template_name   = "gpu-nodegroup" 
       iam_role_additional_policies = [
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",

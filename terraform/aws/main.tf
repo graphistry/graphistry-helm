@@ -172,9 +172,10 @@ resource "helm_release" "karpenter" {
   }
 }
 resource "null_resource" "patch_aws_cni" {
-  triggers = {
-    cluster_id = module.eks.cluster_id
-  }
+  depends_on = [
+     module.eks.node_group_id
+  ]
+
   provisioner "local-exec" {
     command = <<EOF
 # do all those commands to get kubectl and auth info, then run:
@@ -382,7 +383,8 @@ module "eks" {
 
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
-  cluster_security_group_id = module.eks.node_security_group_id
+
+  #cluster_security_group_id = module.eks.node_security_group_id
 
   # Required for Karpenter role below
   enable_irsa = true
@@ -445,7 +447,7 @@ module "eks" {
       sed -i 's/KUBELET_EXTRA_ARGS=$2/KUBELET_EXTRA_ARGS="$2 $KUBELET_EXTRA_ARGS"/' /etc/eks/bootstrap.sh
       EOT
 
-      #key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
+      key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
 
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
@@ -471,11 +473,6 @@ module "eks" {
       tags = {
         # This will tag the launch template created for use by Karpenter
         "karpenter.sh/discovery/${local.cluster_name}" = local.cluster_name
-      }
-      remote_access = {
-        count                     = var.enable-ssh ? 1 : 0
-        source_security_group_ids = var.enable-ssh == true ? [module.eks.node_security_group_id] : []
-        ec2_ssh_key               = var.enable-ssh == true ? var.key_pair_name : null
       }
     }
 

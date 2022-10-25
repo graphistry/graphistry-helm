@@ -122,7 +122,7 @@ provider "kubernetes" {
   cluster_ca_certificate = base64decode(module.eks.cluster_certificate_authority_data)
 
   exec {
-    api_version = "client.authentication.k8s.io/v1beta1"
+    api_version = "client.authentication.k8s.io/v1alpha1"
     command     = "aws"
     # This requires the awscli to be installed locally where Terraform is executed
     args = ["eks", "get-token", "--cluster-name", module.eks.cluster_id]
@@ -460,7 +460,8 @@ module "eks" {
       max_size     = var.cluster_size["max_size"]
       desired_size = var.cluster_size["desired_size"]
       disk_size    = var.disk_size
-
+      create_launch_template = false 
+      launch_template_name   = "" 
       iam_role_additional_policies = [
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",

@@ -141,6 +141,13 @@ provider "helm" {
     }
   }
 }
+resource "helm_release" "k8s-device-plugin" {
+  name  = "k8s-device-plugin"
+  repository = "https://nvidia.github.io/k8s-device-plugin"
+  chart = "nvidia-device-plugin"
+  version = "0.12.3"
+  namespace = "nvidia-device-plugin"
+}
 
 resource "helm_release" "karpenter" {
   namespace        = "karpenter"
@@ -449,7 +456,7 @@ module "eks" {
       EOT
 
       key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
-
+      ami_type = var.ami_type
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
       create_security_group = false

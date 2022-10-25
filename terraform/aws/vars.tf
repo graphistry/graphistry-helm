@@ -23,6 +23,11 @@ variable "instance_types" {
   type    = list
   default = ["g4dn.xlarge"]
 }
+variable "ami_type" {
+  description = "the ami type - choose one with nvidia driver"
+  type    = string
+  default = "AL2_x86_64_GPU"
+}
 
 variable "cluster_size" {
     description = "the cluster size"

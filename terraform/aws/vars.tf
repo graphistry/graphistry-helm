@@ -12,6 +12,12 @@ variable "availability_zone_name" {
   default = "us-east-1"
 }
 
+variable "cluster_endpoint_public_access_cidrs" {
+  description = "cluster endpoint public access cidrs default set to 0.0.0.0/0"
+  type    = string
+  default = "0.0.0.0/0"
+}
+
 variable "disk_size" {
   description = "size of disk"
   type    = number

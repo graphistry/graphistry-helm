@@ -180,7 +180,7 @@ resource "null_resource" "patch_aws_cni" {
   provisioner "local-exec" {
     command = <<EOF
 # do all those commands to get kubectl and auth info, then run:
-kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=1
+kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=2
 EOF
   }
 }

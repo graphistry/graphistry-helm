@@ -52,7 +52,6 @@ resource "aws_eks_addon" "addons" {
   cluster_name             = module.eks.cluster_id
   addon_name               = each.value.name
   addon_version            = each.value.version
-  service_account_role_arn = module.karpenter_irsa.iam_role_arn
   resolve_conflicts = "OVERWRITE"
 }
 

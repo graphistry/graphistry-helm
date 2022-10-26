@@ -435,6 +435,22 @@ module "eks" {
       source_cluster_security_group = true
 
     }   
+    ingress_self_all = {
+      description = "Node to node all ports/protocols"
+      protocol    = "-1"
+      from_port   = 0
+      to_port     = 0
+      type        = "ingress"
+      source_cluster_security_group = true
+    }
+    egress_all = {
+      description      = "Node all egress"
+      protocol         = "-1"
+      from_port        = 0
+      to_port          = 0
+      type             = "egress"
+      source_cluster_security_group = true
+    }
   }
 
   node_security_group_tags = {
@@ -485,8 +501,9 @@ module "eks" {
       max_size     = var.cluster_size["max_size"]
       desired_size = var.cluster_size["desired_size"]
       disk_size    = var.disk_size
-      #create_launch_template = true 
-      #launch_template_name   = "" 
+      create_launch_template = false
+      launch_template_name   = "" 
+      
       iam_role_additional_policies = [
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",

@@ -3,11 +3,11 @@ tlsEmail: "cody@graphistry.com"
 tls: true
 metrics: false
 fwdHeaders: true
-#volumeName:
-#  dataMount: pvc-7e69c7eb-79b0-4e0b-b23e-0c06f8e79b4f
-#  localMediaMount: pvc-e11b1eeb-3d13-44d8-83c5-65e52ae42a8d
-#  gakPublic: pvc-838682e3-f807-4fce-a584-d30cb2a2f104
-#  gakPrivate: pvc-cee28c9f-87dd-4e9c-91ec-0a38213ece91
+volumeName:
+  dataMount: pvc-1f74538d-971f-451c-be91-c924b523036c
+  localMediaMount: pvc-803077a4-6f51-4349-beaf-1771782804cd
+  gakPublic: pvc-ed2c196c-3bee-4884-b8b0-686a21cc571c
+  gakPrivate: pvc-2a220f57-0986-40b5-b01e-ba392ce29a8e
 networkPolicy:
   strict: true
 
@@ -65,7 +65,7 @@ global:
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod
-#  postgresVolumeLabel: graphistry-postgres
+  postgresVolumeLabel: graphistry-postgres
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true
 

@@ -93,8 +93,6 @@ module "vpc" {
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
-  #enable_dns_support     = true
-  #enable_dns_hostnames   = true
 
   enable_nat_gateway     = true
   single_nat_gateway     = true
@@ -223,7 +221,6 @@ resource "helm_release" "ingress-nginx" {
 
 resource "helm_release" "ingress-nginx-grafana" {
   count      =  var.enable-ingress-nginx  && var.enable-grafana ? 1 : 0
-  #count      = var.enable-ingress-nginx ? 1 : 0 && var.enable-grafana ? 1 : 0
   name       = "ingress-nginx"
   chart      = "../../charts/ingress-nginx"
   namespace  = "ingress-nginx"
@@ -437,7 +434,7 @@ module "eks" {
   vpc_id     = module.vpc.vpc_id
   subnet_ids = module.vpc.private_subnets
 
-  #cluster_security_group_id = module.eks.node_security_group_id
+
 
   # Required for Karpenter role below
   enable_irsa = true
@@ -506,7 +503,6 @@ module "eks" {
       sed -i 's/KUBELET_EXTRA_ARGS=$2/KUBELET_EXTRA_ARGS="$2 $KUBELET_EXTRA_ARGS"/' /etc/eks/bootstrap.sh
       EOT
 
-      #key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
       ami_type = var.ami_type
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
@@ -519,7 +515,6 @@ module "eks" {
       desired_size = var.cluster_size["desired_size"]
       disk_size    = var.disk_size
       remote_access = {
-
         ec2_ssh_key               = var.key_pair_name
         source_security_group_ids = [aws_security_group.remote_access.id]
       }

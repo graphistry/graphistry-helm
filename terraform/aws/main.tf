@@ -93,8 +93,8 @@ module "vpc" {
   private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
   public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 
-  enable_dns_support     = true
-  enable_dns_hostnames   = true
+  #enable_dns_support     = true
+  #enable_dns_hostnames   = true
 
   enable_nat_gateway     = true
   single_nat_gateway     = true
@@ -232,6 +232,32 @@ resource "helm_release" "ingress-nginx-grafana" {
   values = [
     "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
   ]
+}
+resource "aws_security_group" "remote_access" {
+  name_prefix = "${local.cluster_name}-remote-access"
+  description = "Allow remote SSH access"
+  vpc_id      = module.vpc.vpc_id
+
+  ingress {
+    description = "SSH access"
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = ["10.0.0.0/8"]
+  }
+
+  egress {
+    from_port        = 0
+    to_port          = 0
+    protocol         = "-1"
+    cidr_blocks      = ["0.0.0.0/0"]
+    ipv6_cidr_blocks = ["::/0"]
+  }
+
+  tags = {
+        # This will tag the launch template created for use by Karpenter
+        "karpenter.sh/discovery/${local.cluster_name}" = local.cluster_name
+      }
 }
 
 resource "helm_release" "grafana-stack" {
@@ -402,8 +428,8 @@ module "eks" {
   cluster_name    = local.cluster_name
   cluster_version = "1.23"
   
-#  cluster_endpoint_private_access = var.enable-ssh == true ? true : null
-#  cluster_endpoint_public_access  = var.enable-ssh == true ? true : null
+  cluster_endpoint_private_access = var.enable-ssh == true ? true : null
+  cluster_endpoint_public_access  = var.enable-ssh == true ? true : null
 
   cluster_endpoint_public_access_cidrs = ["${var.cluster_endpoint_public_access_cidrs}"]
 
@@ -425,17 +451,7 @@ module "eks" {
       type                          = "ingress"
       source_cluster_security_group = true
     }
-#    ingress_nodes_ssh_port = {
-#      count                         = var.enable-ssh ? 1 : 0
-#      name                          = "ssh"
-#      description                   = "Allow SSH access to nodes"
-#      protocol                      = "tcp"
-#      from_port                     = 22
-#      to_port                       = 22
-#      type                          = "ingress"
-#      source_cluster_security_group = true
 
-#    }   
     ingress_self_all = {
       description = "Node to node all ports/protocols"
       protocol    = "-1"
@@ -502,6 +518,11 @@ module "eks" {
       max_size     = var.cluster_size["max_size"]
       desired_size = var.cluster_size["desired_size"]
       disk_size    = var.disk_size
+      remote_access = {
+
+        ec2_ssh_key               = var.key_pair_name
+        source_security_group_ids = [aws_security_group.remote_access.id]
+      }
       create_launch_template = false
       launch_template_name   = "" 
 

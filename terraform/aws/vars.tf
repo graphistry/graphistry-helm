@@ -74,11 +74,11 @@ variable "enable-morpheus" {
   default = false
 }
 
-#variable "enable-ssh" {
-#  description = "If set to true, it will create a ingress-nginx namespace and install ingres-nginx controller"
-#  type = bool
-#  default = false
-#}
+variable "enable-ssh" {
+  description = "If set to true, it will allow SSH access to the nodes"
+  type = bool
+  default = false
+}
 
 variable "addons" {
   type = list(object({

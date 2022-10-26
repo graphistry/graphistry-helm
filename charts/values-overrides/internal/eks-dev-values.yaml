@@ -3,11 +3,11 @@ tlsEmail: "cody@graphistry.com"
 tls: true
 metrics: false
 fwdHeaders: true
-volumeName:
-  dataMount: pvc-1f74538d-971f-451c-be91-c924b523036c
-  localMediaMount: pvc-803077a4-6f51-4349-beaf-1771782804cd
-  gakPublic: pvc-ed2c196c-3bee-4884-b8b0-686a21cc571c
-  gakPrivate: pvc-2a220f57-0986-40b5-b01e-ba392ce29a8e
+#volumeName:
+#  dataMount: pvc-1f74538d-971f-451c-be91-c924b523036c
+#  localMediaMount: pvc-803077a4-6f51-4349-beaf-1771782804cd
+#  gakPublic: pvc-ed2c196c-3bee-4884-b8b0-686a21cc571c
+#  gakPrivate: pvc-2a220f57-0986-40b5-b01e-ba392ce29a8e
 networkPolicy:
   strict: true
 
@@ -54,7 +54,7 @@ cert-manager: #defined by either the name or alias of your dependency in Chart.y
       
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.30
+  tag: v2.39.27
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
   #logs:
@@ -65,7 +65,7 @@ global:
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod
-  postgresVolumeLabel: graphistry-postgres
+#  postgresVolumeLabel: graphistry-postgres
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true
 

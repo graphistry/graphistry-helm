@@ -402,8 +402,9 @@ module "eks" {
   cluster_name    = local.cluster_name
   cluster_version = "1.23"
   
-  cluster_endpoint_private_access = var.enable-ssh == true ? true : null
-  cluster_endpoint_public_access  = var.enable-ssh == true ? true : null
+#  cluster_endpoint_private_access = var.enable-ssh == true ? true : null
+#  cluster_endpoint_public_access  = var.enable-ssh == true ? true : null
+
   cluster_endpoint_public_access_cidrs = ["${var.cluster_endpoint_public_access_cidrs}"]
 
 
@@ -424,17 +425,17 @@ module "eks" {
       type                          = "ingress"
       source_cluster_security_group = true
     }
-    ingress_nodes_ssh_port = {
-      count                         = var.enable-ssh ? 1 : 0
-      name                          = "ssh"
-      description                   = "Allow SSH access to nodes"
-      protocol                      = "tcp"
-      from_port                     = 22
-      to_port                       = 22
-      type                          = "ingress"
-      source_cluster_security_group = true
+#    ingress_nodes_ssh_port = {
+#      count                         = var.enable-ssh ? 1 : 0
+#      name                          = "ssh"
+#      description                   = "Allow SSH access to nodes"
+#      protocol                      = "tcp"
+#      from_port                     = 22
+#      to_port                       = 22
+#      type                          = "ingress"
+#      source_cluster_security_group = true
 
-    }   
+#    }   
     ingress_self_all = {
       description = "Node to node all ports/protocols"
       protocol    = "-1"
@@ -489,7 +490,7 @@ module "eks" {
       sed -i 's/KUBELET_EXTRA_ARGS=$2/KUBELET_EXTRA_ARGS="$2 $KUBELET_EXTRA_ARGS"/' /etc/eks/bootstrap.sh
       EOT
 
-      key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
+      #key_name = var.enable-ssh == true ? "${var.key_pair_name}" : null
       ami_type = var.ami_type
       instance_types = var.instance_types
       # Not required nor used - avoid tagging two security groups with same tag as well
@@ -503,7 +504,7 @@ module "eks" {
       disk_size    = var.disk_size
       create_launch_template = false
       launch_template_name   = "" 
-      
+
       iam_role_additional_policies = [
         # Required by Karpenter
         "arn:${local.partition}:iam::aws:policy/AmazonSSMManagedInstanceCore",

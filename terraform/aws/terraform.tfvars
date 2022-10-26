@@ -17,8 +17,8 @@ enable-cert-manager = true
 #enable-grafana = true
 #enable-morpheus = true
 ####ssh access with key
-key_pair_name = "cody-key"
-enable-ssh = true
+#key_pair_name = "cody-key"
+#enable-ssh = true
 
 #if enable-morpheus is set to true apply terraform as below
 #terraform apply -var=ngc_api_key="<api key here>"

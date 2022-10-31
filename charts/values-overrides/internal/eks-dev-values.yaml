@@ -54,7 +54,7 @@ cert-manager: #defined by either the name or alias of your dependency in Chart.y
       
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.27
+  tag: v2.39.31
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
   #logs:

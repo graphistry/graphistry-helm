@@ -67,12 +67,12 @@ spec:
           #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}
-          livenessProbe:
-            exec:
-              command:
-                - sh 
-                - -c 
-                - 'curl -Lf http://localhost:8501/healthz'
+          #livenessProbe:
+          #  exec:
+          #    command:
+          #      - sh 
+          #      - -c 
+          #      - 'curl -Lf http://localhost:8501/healthz'
 
           name: graph-app-kit-private
           ports:

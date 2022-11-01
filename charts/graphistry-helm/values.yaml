@@ -349,9 +349,9 @@ streamlitEnv: #graph-app-kit (streamlit) environment variables
  - name: LOG_LEVEL
    value: DEBUG
  - name: BASE_PATH
-   value: dashboard/
+   value: 
  - name: BASE_URL
-   value: "http://localhost:8501/dashboard"
+   value: "http://localhost:8501"
  - name: FAVICON_URL
    value: "https://hub.graphistry.com/pivot/favicon/favicon.ico"
  - name: USE_DOCKER
@@ -359,7 +359,7 @@ streamlitEnv: #graph-app-kit (streamlit) environment variables
  - name: ST_PUBLIC_PORT
    value: 8501
  - name: GRAPH_VIEWS
-   value: "/apps/views"
+   value: "../python/views"
  - name: COMPOSE_PROJECT_NAME
    value: 
  - name: VERSION_BASE

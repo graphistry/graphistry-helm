@@ -70,7 +70,7 @@ spec:
           args:
               - --server.baseUrlPath="$BASE_PATH" 
           command:
-              - /apps/entrypoint.py
+              - ../entrypoint.sh
           #livenessProbe:
           #  exec:
           #    command:

@@ -349,9 +349,9 @@ streamlitEnv: #graph-app-kit (streamlit) environment variables
  - name: LOG_LEVEL
    value: DEBUG
  - name: BASE_PATH
-   value: 
+   value: dashboard/
  - name: BASE_URL
-   value: "http://localhost:8501"
+   value: "http://localhost:8501/dashboard"
  - name: ST_PUBLIC_PORT
    value: 8501
  - name: GRAPH_VIEWS

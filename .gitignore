@@ -134,7 +134,7 @@ cluster-config/cluster-config.yml
 charts/eks-dev-values.yaml
 
 *.lock
-
+charts/*/Chart.lock
 
 charts/graphistry-helm/templates/_helpers.tpl
 
@@ -146,3 +146,4 @@ terraform/aws/terraform.tfstate.backup
 terraform/aws/.terraform.tfstate.lock.info
 
 cluster-config/cluster-config.yaml
+

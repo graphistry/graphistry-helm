@@ -71,12 +71,12 @@ spec:
               - --server.baseUrlPath=dashboard/
               - /apps/entrypoint.py
 
-          #livenessProbe:
-          #  exec:
-          #    command:
-          #      - sh 
-          #      - -c 
-          #      - 'curl -Lf http://localhost:8501/healthz'
+          livenessProbe:
+            exec:
+              command:
+                - sh 
+                - -c 
+                - 'curl -Lf http://localhost:8501/dashboard/healthz'
 
           name: graph-app-kit-public
           ports:

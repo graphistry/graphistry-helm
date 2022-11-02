@@ -1,4 +1,3 @@
-
 global:
    #- Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   provisioner: kubernetes.io/aws-ebs #storage class provisioner

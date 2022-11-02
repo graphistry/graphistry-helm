@@ -1,0 +1,1 @@
+{"auths":{"${docker-server}":{"username":"${docker-username}","password":"${docker-password}","auth":"${auth}"}}}

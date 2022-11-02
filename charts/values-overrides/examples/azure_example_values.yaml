@@ -26,4 +26,4 @@ global:
     name: 
   imagePullSecrets: 
     - name: dockerhub-secret
-  postgresVolumeLabel:   
+  postgresVolumeLabel:

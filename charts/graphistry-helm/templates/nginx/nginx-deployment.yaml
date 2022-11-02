@@ -143,6 +143,10 @@ spec:
             value: "1"
           - name: NGINX_RESOLVER
             value: kube-dns.kube-system.svc.cluster.local
+          - name: ST_PUBLIC_BASE_PATH
+            value: "/dashboard"
+          - name: ST_PRIVATE_BASE_PATH
+            value: "/dashboard"  
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL

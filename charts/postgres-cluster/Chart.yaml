@@ -35,7 +35,7 @@ long_description: |
       .. code-block:: shell-session
 
 
-        kubectl get pv -n graphistry && kubectl label pv <pv name> pgo-postgres-cluster=graphistry-postgres        
+        kubectl get pv -n graphistry && kubectl label pv <pv name for the postgres instance> pgo-postgres-cluster=graphistry-postgres        
 
   Change the postgres password if needed. The default password is randomly generated AlphaNumeric string.
 

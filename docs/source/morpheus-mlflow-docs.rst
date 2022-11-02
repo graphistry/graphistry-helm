@@ -42,7 +42,7 @@ Parameter                                          Description                  
 ``ngc.team``                                                                                                                                            ``""``                                            
 ``mlflow.registry``                                                                                                                                     ``"nvcr.io/nvidia/morpheus"``                     
 ``mlflow.image``                                                                                                                                        ``"mlflow-triton-plugin"``                        
-``mlflow.version``                                                                                                                                      ``"1.28.0"``                                      
+``mlflow.version``                                                                                                                                      ``"1.24.0"``                                      
 ``mlflow.withEngine``                                                                                                                                   ``false``                                         
 ``dashboardPort``                                                                                                                                       ``30500``                                         
 ``hostCommonPath``                                                                                                                                      ``"/opt/morpheus/common"``                        

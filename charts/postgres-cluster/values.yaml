@@ -1,29 +1,39 @@
 
 global:
-   #- Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
-  provisioner: kubernetes.io/aws-ebs #storage class provisioner
-  multiNode: false # multinode selector switch to determine if going multi/single node
-  containerregistry:  #container registry name
+  #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
+  provisioner: kubernetes.io/aws-ebs
+# multinode selector switch to determine if going multi/single node
+  multiNode: false
+  #container registry name
+  containerregistry:
     name: acrgraphistryk8s.azurecr.io
-  devMode: false  #dev mode for debugging with nexus, postgres and nginx
+  #dev mode for debugging with nexus, postgres and nginx
+  devMode: false
+  #postgres repository name 
   postgres:
-    repository: graphistry-postgres  #postgres repository name 
-    name: graphistry #postgres db name
-    user: graphistry #postgres db user
-    port: 5432  #port for postgres service to listen on
-    host: postgres  #hostname for postgres
-  tag: latest  #tag for the docker image
+    repository: graphistry-postgres
+    name: graphistry
+    user: graphistry
+  #port for postgres service to listen on
+    port: 5432
+  #hostname for postgres
+    host: postgres
+  #tag for the docker image
+  tag: latest
   #image pull policy
-  imagePullPolicy: IfNotPresent ##image pull policy could also be Always
-  restartPolicy: Always #restart policy
-  imagePullSecrets: [] #image pull secrets name
+  imagePullPolicy: IfNotPresent #could also be Always
+  #restart policy
+  restartPolicy: Always
+  #image pull secrets name
+  imagePullSecrets: []
   #  - name: docker-secret
-  nodeSelector: #node selector to determine which node to deploy cluster to
+#node selector to determine which node to deploy cluster to
+  nodeSelector: 
   #{"accelerator": "nvidia"}
   #--set nodeSelector."accelerator"=nvidia
   #{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
   #--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
-  logs: #log levels
+  logs:
     LogLevel: INFO
     GraphistryLogLevel: INFO
-  postgresVolumeLabel:  #postgres volume label
+  postgresVolumeLabel: 

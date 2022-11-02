@@ -139,4 +139,10 @@ charts/eks-dev-values.yaml
 charts/graphistry-helm/templates/_helpers.tpl
 
 *.tgz
+
+terraform/aws/.terraform
+terraform/aws/terraform.tfstate
+terraform/aws/terraform.tfstate.backup
+terraform/aws/.terraform.tfstate.lock.info
+
 cluster-config/cluster-config.yaml

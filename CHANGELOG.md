@@ -21,14 +21,5 @@
 *   Removed the nexus migration job and replaced it with a strategy to rollout our deployment exactly 
     the same way as we do with our docker-compose version.
 
-*   Created Docs -> [Graphistry Helm Docs](https://readthedocs.org/projects/graphistry-helm/)
+*   Created Docs
 
-*   Added volume names to automatically bind PVC to PV after provisioning upon redeployment
-
-*   Added a volume selector to postgres cluster to bind the PVC to the PV after provisioning upon redeployment
-
-*   Made network policy optional, with a strict mode and default mode set to false as default (No policy in use by default).
-
-*   Added ability to configure Forge ETL python resource limits and number of workers
-
-*   Added Morpheus and MLFlow plugin charts 

@@ -25,8 +25,10 @@ spec:
         {{- end }}        
         command: ["/bin/bash"]
         args: ["-c", "while true; do ping localhost; sleep 60;done"]
+      {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
-          - name: {{ .Values.global.imagePullSecrets }} 
+        {{- toYaml . | nindent 8 }}
+      {{- end }}      
 {{ end }}
 
 

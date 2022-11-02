@@ -69,6 +69,7 @@ The following table lists the configurable parameters of the Argo-cd chart and t
 Parameter                                          Description                                                                                          Default
 ================================================== ==================================================================================================== ==================================================
 ``argo-cd.dex.enabled``                                                                                                                                 ``false``                                         
+``argo-cd.server.extraArgs``                                                                                                                            ``["--insecure", "--rootpath=/argo", "--basehref=/argo"]``
 ``argo-cd.server.config.repositories``                                                                                                                  ``"- type: helm\n  name: argo-cd\n  url: https://argoproj.github.io/argo-helm\n"``
 ================================================== ==================================================================================================== ==================================================
 

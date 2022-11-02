@@ -68,7 +68,7 @@ spec:
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}
           args:
-              - --server.baseUrlPath="$BASE_PATH"
+              - --server.baseUrlPath=$BASE_PATH
               - /apps/entrypoint.py
 
           #livenessProbe:

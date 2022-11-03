@@ -54,6 +54,10 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          {{- if eq .Values.vgpu true  }}
+          - name: RMM_ALLOCATOR
+            value: "default"
+        {{- end }}
           - name: GRAPHISTRY_PROTOCOL
             value: "http"
           - name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME

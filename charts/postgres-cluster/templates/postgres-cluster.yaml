@@ -10,8 +10,13 @@ spec:
   #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
   #{{ else }}  
   #image: graphistry/{{.Values.global.postgres.repository}}:{{.Values.global.tag}}-universal-dev
-  #{{ end }}    
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
+  #{{ end }}
+  {{- if eq .Values.global.containerregistry.name "docker.io" }}
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1 #crunchydata
+  {{ else }}
+  image: {{.Values.global.containerregistry.name}}/crunchydata/crunchy-postgres:ubi8-14.5-1
+  {{- end }}    
+  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
   port: {{ .Values.global.postgres.port }}
   postgresVersion: 14
   users:
@@ -51,7 +56,12 @@ spec:
   
   backups:
     pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      #image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      {{- if eq .Values.global.containerregistry.name "docker.io" }}
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1 #crunchydata
+      {{ else }}
+      image: {{.Values.global.containerregistry.name}}/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      {{- end }}    
       repos:
         - name: repo1
           volume:

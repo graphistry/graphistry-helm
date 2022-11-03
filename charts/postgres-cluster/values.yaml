@@ -3,7 +3,7 @@ global:
   provisioner: kubernetes.io/aws-ebs #storage class provisioner
   multiNode: false # multinode selector switch to determine if going multi/single node
   containerregistry:  #container registry name
-    name: acrgraphistryk8s.azurecr.io
+    name: docker.io
   devMode: false  #dev mode for debugging with nexus, postgres and nginx
   postgres:
     repository: graphistry-postgres  #postgres repository name 

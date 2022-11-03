@@ -41,6 +41,10 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          {{- if eq .Values.vgpu true  }}
+          - name: RMM_ALLOCATOR
+            value: "default"
+        {{- end }}
           - name: REMOTE_DASK
             value: {{.Values.daskscheduler.location | quote }}
           - name: POSTGRES_HOST

@@ -14,7 +14,7 @@ spec:
   {{- if eq .Values.global.containerregistry.name "docker.io" }}
   image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1 #crunchydata
   {{ else }}
-  image: {{.Values.global.containerregistry.name}}/crunchydata/crunchy-postgres:ubi8-14.5-1
+  image: {{.Values.global.containerregistry.name}}/crunchy-postgres:ubi8-14.5-1
   {{- end }}    
   #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
   port: {{ .Values.global.postgres.port }}
@@ -60,7 +60,7 @@ spec:
       {{- if eq .Values.global.containerregistry.name "docker.io" }}
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1 #crunchydata
       {{ else }}
-      image: {{.Values.global.containerregistry.name}}/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      image: {{.Values.global.containerregistry.name}}/crunchy-pgbackrest:ubi8-2.40-1
       {{- end }}    
       repos:
         - name: repo1

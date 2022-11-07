@@ -75,7 +75,10 @@ spec:
           name: redis
           ports:
             - containerPort: 6379
-          resources: {}
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: 4.0
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

@@ -94,9 +94,11 @@ spec:
             timeoutSeconds: 30
           name: notebook
           ports:
-
             - containerPort: 8888
-          resources: {}
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: 4.0
           volumeMounts:
             - mountPath: /home/graphistry/notebooks
               subPath: notebooks

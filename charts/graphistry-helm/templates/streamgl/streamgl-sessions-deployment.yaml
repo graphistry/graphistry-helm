@@ -72,7 +72,10 @@ spec:
           name: streamgl-sessions
           ports:
             - containerPort: 8080
-          resources: {}
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: 4.0
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

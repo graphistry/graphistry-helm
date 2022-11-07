@@ -111,7 +111,10 @@ spec:
             - containerPort: {{.Values.nexusPort.portTwo}}
               name: nexus
               protocol: TCP
-          resources: {} 
+          resources:
+            limits:
+              memory: 2Gi
+              cpu: 4.0
           volumeMounts:
             - mountPath: /opt/graphistry/apps/core/nexus/staticfiles
               name: local-media-mount

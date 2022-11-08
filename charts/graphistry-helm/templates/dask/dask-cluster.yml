@@ -76,7 +76,10 @@ spec:
             timeoutSeconds: 30
         ports:
             - containerPort: 8787
-        resources: {}
+        resources:
+          limits:
+            memory: 4Gi
+            cpu: 4.0
         volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount
@@ -154,6 +157,10 @@ spec:
           - name: http-dashboard
             containerPort: 8787
             protocol: TCP
+        resources:
+          limits:
+            memory: 4Gi
+            cpu: 4.0
         livenessProbe:
             exec:
               command:

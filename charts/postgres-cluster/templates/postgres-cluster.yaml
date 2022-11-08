@@ -40,8 +40,11 @@ spec:
         storageClassName: retain-sc-{{ .Release.Namespace }}
       {{- end }}
         resources:
+          limits:
+            memory: 4Gi
+            cpu: 4.0  
           requests:
-            storage: 4Gi   
+            storage: 4Gi
 {{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
@@ -78,6 +81,13 @@ spec:
               resources:
                 requests:
                   storage: 4Gi
+              resources:
+                limits:
+                  memory: 4Gi
+                  cpu: 4.0  
+                requests:
+                  storage: 4Gi
+        
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:

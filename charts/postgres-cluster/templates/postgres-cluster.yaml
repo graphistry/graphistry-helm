@@ -21,6 +21,15 @@ spec:
       password:
         type: AlphaNumeric 
   instances:
+      sidecars:
+        replicaCertCopy:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
     - name: instance1
       replicas: 1
       resources:

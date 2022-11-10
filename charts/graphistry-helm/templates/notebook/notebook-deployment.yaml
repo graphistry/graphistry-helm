@@ -43,7 +43,7 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
-          resources:
+        resources:
           requests:
             memory: "128Mi"
             cpu: "100m"

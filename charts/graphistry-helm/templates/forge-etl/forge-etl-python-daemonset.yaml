@@ -46,6 +46,13 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "pod"

@@ -21,6 +21,10 @@ spec:
       password:
         type: AlphaNumeric 
   instances:
+    - name: instance1
+      replicas: 1
+      resources:
+        {{- toYaml .Values.global.PostgresResources | nindent 8 }}
       sidecars:
         replicaCertCopy:
           resources:
@@ -30,10 +34,6 @@ spec:
             limits:
               cpu: 100m
               memory: 128Mi
-    - name: instance1
-      replicas: 1
-      resources:
-        {{- toYaml .Values.global.PostgresResources | nindent 8 }}
       dataVolumeClaimSpec:
       {{- if eq .Values.global.multiNode true  }}
         accessModes:

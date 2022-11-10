@@ -72,7 +72,8 @@ spec:
           name: streamgl-sessions
           ports:
             - containerPort: 8080
-          resources: {}
+          resources:
+            {{- toYaml .Values.StreamglSessionsResources | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

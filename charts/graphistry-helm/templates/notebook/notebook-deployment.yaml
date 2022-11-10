@@ -94,9 +94,9 @@ spec:
             timeoutSeconds: 30
           name: notebook
           ports:
-
             - containerPort: 8888
-          resources: {}
+          resources:
+            {{- toYaml .Values.NotebookResources | nindent 12 }}
           volumeMounts:
             - mountPath: /home/graphistry/notebooks
               subPath: notebooks

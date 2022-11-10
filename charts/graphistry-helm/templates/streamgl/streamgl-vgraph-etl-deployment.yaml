@@ -74,7 +74,8 @@ spec:
           name: streamgl-vgraph-etl
           ports:
             - containerPort: 8080
-          resources: {}
+          resources:
+            {{- toYaml .Values.StreamglVgraphResources | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

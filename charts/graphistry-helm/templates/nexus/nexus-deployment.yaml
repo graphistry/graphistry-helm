@@ -111,7 +111,8 @@ spec:
             - containerPort: {{.Values.nexusPort.portTwo}}
               name: nexus
               protocol: TCP
-          resources: {} 
+          resources:
+            {{- toYaml .Values.NexusResources | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/graphistry/apps/core/nexus/staticfiles
               name: local-media-mount

@@ -113,7 +113,8 @@ spec:
           name: pivot
           ports:
             - containerPort: 8080
-          resources: {}
+          resources:
+            {{- toYaml .Values.PivotResources | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/graphistry/apps/core/pivot/data/config/config.json
               subPath: config.json

@@ -43,11 +43,25 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+          resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "streamgl-vgraph-etl"
       - name: volume-mount-hack
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]
         volumeMounts:

@@ -45,6 +45,13 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -55,6 +62,13 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -65,6 +79,13 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -75,6 +96,13 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -85,11 +113,25 @@ spec:
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "streamgl-vgraph-etl"       
       - name: nginx-init-streamgl-viz
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m"
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: 
         - sh 
@@ -104,7 +146,14 @@ spec:
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
       {{ else }}
         image: {{.Values.graphistry}}/{{.Values.pivotDev.repository}}:{{.Values.global.tag}}-dev
-    {{ end }}   
+    {{ end }}  
+        resources:
+          requests:
+            memory: "128Mi"
+            cpu: "100m"
+          limits:
+            memory: "128Mi"
+            cpu: "100m" 
         command: 
         - sh 
         - -c
@@ -179,7 +228,8 @@ spec:
               name: http
               protocol: TCP
             - containerPort: {{.Values.nginxPorts.portTwo}}
-          resources: {}
+          resources:
+            {{- toYaml .Values.NginxResources | nindent 12 }}
           volumeMounts:
         {{ if eq .Values.global.devMode true }}
             - mountPath: /opt/graphistry/apps/core/viz/www/public

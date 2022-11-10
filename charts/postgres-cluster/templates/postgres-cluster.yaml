@@ -87,6 +87,7 @@ spec:
             memory: 128Mi
       restore:
         repoName: repo1
+        enabled: false
         resources:
           requests:
             cpu: 100m

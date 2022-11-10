@@ -58,10 +58,10 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
-          {{- if eq .Values.global.containerregistry.name "docker.io" }}
+          {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
           image: {{.Values.redis.repository}}:{{.Values.redis.tag}} #DockerHub
           {{ else }}
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
+          image: {{.Values.global.containerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
           {{- end }}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}         
           livenessProbe:

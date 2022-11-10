@@ -6,18 +6,11 @@ spec:
   metadata:
     labels:
       app: postgres
-  
-  #{{ if eq .Values.global.devMode false }}
-  #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
-  #{{ else }}  
-  #image: graphistry/{{.Values.global.postgres.repository}}:{{.Values.global.tag}}-universal-dev
-  #{{ end }}
-  {{- if eq .Values.global.containerregistry.name "docker.io" }}
+  {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
   image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1 #crunchydata
   {{ else }}
   image: {{.Values.global.containerregistry.name}}/crunchy-postgres:ubi8-14.5-1
   {{- end }}    
-  #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
   port: {{ .Values.global.postgres.port }}
   postgresVersion: 14
   users:
@@ -30,6 +23,8 @@ spec:
   instances:
     - name: instance1
       replicas: 1
+      resources:
+        {{- toYaml .Values.global.PostgresResources | nindent 8 }}
       dataVolumeClaimSpec:
       {{- if eq .Values.global.multiNode true  }}
         accessModes:
@@ -41,7 +36,8 @@ spec:
         storageClassName: retain-sc-{{ .Release.Namespace }}
       {{- end }}
         resources:
-            {{- toYaml .Values.global.PostgresResources | nindent 10 }}
+          requests:
+            storage: 4Gi
 {{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
@@ -56,8 +52,7 @@ spec:
   
   backups:
     pgbackrest:
-      #image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
-      {{- if eq .Values.global.containerregistry.name "docker.io" }}
+      {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1 #crunchydata
       {{ else }}
       image: {{.Values.global.containerregistry.name}}/crunchy-pgbackrest:ubi8-2.40-1
@@ -75,14 +70,13 @@ spec:
                 - "ReadWriteOnce"
               storageClassName: retain-sc-{{ .Release.Namespace }}
             {{- end }}
-              resources:                 
-            {{- toYaml .Values.global.PostgresResources | nindent 16 }}        
+              resources:
+                requests:
+                  storage: 4Gi     
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:
     {{- toYaml . | nindent 3 }}
   {{- end }}
-#  imagePullSecrets:
-#    - name: {{ .Values.global.imagePullSecrets  }}
 
 

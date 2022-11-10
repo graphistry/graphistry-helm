@@ -6,6 +6,7 @@ spec:
   metadata:
     labels:
       app: postgres
+  
   #{{ if eq .Values.global.devMode false }}
   #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
   #{{ else }}  
@@ -14,7 +15,7 @@ spec:
   {{- if eq .Values.global.containerregistry.name "docker.io" }}
   image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1 #crunchydata
   {{ else }}
-  image: {{.Values.global.containerregistry.name}}/crunchydata/crunchy-postgres:ubi8-14.5-1
+  image: {{.Values.global.containerregistry.name}}/crunchy-postgres:ubi8-14.5-1
   {{- end }}    
   #image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
   port: {{ .Values.global.postgres.port }}
@@ -40,8 +41,7 @@ spec:
         storageClassName: retain-sc-{{ .Release.Namespace }}
       {{- end }}
         resources:
-          requests:
-            storage: 4Gi   
+            {{- toYaml .Values.global.PostgresResources | nindent 10 }}
 {{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
@@ -60,7 +60,7 @@ spec:
       {{- if eq .Values.global.containerregistry.name "docker.io" }}
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1 #crunchydata
       {{ else }}
-      image: {{.Values.global.containerregistry.name}}/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      image: {{.Values.global.containerregistry.name}}/crunchy-pgbackrest:ubi8-2.40-1
       {{- end }}    
       repos:
         - name: repo1
@@ -75,9 +75,8 @@ spec:
                 - "ReadWriteOnce"
               storageClassName: retain-sc-{{ .Release.Namespace }}
             {{- end }}
-              resources:
-                requests:
-                  storage: 4Gi
+              resources:                 
+            {{- toYaml .Values.global.PostgresResources | nindent 16 }}        
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:

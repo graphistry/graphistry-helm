@@ -85,7 +85,8 @@ spec:
           name: graph-app-kit-private
           ports:
             - containerPort: 8501
-          resources: {}
+          resources:
+            {{- toYaml .Values.GAKResources | nindent 12 }}
           volumeMounts:
             - mountPath: /apps/css
               subPath: css

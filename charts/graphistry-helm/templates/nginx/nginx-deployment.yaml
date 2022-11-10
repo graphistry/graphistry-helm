@@ -206,10 +206,8 @@ spec:
           name: nginx-log-exporter
           ports:
             - containerPort: 4040
-          resources: 
-            limits:
-              memory: 128Mi
-              cpu: 500m
+          resources:
+            {{- toYaml .Values.NginxResources | nindent 12 }}
           volumeMounts:
           - name: exporter-config
             mountPath: /etc/prometheus-nginxlog-exporter

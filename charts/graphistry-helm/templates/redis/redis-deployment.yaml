@@ -75,7 +75,8 @@ spec:
           name: redis
           ports:
             - containerPort: 6379
-          resources: {}
+          resources:
+            {{- toYaml .Values.RedisResources | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

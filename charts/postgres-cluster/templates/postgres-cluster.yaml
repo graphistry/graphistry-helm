@@ -52,6 +52,47 @@ spec:
   
   backups:
     pgbackrest:
+      repoHost:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      sidecars:
+        pgbackrest:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+        pgbackrestConfig:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      jobs:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      restore:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
       {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1 #crunchydata
       {{ else }}
@@ -80,3 +121,8 @@ spec:
   {{- end }}
 
 
+#spec.backups.pgbackrest.repoHost.resources section, which sets the resources for the pgBackRest repo host container, as well as any init containers in the associated pod and containers created by the pgBackRestVolume data migration job.
+#spec.backups.pgbackrest.sidecars.pgbackrest.resources section, which sets the resources for the pgbackrest sidecar container.
+#spec.backups.pgbackrest.sidecars.pgbackrestConfig.resources section, which sets the resources for the pgbackrest-config sidecar container.
+#spec.backups.pgbackrest.jobs.resources section, which sets the resources for any pgBackRest backup job.
+#spec.backups.pgbackrest.restore.resources section, which sets the resources for manual pgBackRest restore jobs.

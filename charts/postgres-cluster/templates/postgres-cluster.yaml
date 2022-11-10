@@ -6,6 +6,7 @@ spec:
   metadata:
     labels:
       app: postgres
+  
   #{{ if eq .Values.global.devMode false }}
   #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
   #{{ else }}  
@@ -40,11 +41,7 @@ spec:
         storageClassName: retain-sc-{{ .Release.Namespace }}
       {{- end }}
         resources:
-          limits:
-            memory: 4Gi
-            cpu: 4.0  
-          requests:
-            storage: 4Gi
+            {{- toYaml .Values.global.PostgresResources | nindent 10 }}
 {{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
@@ -78,13 +75,8 @@ spec:
                 - "ReadWriteOnce"
               storageClassName: retain-sc-{{ .Release.Namespace }}
             {{- end }}
-              resources:
-                limits:
-                  memory: 4Gi
-                  cpu: 4.0  
-                requests:
-                  storage: 4Gi
-        
+              resources:                 
+            {{- toYaml .Values.global.PostgresResources | nindent 16 }}        
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:

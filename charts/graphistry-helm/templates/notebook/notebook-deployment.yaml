@@ -96,9 +96,7 @@ spec:
           ports:
             - containerPort: 8888
           resources:
-            limits:
-              memory: 2Gi
-              cpu: 4.0
+            {{- toYaml .Values.NotebookResources | nindent 12 }}
           volumeMounts:
             - mountPath: /home/graphistry/notebooks
               subPath: notebooks

@@ -99,9 +99,7 @@ spec:
           ports:
             - containerPort: 8080
           resources:
-            limits:
-              memory: {{ .Values.forgeMemory }}
-              cpu: 4.0
+            {{- toYaml .Values.ForgeETLPythonResources | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

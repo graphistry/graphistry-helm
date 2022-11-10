@@ -77,9 +77,7 @@ spec:
         ports:
             - containerPort: 8787
         resources:
-          limits:
-            memory: 4Gi
-            cpu: 4.0
+          {{- toYaml .Values.DaskWorkerResources | nindent 10 }}
         volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount
@@ -158,9 +156,7 @@ spec:
             containerPort: 8787
             protocol: TCP
         resources:
-          limits:
-            memory: 4Gi
-            cpu: 4.0
+          {{- toYaml .Values.DaskSchedulerResources | nindent 10 }}
         livenessProbe:
             exec:
               command:

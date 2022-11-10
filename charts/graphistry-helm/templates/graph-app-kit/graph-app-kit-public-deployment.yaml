@@ -86,9 +86,7 @@ spec:
           ports:
             - containerPort: 8501
           resources:
-            limits:
-              memory: 2Gi
-              cpu: 4.0
+            {{- toYaml .Values.GAKResources | nindent 12 }}
           volumeMounts:
             - mountPath: /apps/css
               subPath: css

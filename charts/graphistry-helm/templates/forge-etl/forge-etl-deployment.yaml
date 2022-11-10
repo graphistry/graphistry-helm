@@ -37,7 +37,7 @@ spec:
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -68,7 +68,7 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.forgeetl.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetl.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}           
           livenessProbe:
             exec:

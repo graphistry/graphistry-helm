@@ -12,7 +12,7 @@ spec:
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -23,7 +23,7 @@ spec:
         - "nexus"
       containers:
       - name: dask-cuda-worker
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         imagePullPolicy: {{.Values.global.imagePullPolicy }}
         args:
             - dask-cuda-worker
@@ -101,7 +101,7 @@ spec:
     spec:
       initContainers:
       - name: "{{ lower .Chart.Name }}-init"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -112,7 +112,7 @@ spec:
         - "nexus"
       containers:
       - name: dask-scheduler
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.daskscheduler.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskscheduler.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         imagePullPolicy: {{.Values.global.imagePullPolicy }}
         args:
             - dask-scheduler

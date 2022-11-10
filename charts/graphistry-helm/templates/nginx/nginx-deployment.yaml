@@ -40,7 +40,7 @@ spec:
       initContainers:
       {{ if eq .Values.global.devMode false }} 
       - name: "nginx-wait-for-forge-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -50,7 +50,7 @@ spec:
         - "service"
         - "forge-etl"
       - name: "nginx-wait-for-forge-etl-python"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -60,7 +60,7 @@ spec:
         - "service"
         - "forge-etl-python"
       - name: "nginx-wait-for-streamgl-gpu"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -70,7 +70,7 @@ spec:
         - "service"
         - "streamgl-gpu"
       - name: "nginx-wait-for-streamgl-sessions"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -80,7 +80,7 @@ spec:
         - "service"
         - "streamgl-sessions"
       - name: "nginx-wait-for-streamgl-vgraph-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
@@ -90,7 +90,7 @@ spec:
         - "service"
         - "streamgl-vgraph-etl"       
       - name: nginx-init-streamgl-viz
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: 
         - sh 
         - -c 
@@ -101,7 +101,7 @@ spec:
       {{ end }}          
       - name: nginx-init-pivot
         {{ if eq .Values.global.devMode false }}
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
       {{ else }}
         image: {{.Values.graphistry}}/{{.Values.pivotDev.repository}}:{{.Values.global.tag}}-dev
     {{ end }}   
@@ -157,7 +157,7 @@ spec:
           {{ end }}
    {{ if eq .Values.global.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.global.tag}}-universal
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.global.tag}}-universal
     {{ else }}
           image: {{.Values.graphistry}}/{{.Values.nginxDev.repository}}:{{.Values.global.tag}}-universal-dev
     {{ end }}      

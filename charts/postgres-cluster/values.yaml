@@ -3,7 +3,7 @@ global:
   provisioner: kubernetes.io/aws-ebs #storage class provisioner
   multiNode: false # multinode selector switch to determine if going multi/single node
   containerregistry:  #container registry name
-    name: docker.io
+    name: docker.io/graphistry
   devMode: false  #dev mode for debugging with nexus, postgres and nginx
   postgres:
     repository: graphistry-postgres  #postgres repository name 
@@ -34,7 +34,7 @@ global:
      limits:
        cpu: 100m
        memory: 128Mi
-     requests:
+    # requests:
     #   cpu: 100m
     #   memory: 128Mi
-       storage: 4Gi
+

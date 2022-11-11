@@ -34,6 +34,16 @@ spec:
             limits:
               cpu: 100m
               memory: 128Mi
+      #affinity:
+      #  nodeAffinity:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #      nodeSelectorTerms:
+      #      - matchExpressions:
+      #        - key: apptype
+      #          operator: In
+      #          values:
+      #          - gpu
+                
       dataVolumeClaimSpec:
       {{- if eq .Values.global.multiNode true  }}
         accessModes:

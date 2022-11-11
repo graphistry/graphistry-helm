@@ -20,193 +20,194 @@ volumeName: #volume names
 #the namespace of the ingress controller - this is the namespace that the ingress controller is going to be deployed to.
 ingressNamespace: ingress-nginx #the namespace of the ingress controller
 
-CaddyResources: {}  # Resources for the Caddy pod
+CaddyResources: #{}  # Resources for the Caddy pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 500m
+     memory: 500Mi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
 
-DaskSchedulerResources: {}  # Resources for the Dask Scheduler pod
+DaskSchedulerResources: #{}  # Resources for the Dask Scheduler pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 500m
+     memory: 1Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
 
-DaskWorkerResources: {}  # Resources for the Dask worker pod
+DaskWorkerResources: #{}  # Resources for the Dask worker pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-
-
-ForgeETLResources: {}  # Resources for the Forge Etl pod
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-
-ForgeETLPythonResources: {}  # Resources for the Forge ETL python pod
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-
-GAKResources: {}  # Resources for the graph app kit pods
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 3000m
+     memory: 4Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
 
 
-
-NexusResources: {}  # Resources for the nexus pod
+ForgeETLResources: #{}  # Resources for the Forge Etl pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 1000m
+     memory: 1Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
 
-NginxResources: {}  # Resources for the nginx pod
+ForgeETLPythonResources: #{}  # Resources for the Forge ETL python pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 3000m
+     memory: 4Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
 
-NotebookResources: {}  # Resources for the notebook pod
+GAKResources: #{}  # Resources for the graph app kit pods
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 3000m
+     memory: 4Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
-PivotResources: {}  # Resources for the pivot pod
+
+
+
+NexusResources: #{}  # Resources for the nexus pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 2000m
+     memory: 400Mi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
-StreamglGpuResources: {}  # Resources for the streamgl gpu pod
+
+NginxResources: #{}  # Resources for the nginx pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 500m
+     memory: 500Mi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
-StreamglSessionsResources: {}  # Resources for the streamgl sessions pod
+
+NotebookResources: #{}  # Resources for the notebook pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 3000m
+     memory: 4Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
-StreamglVgraphResources: {}  # Resources for the streamgl vgraph etl pod
+PivotResources: #{}  # Resources for the pivot pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 2000m
+     memory: 2Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
-StreamglVizResources: {}  # Resources for the streamgl viz pod
+
+RedisResources: #{}  # Resources for the redis pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 100m
-  #   memory: 128Mi
+   limits:
+     cpu: 1000m
+     memory: 100Mi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
 
-RedisResources: {}  # Resources for the redis pod
+StreamglGpuResources: #{}  # Resources for the streamgl gpu pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
   # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
+   limits:
+     cpu: 2000m
+     memory: 2Gi
+  # requests:
   #   cpu: 100m
   #   memory: 128Mi
+
+StreamglSessionsResources: #{}  # Resources for the streamgl sessions pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+   limits:
+     cpu: 500m
+     memory: 400Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+StreamglVgraphResources: #{}  # Resources for the streamgl vgraph etl pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+   limits:
+     cpu: 1000m
+     memory: 500Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+StreamglVizResources: #{}  # Resources for the streamgl viz pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+   limits:
+     cpu: 3000m
+     memory: 4Gi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi

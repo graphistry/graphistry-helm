@@ -99,7 +99,7 @@ spec:
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetlpython.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
 
           imagePullPolicy: {{.Values.global.imagePullPolicy }}    
-          command: ['/bin/bash','-c','server="$ENV_CFG env PYTHONOPTIMIZE=1 hypercorn --reload -b 0.0.0.0:$PORT --worker-class uvloop $server"']
+          command: ['/bin/bash','-c','GRAPHISTRY_CPU_MODE=0 PROTOCOL_BUFFERS_PYTHON_IMPLEMENTATION=cpp env GRAPHISTRY_LOG_LEVEL=TRACE env APP_BUILD_TAG=v2.39.31 env PYTHONOPTIMIZE=1 hypercorn --reload -b 0.0.0.0:8080 --worker-class uvloop --backlog 20 --keep-alive 30 --workers 1 server:app']
 
           livenessProbe:
             exec:

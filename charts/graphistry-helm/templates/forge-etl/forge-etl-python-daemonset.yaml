@@ -89,6 +89,8 @@ spec:
           - name: FORGE_NUM_WORKERS
             value: {{.Values.forgeWorkers | quote }}
           {{- end }}
+          - name: FORGE_MAX_FILE_WAIT_MS
+            value: {{.Values.ForgeMaxFileWait | quote }}
           - name: POSTGRES_HOST
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
           - name: POSTGRES_PORT

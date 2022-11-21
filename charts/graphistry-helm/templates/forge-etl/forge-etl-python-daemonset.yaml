@@ -78,8 +78,17 @@ spec:
         {{- end }}
           - name: REMOTE_DASK
             value: {{.Values.daskscheduler.location | quote }}
+          {{- if eq .Values.FepDevMode true  }}
+          - name: FORGE_NUM_WORKERS
+            value: "1"       
+          - name: HYPERCORN_EXTRA_OPTS
+            value: "--reload"
+          - name: UPLOAD_KEEP_CFG
+            value: "on"
+          {{ else }}
           - name: FORGE_NUM_WORKERS
             value: {{.Values.forgeWorkers | quote }}
+          {{- end }}
           - name: POSTGRES_HOST
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
           - name: POSTGRES_PORT

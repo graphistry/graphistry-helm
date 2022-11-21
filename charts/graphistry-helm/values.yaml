@@ -361,6 +361,9 @@ notebook:
 nexus:
   repository: graphistry-nexus #graphistry nexus repository name
 
+ForgeMaxFileWait: "10000" #milliseconds to wait for file creation
+
+FepDevMode: false
 
 #graphistry nexus repository name 
 nexusDev:

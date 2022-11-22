@@ -400,6 +400,7 @@ daskcudaworker:
 
 forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
+ProxyBodySize: 20000m #sets the proxy body size
 
 ## graphistry key for dev mode in pivot deployment
 graphistryKey: ## graphistry key for dev mode in pivot deployment

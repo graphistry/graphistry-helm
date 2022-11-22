@@ -365,6 +365,8 @@ ForgeMaxFileWait: "10000" #milliseconds to wait for file creation
 
 FepDevMode: false
 
+HypercornOpts: ""
+
 #graphistry nexus repository name 
 nexusDev:
   repository: graphistry-nexus-dev #graphistry nexus dev repository name 

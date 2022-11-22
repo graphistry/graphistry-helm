@@ -88,6 +88,8 @@ spec:
           {{ else }}
           - name: FORGE_NUM_WORKERS
             value: {{.Values.forgeWorkers | quote }}
+          - name: HYPERCORN_EXTRA_OPTS
+            value: {{ .Values.HypercornOpts | quote }}
           {{- end }}
           - name: FORGE_MAX_FILE_WAIT_MS
             value: {{.Values.ForgeMaxFileWait | quote }}

@@ -250,7 +250,11 @@ spec:
         - env:         
           - name: PROMETHEUS_PORT
             value: "4040"
-          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2
+          {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2 #DockerHub
+          {{ else }}
+          image: {{.Values.global.containerregistry.name}}/prometheus-nginxlog-exporter:v1.9.2
+          {{- end }}
           args: ["-config-file", "/etc/prometheus-nginxlog-exporter/config.hcl"]
           imagePullPolicy: {{.Values.global.imagePullPolicy }}
           name: nginx-log-exporter

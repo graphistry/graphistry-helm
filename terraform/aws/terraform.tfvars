@@ -1,5 +1,7 @@
 ###the cluster name
 cluster_name = "eks-dev-tf-cluster"
+##k8s version
+kubernetes_version="1.24"
 ##cluster availability zone
 availability_zone_name = "us-east-1"
 ###change cluster size

@@ -57,7 +57,7 @@ resource "aws_eks_addon" "addons" {
 
 resource "aws_iam_instance_profile" "karpenter" {
   name = "KarpenterNodeInstanceProfile-${local.cluster_name}"
-  role = module.eks.eks_managed_node_groups["nodegroup"].iam_role_name
+  role = module.eks.eks_managed_node_groups["nodegroup_3"].iam_role_name
 }
 
 module "karpenter_irsa" {
@@ -69,7 +69,7 @@ module "karpenter_irsa" {
 
   karpenter_controller_cluster_id = module.eks.cluster_id
   karpenter_controller_node_iam_role_arns = [
-    module.eks.eks_managed_node_groups["nodegroup"].iam_role_arn
+    module.eks.eks_managed_node_groups["nodegroup_3"].iam_role_arn
   ]
 
   oidc_providers = {
@@ -423,7 +423,7 @@ module "eks" {
   version = "18.21.0"
 
   cluster_name    = local.cluster_name
-  cluster_version = "1.23"
+  cluster_version = var.kubernetes_version
   
   cluster_endpoint_private_access = var.enable-ssh == true ? true : null
   cluster_endpoint_public_access  = var.enable-ssh == true ? true : null
@@ -479,7 +479,7 @@ module "eks" {
   # This ensures core services such as VPC CNI, CoreDNS, etc. are up and running
   # so that Karpenter can be deployed and start managing compute capacity as required
   eks_managed_node_groups = {
-    nodegroup = {
+    nodegroup_3 = {
         # See issue https://github.com/awslabs/amazon-eks-ami/issues/844
       pre_bootstrap_user_data = <<-EOT
       #!/bin/bash
@@ -536,6 +536,7 @@ module "eks" {
         "karpenter.sh/discovery/${local.cluster_name}" = local.cluster_name
       }
     }
+
 
   }
 }

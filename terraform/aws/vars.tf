@@ -4,6 +4,13 @@ variable "cluster_name" {
   default = "eks-dev-terraform"
 }
 
+variable "kubernetes_version" {
+  description = "kubernetes version"
+  type    = string
+  default = "1.24"
+
+}
+
 variable "key_pair_name" {}
 
 variable "availability_zone_name" {

@@ -4,6 +4,8 @@ cluster_name = "eks-dev-tf-cluster"
 kubernetes_version="1.24"
 ##cluster availability zone
 availability_zone_name = "us-east-1"
+#instance type
+instance_types = ["g4dn.2xlarge"]
 ###change cluster size
 cluster_size = {"min_size": 1, "max_size": 3, "desired_size": 1}
 ###enable various cluster addons

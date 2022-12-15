@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: k8s-dashboard-cd
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: k8s-dashboard
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: kubernetes-dashboard
+  project: default
+  source:
+    path: charts/k8s-dashboard
+    repoURL: https://github.com/graphistry/graphistry-helm.git
+    targetRevision: terraform #BRANCH OR HEAD WHEN IN MAIN
+    helm:
+      valueFiles:
+        - ../values-overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+##helm template charts/argo-cd/apps/ | kubectl apply -f -

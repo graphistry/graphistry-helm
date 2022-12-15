@@ -110,7 +110,7 @@ rm -rf postgres-operator-examples
 
 echo "gathering argo charts"
 
-git clone https://github.com/graphistry/argo-helm.git
+git clone https://github.com/argoproj/argo-helm
 
 mkdir argo-cd
 

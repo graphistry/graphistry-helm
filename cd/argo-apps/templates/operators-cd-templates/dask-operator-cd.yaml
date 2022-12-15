@@ -1,0 +1,29 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: dask-operator-cd
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: operators
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: dask-operator
+  project: default
+  source:
+    path: charts/dask-kubernetes-operator
+    repoURL: https://github.com/graphistry/graphistry-helm.git
+    targetRevision: terraform #BRANCH OR HEAD WHEN IN MAIN
+    helm:
+      valueFiles:
+        - values.yaml # resolved against source.repoURL and source.path
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+##helm template charts/argo-cd/apps/ | kubectl apply -f -

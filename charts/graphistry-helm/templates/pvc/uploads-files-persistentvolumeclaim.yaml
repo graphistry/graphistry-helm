@@ -26,7 +26,7 @@ spec:
   accessModes:
     - ReadWriteOnce
   storageClassName: uploadfiles-sc
-
+{{- end }}
   #volumeName: pvc-8147f3f6-9b84-4974-b2bb-298a6395ad5a
   resources:
     requests:

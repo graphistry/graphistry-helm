@@ -44,12 +44,7 @@ spec:
         #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
         command: ["/bin/sh","-c"]
         args: ['if [ ! -d "/opt/private/views" ]; then cp -r /apps/views /opt/private/views; else echo "Error: Directory /opt/private/views exists."; fi && if [ ! -d "/opt/private/css" ]; then cp -r /apps/css /opt/private/css; else echo "Error: Directory /opt/private/css exists."; fi && if [ ! -d "/opt/private/util" ]; then cp -r /apps/util /opt/private/util; else echo "Error: Directory /opt/private/util exists."; fi  && if [ ! -d "/opt/private/components" ]; then cp -r /apps/components /opt/private/components; else echo "Error: Directory /opt/private/components exists."; fi && chmod -R 777 /opt/private/  && rm -rf /opt/private/lost+found']
         volumeMounts:

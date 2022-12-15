@@ -41,12 +41,7 @@ spec:
         - "service"
         - "dask-scheduler"
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
       - name: "forge-etl-python-wait-for-postgres"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
@@ -54,12 +49,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "pod"

@@ -21,12 +21,11 @@ spec:
 {{- if eq .Values.global.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: datamount-longhorn-{{ .Release.Namespace }}
+  storageClassName: datamount-longhorn
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: uploadfiles-sc-{{ .Release.Namespace }}
-{{- end }}
+  storageClassName: uploadfiles-sc
 
   #volumeName: pvc-8147f3f6-9b84-4974-b2bb-298a6395ad5a
   resources:

@@ -39,3 +39,4 @@ global:
   devMode: true
   postgresVolumeLabel: graphistry-postgres
 #helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set tag=v2.39.17-koa-sso-new  --namespace graphistry --create-namespace
+

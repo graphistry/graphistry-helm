@@ -13,9 +13,9 @@ spec:
     namespace: dask-operator
   project: default
   source:
-    path: charts/dask-kubernetes-operator
-    repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: terraform #BRANCH OR HEAD WHEN IN MAIN
+    path: dask-kubernetes-operator
+    repoURL: https://helm.dask.org
+    targetRevision: 2022.12.0 #terraform #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
         - values.yaml # resolved against source.repoURL and source.path

@@ -1,5 +1,8 @@
-
-#this aws terraform utilizes karpenter.sh to create a kubernetes cluster with autoscaling
+## Graphistry Terraform AWS utilizing karpenter for autoscaling nodes and argoCD for helm chart management
+## must run bundler.sh first from root dir - $bash chart-bundler/bundler.sh 
+##
+##
+##this aws terraform utilizes karpenter.sh to create a kubernetes cluster with autoscaling
 
 terraform {
   required_version = "~> 1.0"
@@ -214,9 +217,9 @@ resource "helm_release" "ingress-nginx" {
   namespace  = "ingress-nginx"
   create_namespace = true
 
-  values = [
-    "${file("../../charts/ingress-nginx/values.yaml")}"
-  ]
+#  values = [
+#    "${file("../../charts/ingress-nginx/values.yaml")}"
+#  ]
 }
 
 resource "helm_release" "ingress-nginx-grafana" {
@@ -227,7 +230,7 @@ resource "helm_release" "ingress-nginx-grafana" {
   create_namespace = true
 
   values = [
-    "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
+    "${file("../../charts/values-overrides/auxiliary/ingress-nginx-values.yaml")}"
   ]
 }
 resource "aws_security_group" "remote_access" {
@@ -263,12 +266,12 @@ resource "helm_release" "grafana-stack" {
     ]
   count      = var.enable-grafana ? 1 : 0
   name       = "prometheus"
-  chart      = "../../charts/kube-prometheus-stack"
+  chart      = "../../chart-bundle/kube-prom-stack"
   namespace  = "prometheus"
   create_namespace = true
 
   values = [
-    "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
+    "${file("../../charts/values-overrides/auxiliary/kube-prom-values.yaml")}"
   ]
 }
 
@@ -278,7 +281,7 @@ resource "helm_release" "morpheus-ai-engine" {
     ]
   count      = var.enable-morpheus ? 1 : 0 
   name       = "morpheus"
-  chart      = "../../charts/morpheus-ai-engine"
+  chart      = "../../chart-bundle/Morpheus-ai-engine"
   namespace  = "morpheus"
   create_namespace = true
 
@@ -295,7 +298,7 @@ resource "helm_release" "morpheus-mlflow" {
     ]
   count      = var.enable-morpheus ? 1 : 0
   name       = "morpheus-mlflow"
-  chart      = "../../charts/morpheus-mlflow"
+  chart      = "../../chart-bundle/NVIDIA-morpheus-mlflow-plugin"
   namespace  = "morpheus"
   create_namespace = true
 
@@ -312,23 +315,23 @@ resource "helm_release" "cert-manager" {
 
   count      = var.enable-cert-manager ? 1 : 0
   name       = "cert-manager"
-  chart      = "../../charts/cert-manager"
+  chart      = "../../chart-bundle/cert-manager"
   namespace  = "cert-manager"
   create_namespace = true
 
   values = [
-    "${file("../../charts/values-overrides/internal/eks-dev-values.yaml")}"
+    "${file("../../charts/values-overrides/auxiliary/cert-manager-values.yaml")}"
   ]
 }
 
 resource "helm_release" "argo" {
   name       = "argo-cd"
-  chart      = "../../charts/argo-cd"
+  chart      = "../../chart-bundle/argo-cd"
   namespace  = "argo-cd"
   create_namespace = true
 
   values = [
-    "${file("../../charts/argo-cd/values.yaml")}"
+    "${file("../../chart-bundle/argo-cd/argo-values.yaml")}"
   ]
 }
 
@@ -368,7 +371,7 @@ resource "kubernetes_secret" "docker-registry" {
 
 data "helm_template" "argo_instance" {
   name       = "argo-cd"
-  chart      = "../../charts/argo-cd/apps/"
+  chart      = "../../cd/argo-apps/"
 }
 
 

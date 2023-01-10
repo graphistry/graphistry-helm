@@ -13,7 +13,7 @@ spec:
     namespace: graphistry
   project: default
   source:
-    path: charts/argo-cd/apps/templates/graphistry-cd-templates
+    path: cd/argo-apps/templates/graphistry-cd-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: terraform #BRANCH OR HEAD WHEN IN MAIN
   syncPolicy:

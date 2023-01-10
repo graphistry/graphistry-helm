@@ -14,8 +14,11 @@ spec:
   project: default
   source:
     path: charts/argo-cd
-    repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: terraform #BRANCH OR HEAD WHEN IN MAIN
+    repoURL: https://github.com/graphistry/argo-helm.git
+    targetRevision: HEAD #BRANCH OR HEAD WHEN IN MAIN
+    helm:
+      valueFiles:
+        - ./argo-values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true

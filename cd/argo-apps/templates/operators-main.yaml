@@ -13,7 +13,7 @@ spec:
     namespace: graphistry
   project: default
   source:
-    path: charts/argo-cd/apps/templates/operators-cd-templates
+    path: cd/argo-apps/templates/operators-cd-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: terraform #BRANCH OR HEAD WHEN IN MAIN
   syncPolicy:
@@ -23,4 +23,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
 
-##helm template charts/argo-cd/apps/ | kubectl apply -f -
+##helm template cd/argo-apps/ | kubectl apply -f -

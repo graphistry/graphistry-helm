@@ -341,6 +341,40 @@ env: #environment variables
    value: "true"
  - name: ENABLE_TELEMETRY
    value: "false"
+ - name: STRIPE_LIVE_PUBLIC_KEY
+   value: 'pk_test_51JLGcIKcN4vVb9S11OdxWST9S9osDj4PtfRcPxQr4bYVT1GvmmwA9hRys8iBRapIkH1rThIFes2HE4jdn2uN7Idd00hpYRenhC'
+ - name: STRIPE_LIVE_SECRET_KEY
+   value: 'sk_test_51JLGcIKcN4vVb9S10TMGZQlc4n2svMJRZB5GHnYZm4eNYfAj60nQ35dsNbgFzEXyuWNxJhRcbJFqfuVpJ3dfUR4r000vbTqSVt'
+ - name: STRIPE_TEST_PUBLIC_KEY
+   value: 'pk_test_51JLGcIKcN4vVb9S11OdxWST9S9osDj4PtfRcPxQr4bYVT1GvmmwA9hRys8iBRapIkH1rThIFes2HE4jdn2uN7Idd00hpYRenhC'
+ - name: STRIPE_TEST_SECRET_KEY
+   value: 'sk_test_51JLGcIKcN4vVb9S10TMGZQlc4n2svMJRZB5GHnYZm4eNYfAj60nQ35dsNbgFzEXyuWNxJhRcbJFqfuVpJ3dfUR4r000vbTqSVt'
+ - name: DJSTRIPE_WEBHOOK_VALIDATION
+   value: 'retrieve_event'
+ - name: DJSTRIPE_WEBHOOK_SECRET
+   value: 'whsec_fztBauAEDunAUHcXpeYN2jo0vOXRxkrl'
+
+  # stripe products
+ - name: STRIPE_PRODUCT_INDIVIDUAL_ID
+   value: 'prod_JzFIMnD5aRDODJ'
+ - name: STRIPE_PRODUCT_TEAM_ID
+   value: 'prod_JzFKnU43Z8kGqc'
+ - name: STRIPE_PRODUCT_ENTERPRISE_ID
+   value: 'prod_K1YFiilkgvkswK'
+  # stripe plans
+ - name: STRIPE_PLAN_INDIVIDUAL_MONTHLY_ID
+   value: 'price_1JLGnjKcN4vVb9S1b2SaoCcB'
+ - name: STRIPE_PLAN_INDIVIDUAL_ANNUALLY_ID
+   value: 'price_1JLGnjKcN4vVb9S1WOPofAG4'
+ - name: STRIPE_PLAN_TEAM_MONTHLY_ID
+   value: 'price_1JLGpOKcN4vVb9S1ZsDNSwIe'
+ - name: STRIPE_PLAN_TEAM_ANNUALLY_ID
+   value: 'price_1JLGpOKcN4vVb9S1Eejp9uAn'
+ - name: STRIPE_PLAN_ENTERPRISE_MONTHLY_ID
+   value: 'price_1JNV8lKcN4vVb9S13nStP9KR'
+ - name: STRIPE_PLAN_ENTERPRISE_ANNUALLY_ID
+   value: 'price_1JO8nzKcN4vVb9S1IoxuGqWK'
+
 
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \

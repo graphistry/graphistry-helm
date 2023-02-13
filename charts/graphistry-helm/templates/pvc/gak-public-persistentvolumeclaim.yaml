@@ -26,11 +26,11 @@ spec:
 {{- if eq .Values.global.multiNode true  }}
   accessModes:
     - ReadWriteMany
-  storageClassName: datamount-longhorn-{{ .Release.Namespace }}
+  storageClassName: datamount-longhorn
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: retain-sc-{{ .Release.Namespace }}
+  storageClassName: retain-sc
 {{- end }}
   resources:
     requests:

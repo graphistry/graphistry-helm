@@ -148,3 +148,6 @@ terraform/aws/.terraform.tfstate.lock.info
 cluster-config/cluster-config.yaml
 
 charts/graphistry-helm/templates/postgres/pg-sts.yaml
+
+
+chart-bundle

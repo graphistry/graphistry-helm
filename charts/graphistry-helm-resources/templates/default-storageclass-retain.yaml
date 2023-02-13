@@ -5,7 +5,7 @@ metadata:
   annotations:
     #storageclass.kubernetes.io/is-default-class: "true"
     meta.helm.sh/release-namespace: {{ .Release.Namespace }}
-  name: retain-sc-{{ .Release.Namespace }}
+  name: retain-sc
 {{- if .Values.graphistryResources.storageClassParameters }}
 parameters:
 {{ toYaml .Values.graphistryResources.storageClassParameters | indent 2 }}

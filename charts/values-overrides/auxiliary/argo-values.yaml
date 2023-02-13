@@ -1,0 +1,13 @@
+dex: #dex component is used for integration with external auth providers
+  enabled: false
+configs:
+    repositories: 
+      argo-cd:
+        type: helm
+        name: argo-cd
+        url: https://argoproj.github.io/argo-helm
+    params:
+      server.insecure: true
+      server.rootpath: /argo
+      server.basehref: /argo
+

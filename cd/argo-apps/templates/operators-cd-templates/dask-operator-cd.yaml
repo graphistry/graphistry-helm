@@ -13,12 +13,11 @@ spec:
     namespace: dask-operator
   project: default
   source:
-    path: dask-kubernetes-operator
-    repoURL: https://helm.dask.org
-    targetRevision: 2022.12.0 #terraform #BRANCH OR HEAD WHEN IN MAIN
-    helm:
-      valueFiles:
-        - values.yaml # resolved against source.repoURL and source.path
+    path: cd/repo
+    repoURL: https://github.com/graphistry/graphistry-helm.git
+#    helm:
+#      valueFiles:
+#        - values.yaml # resolved against source.repoURL and source.path
   syncPolicy:
     automated:
       prune: true
@@ -26,4 +25,4 @@ spec:
     syncOptions:
       - CreateNamespace=true
 
-##helm template charts/argo-cd/apps/ | kubectl apply -f -
+##helm template cd/argo-apps | kubectl apply -f -

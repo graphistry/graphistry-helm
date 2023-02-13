@@ -126,6 +126,18 @@ NginxResources: {}  # Resources for the nginx pod
   #   cpu: 100m
   #   memory: 128Mi
 
+InitContainerResources: {}  # Resources for the notebook pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 3000m
+  #   memory: 4Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
 
 NotebookResources: {}  # Resources for the notebook pod
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -337,6 +349,9 @@ streamglvgraph:
 streamglgpu:
   repository: streamgl-gpu #streamgl-gpu repository name 
 
+elk: #enables elk and sets the version
+  version: 8.5.2 #elk version
+  enabled: false
 
 #streamgl-sessions repository name
 streamglsessions:
@@ -361,6 +376,11 @@ notebook:
 nexus:
   repository: graphistry-nexus #graphistry nexus repository name
 
+ForgeMaxFileWait: "10000" #milliseconds to wait for file creation
+
+FepDevMode: false
+
+HypercornOpts: 
 
 #graphistry nexus repository name 
 nexusDev:
@@ -395,6 +415,7 @@ daskcudaworker:
 
 forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
+ProxyBodySize: 20000m #sets the proxy body size for ingress controller and uploads to 20 GB
 
 ## graphistry key for dev mode in pivot deployment
 graphistryKey: ## graphistry key for dev mode in pivot deployment

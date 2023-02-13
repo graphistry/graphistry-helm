@@ -22,39 +22,12 @@ k8sDashboard:
   readonly: false
   createServiceAccount: false
 
-#example values.yaml of an aws eks based deployment
-
-grafana:
-  grafana.ini:
-      server:
-        domain: "eks-dev.grph.xyz"
-        root_url: "https://eks-dev.grph.xyz/grafana"
-        serve_from_sub_path: true
-      auth.anonymous:
-        enabled: true
-
-prometheus:
-  prometheusSpec:
-    serviceMonitorSelectorNilUsesHelmValues: false
-
-ingress-nginx:
-  controller:
-    metrics:
-      enabled: true 
-      serviceMonitor:
-        enabled: true 
-        additionalLabels:
-          release: "prometheus"
 
 
-cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
-  namespace: cert-manager
-  installCRDs: true
-  createCustomResource: true
-      
+
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.31
+  tag: v2.39.43
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
   #logs:

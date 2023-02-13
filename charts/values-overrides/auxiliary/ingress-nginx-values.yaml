@@ -1,0 +1,9 @@
+##if you have prometheus monitoring installed use these settings
+controller:
+  metrics:
+    enabled: true 
+    serviceMonitor:
+      enabled: true 
+      additionalLabels:
+        release: "prometheus"
+

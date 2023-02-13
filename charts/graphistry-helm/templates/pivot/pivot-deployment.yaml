@@ -43,12 +43,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m" 
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "pod"
@@ -60,12 +55,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m" 
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -77,12 +67,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m" 
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"

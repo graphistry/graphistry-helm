@@ -46,12 +46,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -63,12 +58,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -80,12 +70,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -97,12 +82,7 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -114,24 +94,14 @@ spec:
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "streamgl-vgraph-etl"       
       - name: nginx-init-streamgl-viz
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m"
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: 
         - sh 
@@ -148,12 +118,7 @@ spec:
         image: {{.Values.graphistry}}/{{.Values.pivotDev.repository}}:{{.Values.global.tag}}-dev
     {{ end }}  
         resources:
-          requests:
-            memory: "128Mi"
-            cpu: "100m"
-          limits:
-            memory: "128Mi"
-            cpu: "100m" 
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         command: 
         - sh 
         - -c
@@ -250,7 +215,11 @@ spec:
         - env:         
           - name: PROMETHEUS_PORT
             value: "4040"
-          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2
+          {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2 #DockerHub
+          {{ else }}
+          image: {{.Values.global.containerregistry.name}}/prometheus-nginxlog-exporter:v1.9.2
+          {{- end }}
           args: ["-config-file", "/etc/prometheus-nginxlog-exporter/config.hcl"]
           imagePullPolicy: {{.Values.global.imagePullPolicy }}
           name: nginx-log-exporter

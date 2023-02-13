@@ -3,8 +3,9 @@
 set -e
 
 rm -rf chart-bundle
-mkdir chart-bundle
-cd chart-bundle
+#mkdir chart-bundle
+#cd chart-bundle
+cd charts
 # This script is used to generate a chart bundle from the forks of charts we use to suport the graphistry helm chart deployment.    
 
 echo "gathering kube prometheus stack charts"

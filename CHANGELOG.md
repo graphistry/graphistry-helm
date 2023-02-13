@@ -1,6 +1,8 @@
+
 # graphistry-helm Version Release Notes
 
 ## Changelog
+
 
 All notable changes to the graphistry-helm repo are documented in this file. Additional Graphistry components are tracked in the main [Graphistry major release history documentation](https://graphistry.zendesk.com/hc/en-us/articles/360033184174-Enterprise-Release-List-Downloads).
 
@@ -8,6 +10,7 @@ The changelog format is based on [Keep a Changelog](https://keepachangelog.com/e
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and all PyGraphistry-specific breaking changes are explictly noted here.
 
 ## [Development]
+
 
 ## [Version 0.3.5 - 2023-02-13]
 
@@ -57,3 +60,4 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 
 *   Fixed the pvc retention issue by setting the pvc name in the values.yaml so the PV and PVC automatically bind after provisioning upon redeployment
+

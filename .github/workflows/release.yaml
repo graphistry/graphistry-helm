@@ -22,7 +22,7 @@ jobs:
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
 ## docker compose build
-      - name: Get aux charts for release
+      - name: get aux charts for release
         run: bash chart-bundler/bundler.sh
 
       - name: Run chart-releaser

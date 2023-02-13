@@ -27,7 +27,7 @@ k8sDashboard:
 
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.31
+  tag: v2.39.43
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
   #logs:

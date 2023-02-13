@@ -1,0 +1,5 @@
+frigate
+sphinx-click
+sphinx
+sphinx-tabs
+sphinx-rtd-theme

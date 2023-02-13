@@ -1,0 +1,58 @@
+{{ if eq .Values.global.devMode false }}
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: {{ .Release.Namespace }}
+  name: caddy-ingress-{{ .Release.Namespace }}
+  annotations:
+    kubernetes.io/ingress.class: nginx
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "sessionid"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ProxyBodySize }} # 20GB upload limit
+{{- if eq .Values.tls true  }}
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-production-{{ .Release.Namespace }}"
+    ingress.kubernetes.io/ssl-redirect: "true"
+
+{{- else if eq .Values.tlsStaging true }}
+    kubernetes.io/tls-acme: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-staging-{{ .Release.Namespace }}"
+    ingress.kubernetes.io/ssl-redirect: "true"
+{{- end  }}
+{{- if .Values.ingress.management.annotations }}
+{{ toYaml .Values.ingress.management.annotations | indent 4 }}
+{{- end }}
+  labels:
+  name: caddy-ingress-{{ .Release.Namespace }}
+spec:
+  rules:
+  {{ if .Values.domain }}
+    - host: {{.Values.domain}}
+      http:
+  {{ else }}
+    - http:  
+  {{- end }}
+        paths:
+          - backend:
+              service:
+                name: caddy-{{ .Release.Namespace }}
+                port:
+                  number: 80
+            path: /
+            pathType: Prefix
+{{- if eq .Values.tls true  }}
+  tls:
+  - hosts:
+    - {{.Values.domain}}
+    secretName: letsencrypt-tls-{{ .Release.Namespace }}
+{{- else if eq .Values.tlsStaging true }}
+  tls:
+  - hosts:
+    - {{.Values.domain}}
+    secretName: letsencrypt-staging-{{ .Release.Namespace }}
+{{- end }}
+
+{{- end }}

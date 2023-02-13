@@ -1,0 +1,168 @@
+{{ if eq .Values.global.devMode false }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: forge-etl-python
+  name: forge-etl-python
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: forge-etl-python
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        autoheal: "true"
+        kompose.cmd: kompose --file ./compose/release.yml convert -c
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: forge-etl-python
+    spec:
+      initContainers:
+      - name: "forge-etl-python-wait-for-dask-scheduler"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "dask-scheduler"
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+      - name: "forge-etl-python-wait-for-postgres"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "pod"
+        - "-lapp=postgres"
+      containers:
+        - env:
+          - name: GRAPHISTRY_CPU_MODE
+            value: {{.Values.graphistryCPUMode | quote }}
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          {{- if eq .Values.vgpu true  }}
+          - name: RMM_ALLOCATOR
+            value: "default"
+        {{- end }}
+          - name: REMOTE_DASK
+            value: {{.Values.daskscheduler.location | quote }}
+          {{- if eq .Values.FepDevMode true  }}
+          - name: FORGE_NUM_WORKERS
+            value: "1"       
+          - name: HYPERCORN_EXTRA_OPTS
+            value: "--reload"
+          - name: UPLOAD_KEEP_CFG
+            value: "on"
+          {{ else }}
+          - name: FORGE_NUM_WORKERS
+            value: {{.Values.forgeWorkers | quote }}
+          - name: HYPERCORN_EXTRA_OPTS
+            value: {{ .Values.HypercornOpts | quote }}
+          {{- end }}
+          - name: FORGE_MAX_FILE_WAIT_MS
+            value: {{.Values.ForgeMaxFileWait | quote }}
+          - name: POSTGRES_HOST
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.forgeetlpython.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}    
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "curl -f http://localhost:8080/cudfhealth && curl -f http://localhost:8080/blazinghealth"
+            failureThreshold: 3
+            initialDelaySeconds: 180
+            periodSeconds: 120
+            timeoutSeconds: 30
+          name: forge-etl-python
+          ports:
+            - containerPort: 8080
+          resources:
+            {{- toYaml .Values.ForgeETLPythonResources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /opt/graphistry/data/uploads
+              name: uploads-files
+      restartPolicy: {{ .Values.global.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
+        - name: uploads-files
+          persistentVolumeClaim:
+            claimName: uploads-files
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}            
+#      imagePullSecrets:
+#          - name: {{ .Values.global.imagePullSecrets }} 
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+
+
+---
+#service for nginx
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: forge-etl-python
+  name: forge-etl-python
+spec:
+  ports:
+    - name: "8080"
+      port: 8080
+      targetPort: 8080
+      protocol: TCP
+  selector:
+    io.kompose.service: forge-etl-python
+status:
+  loadBalancer: {}
+{{ end }}
+---
+

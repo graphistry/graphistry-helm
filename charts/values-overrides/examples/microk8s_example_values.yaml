@@ -1,0 +1,63 @@
+#example values.yaml of an aws eks based deployment
+tls: false
+graphAppKitPublic: false
+graphAppKitPrivate: false
+#volume pv names go here after initial deployment and provisioning
+volumeName:
+  dataMount: 
+  localMediaMount: 
+  gakPublic: 
+  gakPrivate: 
+
+
+
+
+  ## createServiceAccount: true only true on initial deployment
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
+#example values.yaml of an aws eks based deployment
+
+
+grafana:
+  grafana.ini:
+      server:
+        domain: eks-dev.grph.xyz
+        root_url: https://eks-dev.grph.xyz/k8s/grafana
+        serve_from_sub_path: true
+      auth.anonymous:
+        enabled: true
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+
+#graphistryResources:
+#  storageClassParameters:
+
+
+ingress-nginx:
+  controller:
+    metrics:
+      enabled: true 
+      serviceMonitor:
+        enabled: true 
+        additionalLabels:
+          release: "prometheus"
+
+
+cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
+  namespace: cert-manager
+  installCRDs: true
+  createCustomResource: true
+
+
+global:
+  tag: v2.39.28-admin
+  imagePullSecrets: 
+    - name: dockerhub-secret
+  provisioner: microk8s.io/hostpath
+  postgresVolumeLabel:
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/overrides/microk8s_example_values.yaml --set tag=v2.39.24-koa-sso-fix --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-29-0.us-east-2.compute.internal --namespace graphistry --create-namespace 

@@ -69,7 +69,7 @@ instance/
 .scrapy
 
 # Sphinx documentation
-docs/_build/
+docs/build/
 
 # PyBuilder
 target/
@@ -130,6 +130,24 @@ dmypy.json
 velero-bootstrap/aws/velero_policy.json
 charts/graphistry-helm/velero_values_primary_cluster.yaml
 cluster-config/cluster-config.yml
-charts/kube-prometheus-stack
+
 charts/eks-dev-values.yaml
-charts/graphistry-jupyter-hub
+
+*.lock
+charts/*/Chart.lock
+
+charts/graphistry-helm/templates/_helpers.tpl
+
+*.tgz
+
+terraform/aws/.terraform
+terraform/aws/terraform.tfstate
+terraform/aws/terraform.tfstate.backup
+terraform/aws/.terraform.tfstate.lock.info
+
+cluster-config/cluster-config.yaml
+
+charts/graphistry-helm/templates/postgres/pg-sts.yaml
+
+
+chart-bundle

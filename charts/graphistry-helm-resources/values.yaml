@@ -1,0 +1,14 @@
+
+global:
+  provisioner: kubernetes.io/aws-ebs #storage class provisioner .
+  multiNode: false # multinode selector switch to determine if going multi/single node
+
+graphistryResources:
+  storageClassParameters: #cloud provider storage class parameters
+    #aws types:
+     #fsType: ext4
+      #type: gp2
+    #azure types:
+    #  skuName: StandardSSD_LRS  
+    #vmware types:
+    #  storagePolicyName: optional

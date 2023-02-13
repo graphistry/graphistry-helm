@@ -1,0 +1,29 @@
+#example values.yaml for a azure aks deployment with a private repository
+ingressNamespace: default
+#volume pv names go here after initial deployment and provisioning
+volumeName:
+  dataMount: 
+  localMediaMount: 
+  gakPublic: 
+  gakPrivate: 
+
+
+
+graphistryResources:
+    storageClassParameters:
+        skuName: StandardSSD_LRS  
+
+
+
+#example values.yaml of an azure based deployment
+
+
+
+global:
+  tag: v2.39.28-admin
+  provisioner: disk.csi.azure.com
+  containerregistry:
+    name: 
+  imagePullSecrets: 
+    - name: dockerhub-secret
+  postgresVolumeLabel:

@@ -1,0 +1,33 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: data-mount
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+{{- if eq .Values.global.multiNode true  }}
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+
+{{ else }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
+{{- end }}
+  finalizers:
+  - kubernetes.io/pvc-protection
+spec:
+{{- if eq .Values.global.multiNode true  }}
+  accessModes:
+    - ReadWriteMany
+  storageClassName: datamount-longhorn
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: retain-sc
+{{- end }}  
+{{- if .Values.volumeName.dataMount }}
+  volumeName: {{ .Values.volumeName.dataMount }}
+{{- end }}
+  resources:
+    requests: 
+      storage: 64Gi
+status: {}

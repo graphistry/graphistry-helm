@@ -1,0 +1,27 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: postgres-cluster-cd
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: postgres
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: graphistry
+  project: default
+  source:
+    path: charts/postgres-cluster
+    repoURL: https://github.com/graphistry/graphistry-helm.git
+    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
+    helm:
+      valueFiles:
+        - ../values-overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true

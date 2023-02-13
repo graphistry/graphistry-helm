@@ -1,0 +1,26 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: operators-deploy-cd
+  namespace: argo-cd
+  finalizers:
+  - resources-finalizer.argocd.argoproj.io
+  labels:
+    name: operators
+spec:
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: graphistry
+  project: default
+  source:
+    path: cd/argo-apps/templates/operators-cd-templates
+    repoURL: https://github.com/graphistry/graphistry-helm.git
+    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
+  syncPolicy:
+    automated:
+      prune: true
+      selfHeal: true
+    syncOptions:
+      - CreateNamespace=true
+
+##helm template cd/argo-apps/ | kubectl apply -f -

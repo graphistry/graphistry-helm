@@ -1,0 +1,49 @@
+domain: eks-dev.grph.xyz 
+tlsEmail: "cody@graphistry.com" 
+tls: true
+metrics: false
+fwdHeaders: true
+#volumeName:
+#  dataMount: pvc-c3e768a1-29a8-42ad-95e0-692b608dd19f
+#  localMediaMount: pvc-76551421-a3fb-4a24-9d35-62e7d470627b
+#  gakPublic: pvc-eec4b0d9-b074-4117-9093-276912661f8a
+#  gakPrivate: pvc-75bb5fd0-ab86-49c4-afed-6e261161808c
+networkPolicy:
+  strict: true
+
+graphistryResources:
+  storageClassParameters:
+      csi.storage.k8s.io/fstype: ext4
+      type: gp2
+
+  ## createServiceAccount: true only true on initial deployment
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
+
+
+
+global:
+  provisioner: ebs.csi.aws.com
+  tag: v2.39.43
+  nodeSelector: {"accelerator": "nvidia"}
+  #change log levels
+  #logs:
+  #  LogLevel: "TRACE"
+  #  GraphistryLogLevel: "TRACE"
+  #multinode setting
+  #multiNode: true
+  imagePullPolicy: Always
+  imagePullSecrets: 
+    - name: docker-secret-prod
+  #postgresVolumeLabel: graphistry-postgres
+  #dev mode for debugging with nexus, postgres and nginx
+  #devMode: true
+
+
+
+
+#helm upgrade -i prometheus-community ./charts/kube-prometheus-stack --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace --dry-run 

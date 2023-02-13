@@ -1,0 +1,67 @@
+
+hub:
+  config:
+    Authenticator:
+      admin_users:
+        - cody
+        - leo
+      allowed_users:
+        - alex
+        - daniel
+    NativeAuthenticator:
+      enable_signup: true
+      minimum_password_length: 10
+      check_common_password: true
+      ask_email_on_signup: false
+      allow_2fa: false
+    JupyterHub:
+      authenticator_class: nativeauthenticator.NativeAuthenticator
+      admin_access: true
+
+singleuser:
+  uid: 1000
+  fsGid: 1000
+  storage:
+    type: dynamic
+    capacity: 10Gi
+    homeMountPath: /home/graphistry/notebooks  
+    dynamic:
+      storageClass: gp2
+      pvcNameTemplate: claim-{username}
+      volumeNameTemplate: volume-{username}
+      storageAccessModes: [ReadWriteOnce]
+  memory:
+    limit: 4G
+    guarantee: 2G 
+  defaultUrl: /user/{username}/lab
+  profileList:
+    - display_name: "Graphistry GPU Server"
+      description: "Spawns a notebook server with access to a GPU and a conda environment for Graphistry Dev"
+      default: True
+      kubespawner_override:
+        image: graphistry/graphistry:jupyter-notebook-v2.39.27-11.4
+        http_timeout: 90
+        start_timeout: 90
+        image_pull_policy: IfNotPresent
+        default_url: /user/{username}/lab
+        notebook_dir: /home/graphistry/notebooks
+        cmd: ["/bin/bash", "-c" ,"source activate rapids && pip install --user jupyterhub==3.0.0 && jupyterhub-singleuser"]        
+        #cmd: ["/bin/bash", "-c" ,"source activate rapids && mamba install --freeze-installed --yes -c rapidsai -c nvidia -c anaconda -c conda-forge -c wakari jupyterhub==3.0.0b1 && jupyterhub-singleuser"]        
+        uid: 1000
+        gid: 1000
+
+
+cull:
+  enabled: true
+  users: false # --cull-users
+  removeNamedServers: false # --remove-named-servers
+  timeout: 3600 # --timeout
+  every: 600 # --cull-every
+  concurrency: 10 # --concurrency
+  maxAge: 0 # --max-age
+
+imagePullSecrets: ["docker-prod"]
+
+
+
+# helm upgrade -i daniels-nb ./charts/graphistry-jupyter-hub --values ./charts/graphistry-jupyter-hub/jupyterhub-values.yaml --namespace daniel --create-namespace

@@ -1,0 +1,41 @@
+domain: eks-skinny.grph.xyz   
+tls: true
+tlsEmail: "cody@graphistry.com" 
+nodeEnv: development 
+appEnvironment: development 
+djangoSettingsModule: "config.settings.dev" 
+graphistryCPUMode: "1" 
+djangoDebug: "True"
+
+
+#volume pv names go here after initial deployment and provisioning
+volumeName:
+  dataMount: pvc-23155f4b-b930-4d6f-92be-b35c17817658
+  localMediaMount: pvc-338325a1-c9fb-4c75-bfc4-66dd7c0fd6a1
+  gakPublic: 
+  gakPrivate: 
+
+
+#example values.yaml of an aws eks based deployment
+
+
+
+graphistryResources:
+  storageClassParameters:
+      fsType: ext4
+      type: gp2
+
+
+      
+global:
+  provisioner: kubernetes.io/aws-ebs
+  imagePullPolicy: Always
+  imagePullSecrets: 
+    - name: dockerhub-secret
+  logs:
+    LogLevel: INFO
+    GraphistryLogLevel: INFO
+  tag: v2.39.28-admin
+  devMode: true 
+  postgresVolumeLabel: 
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/skinny-values.yaml --set tag=v2.39.17-koa-sso-new  --namespace graphistry --create-namespace

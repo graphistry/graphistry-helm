@@ -1,0 +1,6 @@
+#enables k8s dashboard 
+##createServiceAccount: true only on initial deployment
+k8sDashboard: 
+  enabled: false
+  readonly: false
+  createServiceAccount: false

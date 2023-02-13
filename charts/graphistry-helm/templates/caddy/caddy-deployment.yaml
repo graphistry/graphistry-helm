@@ -1,0 +1,132 @@
+{{ if eq .Values.global.devMode false }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: caddy-{{ .Release.Namespace }}
+  name: caddy-{{ .Release.Namespace }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      io.kompose.service: caddy-{{ .Release.Namespace }}
+  strategy:
+{{ if eq .Values.rollingUpdate true }}
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: {{.Values.maxSurge}}
+      maxUnavailable: "0%"
+{{ else }}
+    type: Recreate
+{{- end }}
+  template:
+    metadata:
+      annotations:
+        autoheal: "true"
+        kompose.cmd: kompose --file ./compose/release.yml convert -c
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: caddy-{{ .Release.Namespace }}
+    spec:
+      containers:
+        - env:
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          - name: POSTGRES_HOST
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+          image: {{.Values.global.containerregistry.name}}/{{.Values.caddy.repository}}:{{.Values.global.tag}}-universal
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command:
+                - sh 
+                - -c 
+                - 'curl -f http://localhost/caddy/health/'
+
+          name: caddy
+          ports:
+            - containerPort: 80
+            - containerPort: 443
+          resources:
+            {{- toYaml .Values.CaddyResources | nindent 12 }}
+          volumeMounts:
+            - mountPath: /etc/caddy/Caddyfile
+              name: caddy-config
+              subPath: Caddyfile
+            - mountPath: /config
+              name: data-mount
+            - mountPath: /data
+              name: data-mount
+      restartPolicy: {{ .Values.global.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: caddy-config
+          configMap:
+            name: caddy-config
+            items:
+              - key: Caddyfile
+                path: Caddyfile
+                mode: 0644
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}
+#      imagePullSecrets:
+#          - name: {{ .Values.global.imagePullSecrets }}    
+{{ if eq .Values.global.multiNode false }}
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+{{- end }} 
+status: {}
+
+
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  labels:
+    io.kompose.service: caddy-{{ .Release.Namespace }}
+  name: caddy-{{ .Release.Namespace }}
+spec:
+  ports:
+    - name: "80"
+      port: 80
+      targetPort: 80
+    - name: "443"
+      port: 443
+      targetPort: 443
+  selector:
+    io.kompose.service: caddy-{{ .Release.Namespace }}
+
+
+{{- end }}

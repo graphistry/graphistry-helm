@@ -1,0 +1,222 @@
+{{ if eq .Values.global.devMode false }}
+apiVersion: kubernetes.dask.org/v1
+kind: DaskCluster
+metadata:
+  name: dask
+  labels:
+    io.kompose.network/grph: "true"
+spec:
+
+  worker:
+    replicas: {{ .Values.dask.workers }}
+    spec:
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "nexus"
+      containers:
+      - name: dask-cuda-worker
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }}
+        args:
+            - dask-cuda-worker
+            - --interface
+            - eth0
+            - --dashboard-address localhost:8787
+            - --resources GPU=10
+            - dask-scheduler:8786
+        command:
+            - /entrypoints/rapids-entrypoint.sh
+        env:
+          - name: GRAPHISTRY_CPU_MODE
+            value: {{.Values.graphistryCPUMode | quote }}
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          {{- if eq .Values.vgpu true  }}
+          - name: RMM_ALLOCATOR
+            value: "default"
+        {{- end }}
+          - name: REMOTE_DASK
+            value: {{.Values.daskscheduler.location | quote }}
+          - name: POSTGRES_HOST
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+        livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "curl -Lf http://localhost:8787/health && curl -f http://forge-etl-python:8080/workerhealth"
+
+            failureThreshold: 1
+            initialDelaySeconds: 180
+            periodSeconds: 120
+            timeoutSeconds: 30
+        ports:
+            - containerPort: 8787
+        resources:
+          {{- toYaml .Values.DaskWorkerResources | nindent 10 }}
+        volumeMounts:
+            - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /dask-shared
+              name: data-mount
+      restartPolicy: {{ .Values.global.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}            
+#      imagePullSecrets:
+#          - name: {{ .Values.global.imagePullSecrets }}  
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+
+  scheduler:
+    spec:
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "nexus"
+      containers:
+      - name: dask-scheduler
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskscheduler.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }}
+        args:
+            - dask-scheduler
+            - --port
+            - "8786"
+            - --interface
+            - eth0
+            - --no-show
+            - --dashboard-address
+            - "8787"
+        command:
+            - /entrypoints/rapids-entrypoint.sh
+        env:
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          - name: REMOTE_DASK
+            value: {{.Values.daskscheduler.location | quote }}
+          - name: POSTGRES_HOST
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+        ports:
+          - name: tcp-comm
+            containerPort: 8786
+            protocol: TCP
+          - name: http-dashboard
+            containerPort: 8787
+            protocol: TCP
+        resources:
+          {{- toYaml .Values.DaskSchedulerResources | nindent 10 }}
+        livenessProbe:
+            exec:
+              command:
+                - curl
+                - -Lf
+                - http://localhost:8787/health
+        volumeMounts:
+            - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /dask-shared
+              name: data-mount
+      restartPolicy: {{ .Values.global.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount 
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}           
+#      imagePullSecrets:
+#          - name: {{ .Values.global.imagePullSecrets }} 
+{{ if eq .Values.global.multiNode false }}
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+{{- end }} 
+    service:
+      type: ClusterIP
+      selector:
+        dask.org/cluster-name: dask
+        dask.org/component: scheduler
+      ports:
+      - name: tcp-comm
+        protocol: TCP
+        port: 8786
+        targetPort: "tcp-comm"
+      - name: http-dashboard
+        protocol: TCP
+        port: 8787
+        targetPort: "http-dashboard"
+
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  name: dask-scheduler
+spec:
+  ports:
+    - name: "8786"
+      port: 8786
+      targetPort: 8786
+    - name: "8787"
+      port: 8787
+      targetPort: 8787
+  selector:
+      dask.org/cluster-name: dask
+      dask.org/component: scheduler
+{{ end }}     

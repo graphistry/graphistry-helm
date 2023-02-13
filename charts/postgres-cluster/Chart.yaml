@@ -1,0 +1,52 @@
+apiVersion: v2
+name: postgrescluster
+description: A postgres cluster Helm chart for Graphistry on Kubernetes
+type: application
+# The version below should match the version on the PostgresCluster CRD
+version: 0.6.0
+appVersion: 5.2.0
+
+
+long_description: | 
+  Install Postgres Cluster
+  -------------------------
+  **NOTE:** This chart requires the Postgres Operator to be installed. See :doc:`postgres-operator-docs` for information on how to install the Postgres Operator.
+
+    .. tabs::
+
+      .. tab:: Local from Source
+        .. code-block:: shell-session            
+                  
+          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+          helm upgrade -i  postgres-cluster ./charts/postgres-cluster --namespace graphistry --create-namespace 
+
+      .. tab:: From Graphistry Helm Repo
+        .. code-block:: shell-session            
+                  
+          helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
+          helm upgrade -i postgrescluster graphistry-helm/postgres-cluster --namespace graphistry --create-namespace  
+
+
+  Configuring Postgres Cluster
+  ----------------------------
+
+  After Cluster is deployed, find the pv that is created and add the following label to it. This will allow the cluster to bind the pv to the pod upon redeployment.
+        
+      .. code-block:: shell-session
+
+
+        kubectl get pv -n graphistry && kubectl label pv <pv name for the postgres instance> pgo-postgres-cluster=graphistry-postgres        
+
+  Change the postgres password if needed. The default password is randomly generated AlphaNumeric string.
+
+      .. code-block:: shell-session
+  
+
+        kubectl patch secret -n postgres-operator postgres-pguser-graphistry -p '{"stringData":{"password":"<password>","verifier":""}}'
+
+
+footnotes: |
+
+  For more information on the CrunchyData Postgres Cluster visit the PGO documentation: `CrunchyData PGO Documentation <https://access.crunchydata.com/documentation/postgres-operator/latest/>`_ 
+
+

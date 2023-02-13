@@ -1,0 +1,34 @@
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  creationTimestamp: null
+  labels:
+    io.kompose.service: uploads-files
+  name: uploads-files
+  annotations:
+    pv.kubernetes.io/bound-by-controller: "yes"
+{{- if eq .Values.global.multiNode true  }}
+    volume.beta.kubernetes.io/storage-provisioner: driver.longhorn.io
+    volume.kubernetes.io/storage-provisioner: driver.longhorn.io
+
+{{ else }}
+    volume.beta.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
+    volume.kubernetes.io/storage-provisioner: {{ .Values.global.provisioner }}
+{{- end }}
+  finalizers:
+  - kubernetes.io/pvc-protection
+spec:
+{{- if eq .Values.global.multiNode true  }}
+  accessModes:
+    - ReadWriteMany
+  storageClassName: datamount-longhorn
+{{- else }}
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: uploadfiles-sc
+{{- end }}
+  #volumeName: pvc-8147f3f6-9b84-4974-b2bb-298a6395ad5a
+  resources:
+    requests:
+      storage: 40Gi
+status: {}

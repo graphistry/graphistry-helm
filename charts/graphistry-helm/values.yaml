@@ -1,251 +1,456 @@
-#node selector to determine which node to deploy cluster to
-nodeSelector: 
-#{"accelerator": "nvidia"}
-#--set nodeSelector."accelerator"=nvidia
-#{"kubernetes.io/hostname": "ip-172-31-32-176.us-east-2.compute.internal"}
-#--set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-7-234.us-east-2.compute.internal
 
 #ingress management - determines if ingress is going to be on internal load balancer 
 ingress:
   management:
-    annotations:
+    annotations: #ingress management - determines if ingress is going to be on internal load balance
       #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
-#storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
-provisioner: kubernetes.io/aws-ebs
 
-#cloud provider storage class parameters - Each StorageClass has a set of parameters that are used to determine how the storage is provisioned.
-storageClassParameters:
-  #aws:
-  #  fsType: ext4
-  #  type: gp2
-  #azure:
-  #  skuName: StandardSSD_LRS  
-  #vmware:
-  #  storagePolicyName: optional
+graphistry: graphistry   #graphistry tag for the docker image
+
+#volume names
+volumeName: #volume names
+  dataMount: #data-mount pvc volume name
+  localMediaMount: #local-media-mount pvc volume name 
+  gakPublic:  #gak-public pvc volume name
+  gakPrivate: ##data-mount pvc volume name
 
 #the namespace of the ingress controller - this is the namespace that the ingress controller is going to be deployed to.
-ingressNamespace: ingress-nginx
+ingressNamespace: ingress-nginx #the namespace of the ingress controller
+
+CaddyResources: {}  # Resources for the Caddy pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 500Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+DaskSchedulerResources: {}  # Resources for the Dask Scheduler pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 1Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+DaskWorkerResources: {}  # Resources for the Dask worker pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 3000m
+  #   memory: 4Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+
+ForgeETLResources: {}  # Resources for the Forge Etl pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 1000m
+  #   memory: 1Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+ForgeETLPythonResources: {}  # Resources for the Forge ETL python pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 3000m
+  #   memory: 4Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+GAKResources: {}  # Resources for the graph app kit pods
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 2000m
+  #   memory: 4Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+
+
+NexusResources: {}  # Resources for the nexus pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 2000m
+  #   memory: 400Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+NginxResources: {}  # Resources for the nginx pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 500Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+InitContainerResources: {}  # Resources for the notebook pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 3000m
+  #   memory: 4Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+NotebookResources: {}  # Resources for the notebook pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 3000m
+  #   memory: 4Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+PivotResources: {}  # Resources for the pivot pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 2000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+
+RedisResources: {}  # Resources for the redis pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 1000m
+  #   memory: 100Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+StreamglGpuResources: {}  # Resources for the streamgl gpu pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 2000m
+  #   memory: 2Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+StreamglSessionsResources: {}  # Resources for the streamgl sessions pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 500m
+  #   memory: 400Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+StreamglVgraphResources: {}  # Resources for the streamgl vgraph etl pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 1000m
+  #   memory: 500Mi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
+
+StreamglVizResources: {}  # Resources for the streamgl viz pod
+  # We usually recommend not to specify default resources and to leave this as a conscious
+  # choice for the user. This also increases chances charts run on environments with little
+  # resources, such as Minikube. If you do want to specify resources, uncomment the following
+  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+  # limits:
+  #   cpu: 3000m
+  #   memory: 4Gi
+  # requests:
+  #   cpu: 100m
+  #   memory: 128Mi
 
 
 #max surge of pods in rolling updates
-maxSurge : "10%"
+maxSurge : "10%" #max surge of pods in rolling updates
 
-#dev mode for debugging with nexus, postgres and nginx
-devMode: false
+
 
 #forwards backend proxy's headers to ingress controller
-fwdHeaders: false
+fwdHeaders: false #forwards backend proxy's headers to ingress controller 
 
-httpTesting: false
+httpTesting: false #for testing purposes only - used to do http testing on ingress and nginx/caddy 
 
 #set to development in dev mode
-nodeEnv: production
+nodeEnv: production #sets the Node environment - set to development in dev mode
 
 #set to developmet in dev mode
-appEnvironment: production
+appEnvironment: production #sets the appEnvironment for nexus - set to development in dev mode
 
 #set to config.settings.dev in dev mode
-djangoSettingsModule: "config.settings.production"
+djangoSettingsModule: "config.settings.production" #Sets the django settings - set to config.settings.dev in dev mode
 
-graphistryCPUMode: "0"
+graphistryCPUMode: "0" #sets graphistry to cpu mode - to be used in dev mode set to 1
 
 #set to true in dev mode
-djangoDebug: "False"
+djangoDebug: "False" #sets django in debug mode set to true in dev mode
 
 nginxPorts:
   #port for nginx service to listen on
-  portOne: 80
-  portTwo: 443
+  portOne: 80   #port for nginx service to listen on
+  portTwo: 443   #port for nginx service to listen on
 
-metrics: false
+metrics: false #enables metrics for prometheus - must have kube-prometheus-stack installed
 
 #ports for nexus service to listen on
 nexusPort: 
-  portOne: 8000
-  portTwo: 8080
+  portOne: 8000 #ports for nexus service to listen on
+  portTwo: 8080 #ports for nexus service to listen on
 
 # graph app kit public - determines if public dashboard is going to be deployed
-graphAppKitPublic: true
+graphAppKitPublic: true # graph app kit public - determines if public dashboard is going to be deployed
 
 # graph app kit private - determines if private dashboard is going to be deployed
-graphAppKitPrivate: true
+graphAppKitPrivate: true # graph app kit private - determines if private dashboard is going to be deployed
 
-# multinode selector switch to determine if going multi/single node
-multiNode: false
+networkPolicy: #network policy for for deployment, this limits traffic
+#  strict: true
+
 
 # rolling update deployment strategy switch (postgres and nexus are exempt)
-rollingUpdate: false
+rollingUpdate: false # rolling update deployment strategy switch
 
 # django session cookie timeout (seconds)
-sessionCookieAge : "1209600"
+sessionCookieAge : "1209600" # django session cookie timeout (seconds)
 
 # django drf-jwt, jwt token timeout (seconds)
-jwtExpirationDelta : "3600"
+jwtExpirationDelta : "3600" # django drf-jwt, jwt token timeout (seconds)
 
 # ENABLE django silk - performance analysis library
-enableDjangoSilk : "False"
+enableDjangoSilk : "False" # ENABLE django silk - performance analysis library
 
-
-#restart policy
-restartPolicy: Always
 
 #domain - set to  the node external ip
 #example: 18.116.94.149.nip.io - graphistry.18.116.94.149.nip.io
-domain: 
+domain: #domain - set to a domain of your choosing
 
 #set tlsStaging to true to enable tls staging
-tlsStaging: false
+tlsStaging: false #set tlsStaging to true to enable use of LetsEncrypt staging environment
 
 #set tls to true to enable tls in production
-tls: false
+tls: false #set tls to true to enable use of LetsEncrypt TLS
 
 #email to send tls notifications to
-tlsEmail: ""
+tlsEmail: "" #email to send tls notifications to
 
 #enables longhorn dashboard
-longhornDashboard: false
+longhornDashboard: false #enables longhorn dashboard - needs longhorn installed
 
-#enables k8s dashboard 
-##createServiceAccount: true only on initial deployment
-k8sDashboard: 
-  enabled: false
-  readonly: false
-  createServiceAccount: false
 
-#container registry name
-containerregistry:
-  name: acrgraphistryk8s.azurecr.io
-
-#image pull secrets name
-imagePullSecrets: acr-secret
-
-#image pull policy
-imagePullPolicy: IfNotPresent #could also be Always
 
 #cuda version
 cuda:
-  version: "11.4"
+  version: "11.4" #cuda version
 
-#tag for the docker image
-tag: latest
-
-#graphitry tag for the docker image
-graphistry: graphistry
 
 #caddy repository name
 caddy:
-  repository: caddy
+  repository: caddy #caddy repository name
 
 #graph app kit repository name and tag
 graphAppKit:
-  repository: graph-app-kit-st
+  repository: graph-app-kit-st #graph app kit repository name
 
 
 #redis repository name and tag
 redis:
-  repository: redis
-  tag: 6.2.6
+  repository: redis #redis repository name
+  tag: 6.2.7 #redis repository tag
 
-#postgres repository name 
-postgres:
-  repository: graphistry-postgres
-#port for postgres service to listen on
-  port: 5432
-#hostname for postgres
-  host: postgres
+
+
 
 #streamgl-viz repository name 
 streamglviz:
-  repository: streamgl-viz
+  repository: streamgl-viz #streamgl-viz repository name 
 
 #streamgl-viz repository name 
 streamglvizDev:
-  repository: graphistry-viz-dev
+  repository: graphistry-viz-dev #streamgl-viz-Dev repository name 
 
 #nginx repository name 
 nginx:
-  repository: streamgl-nginx
+  repository: streamgl-nginx #nginx repository name 
 
 #nginx repository name 
 nginxDev:
-  repository: graphistry-nginx-dev
+  repository: graphistry-nginx-dev #nginx repository name
 
 #streamgl-vgraph-etl repository name 
 streamglvgraph:
-  repository: streamgl-vgraph-etl
+  repository: streamgl-vgraph-etl #streamgl-vgraph-etl repository name 
 
 
 #streamgl-gpu repository name 
 streamglgpu:
-  repository: streamgl-gpu
+  repository: streamgl-gpu #streamgl-gpu repository name 
 
+elk: #enables elk and sets the version
+  version: 8.5.2 #elk version
+  enabled: false
 
 #streamgl-sessions repository name
 streamglsessions:
-  repository: streamgl-sessions
+  repository: streamgl-sessions #streamgl-sessions repository name
 
 
 #graphistry pivot repository name 
 pivot:
-  repository: graphistry-pivot
+  repository: graphistry-pivot #graphistry pivot repository name 
 
 #graphistry pivot dev repository
 pivotDev:
-  repository: graphistry-pivot-dev
+  repository: graphistry-pivot-dev #graphistry pivot dev repository
 
 
 #jupyter notebook repository name 
 notebook:
-  repository: jupyter-notebook
+  repository: jupyter-notebook #jupyter notebook repository name 
 
 
 #graphistry nexus repository name 
 nexus:
-  repository: graphistry-nexus
+  repository: graphistry-nexus #graphistry nexus repository name
 
+ForgeMaxFileWait: "10000" #milliseconds to wait for file creation
+
+FepDevMode: false
+
+HypercornOpts: 
 
 #graphistry nexus repository name 
 nexusDev:
-  repository: graphistry-nexus-dev
+  repository: graphistry-nexus-dev #graphistry nexus dev repository name 
 
 #forge-etl-python repository name 
 forgeetlpython:
-  repository: etl-server-python
+  repository: etl-server-python #forge-etl-python repository name
 
 #forge-etl-python dev repository name
 forgeetlpythonDev:
-  repository: graphistry-forge-python-dev
+  repository: graphistry-forge-python-dev #forge-etl-python dev repository name
 
 #forge-etl repository name 
 forgeetl:
-  repository: etl-server
+  repository: etl-server #forge-etl repository name 
 
+#sets the number of dask cuda workers
+dask:
+  workers: 1 #sets the number of dask cuda workers
 
 #dask-scheduler repository name 
 daskscheduler:
-  repository: etl-server-python
+  repository: etl-server-python #dask-scheduler repository name 
+  location: "dask-scheduler:8786" #dask-scheduler location
 
+vgpu: false #enables vgpu mode for bigger than memory workloads on VGPU
 
 #dask-cuda-worker repository name 
 daskcudaworker:
-  repository: etl-server-python
+  repository: etl-server-python #dask-cuda-worker repository name
 
-#gak username to be set to a user registered in graphistry
-graphAppKitusername: 
+forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
-#gak username password to be set to a user registered in graphistry
-graphAppKitpassword: 
+ProxyBodySize: 20000m #sets the proxy body size for ingress controller and uploads to 20 GB
 
 ## graphistry key for dev mode in pivot deployment
-graphistryKey:
+graphistryKey: ## graphistry key for dev mode in pivot deployment
+
+global:  ## global settings for all charts
+  #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
+  provisioner: kubernetes.io/aws-ebs   #storage class provisioner.
+# multinode selector switch to determine if going multi/single node
+  multiNode: false # multinode selector switch to determine if going multi/single node
+  #container registry name
+  containerregistry:
+    name: docker.io/graphistry #container registry name
+  #dev mode for debugging with nexus, postgres and nginx
+  devMode: false   #dev mode for debugging with nexus, postgres and nginx
+  #graphitry tag for the docker image
+  postgres:
+    repository: graphistry-postgres   #postgres repository name   
+    name: graphistry #db name
+    user: graphistry #db user
+    port: 5432 #port for postgres service to listen on
+    host: postgres #hostname for postgres
+  tag: latest #tag for the docker image
+  imagePullPolicy: IfNotPresent   #image pull policy could also be Always
+  restartPolicy: Always #restart policy
+  imagePullSecrets: []   #image pull secrets name
+#    - name: docker-secret
+  nodeSelector: #node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}
+  logs:
+    LogLevel: INFO #log level for the application
+    GraphistryLogLevel: INFO #log level for graphistry
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \
  #--set env.DBUser="FOO" --set env.DBPassword="BAR"
-env:
+env: #environment variables
  - name: HOST
    value: 0.0.0.0
  - name: AUTH_LDAP_BIND_PASSWORD
@@ -264,18 +469,10 @@ env:
    value: 64 MiB
  - name: DASK_CUDF_CSV_CHUNKSIZE
    value: 64 MiB
- - name: FORGE_NUM_WORKERS
-   value: "4"
- - name: REMOTE_DASK
-   value: dask-scheduler:8786
  - name: REMOTE_DASK_DIAGNOSTICS
    value: dask-scheduler:8787
  - name: AIR_GAPPED
    value: "0"
- - name: GRAPHISTRY_LOG_LEVEL
-   value: INFO
- - name: LOG_LEVEL
-   value: INFO
  - name: PIVOT_PORT 
    value: "8080"
  - name: PORT
@@ -316,14 +513,6 @@ env:
    value: "yes"
  - name: PIVOT_CONFIG_FILES
    value: /opt/graphistry/apps/core/pivot/data/config/config.json
- - name: DATABASE_URL
-   value: postgres://graphistry:password@postgres:5432/graphistry
- - name: POSTGRES_DB
-   value: graphistry
- - name : POSTGRES_PASSWORD
-   value: password
- - name: POSTGRES_USER
-   value: graphistry
  - name: CLEAR_LOCAL_DATASET_CACHE_ON_STARTUP
    value: "false"
  - name: CLEAR_LOCAL_SESSION_CACHE_ON_STARTUP
@@ -368,13 +557,17 @@ env:
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \
  #--set stENVPublic.LOG_LEVEL="FOO" 
-stENVPublic:
+streamlitEnv: #graph-app-kit (streamlit) environment variables
  - name: LOG_LEVEL
    value: DEBUG
  - name: BASE_PATH
-   value: 
+   value: dashboard/
  - name: BASE_URL
-   value: "http://localhost:8501"
+   value: "http://localhost:8501/dashboard"
+ - name: FAVICON_URL
+   value: "https://hub.graphistry.com/pivot/favicon/favicon.ico"
+ - name: USE_DOCKER
+   value: "True"
  - name: ST_PUBLIC_PORT
    value: 8501
  - name: GRAPH_VIEWS
@@ -406,43 +599,4 @@ stENVPublic:
  - name: TIGERGRAPH_SECRET
    value: 
 
-#streamlit environment variables
- # can be set like helm upgrade -i  chart_name --name release_name \
- #--set stENVPrivate.LOG_LEVEL="FOO" 
-stENVPrivate:
- - name: LOG_LEVEL
-   value: DEBUG
- - name: BASE_PATH
-   value: 
- - name: BASE_URL
-   value: "http://localhost:8502"
- - name: ST_PUBLIC_PORT
-   value: 8502
- - name: GRAPH_VIEWS
-   value: "/apps/views"
- - name: COMPOSE_PROJECT_NAME
-   value: 
- - name: VERSION_BASE
-   value: "v2.32.4"
- - name: NEPTUNE_READER_PROTOCOL
-   value: 
- - name: NEPTUNE_READER_HOST
-   value: 
- - name: NEPTUNE_READER_PORT
-   value: 
- - name: NEPTUNE_KEY_PATH
-   value: 
- - name: NEPTUNE_TUNNEL_HOST
-   value: 
- - name: NEPTUNE_TUNNEL_USER
-   value:  
- - name: TIGERGRAPH_HOST
-   value: 
- - name: TIGERGRAPH_USERNAME
-   value: 
- - name: TIGERGRAPH_PASSWORD
-   value: 
- - name: TIGERGRAPH_GRAPHNAME
-   value: 
- - name: TIGERGRAPH_SECRET
-   value: 
+

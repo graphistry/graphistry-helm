@@ -3,6 +3,8 @@
 set -e
 
 rm -rf chart-bundle
+
+echo "$PWD"
 #mkdir chart-bundle
 #cd chart-bundle
 cd charts

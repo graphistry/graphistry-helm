@@ -4,6 +4,7 @@ set -e
 
 rm -rf chart-bundle
 
+echo "checking working directory"
 echo "$PWD"
 #mkdir chart-bundle
 #cd chart-bundle
@@ -122,3 +123,6 @@ cp -r argo-helm/charts/argo-cd/* argo-cd
 rm -rf argo-helm
 
 cd argo-cd && helm repo add redis-ha https://dandydeveloper.github.io/charts/ && helm dep build && cd ../
+
+echo "checking charts dir"
+ls charts

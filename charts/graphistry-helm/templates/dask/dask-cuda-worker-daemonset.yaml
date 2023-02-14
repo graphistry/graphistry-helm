@@ -1,0 +1,145 @@
+{{ if eq .Values.global.devMode false }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: dask-cuda-worker
+  name: dask-cuda-worker
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: dask-cuda-worker
+  updateStrategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxUnavailable: 1
+  template:
+    metadata:
+      annotations:
+        autoheal: "true"
+        kompose.cmd: kompose --file ./compose/release.yml convert -c
+        kompose.version: 1.26.0 (40646f47)
+      creationTimestamp: null
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: dask-cuda-worker
+    spec:
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "nexus"
+      containers:
+        - args:
+            - dask-cuda-worker
+            - --interface
+            - eth0
+            - --dashboard-address localhost:8787
+            - --resources GPU=10
+            - dask-scheduler:8786
+          command:
+            - /entrypoints/rapids-entrypoint.sh
+          env:
+          - name: GRAPHISTRY_CPU_MODE
+            value: {{.Values.graphistryCPUMode | quote }}
+   {{- range .Values.env }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+   {{- end }}
+          {{- if eq .Values.vgpu true  }}
+          - name: RMM_ALLOCATOR
+            value: "default"
+        {{- end }}
+          - name: REMOTE_DASK
+            value: {{.Values.daskscheduler.location | quote }}
+          - name: POSTGRES_HOST
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          - name: POSTGRES_PORT
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
+          - name: POSTGRES_DB
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: dbname } }
+          - name: POSTGRES_USER
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: user } }
+          - name: POSTGRES_PASSWORD
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
+          - name: DATABASE_URL
+            valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+          - name: GRAPHISTRY_LOG_LEVEL
+            value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+          - name: LOG_LEVEL
+            value: {{ .Values.global.logs.LogLevel | quote }}  
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}
+          livenessProbe:
+            exec:
+              command:
+                - sh
+                - -c
+                - "curl -Lf http://localhost:8787/health && curl -f http://forge-etl-python:8080/workerhealth"
+
+            failureThreshold: 1
+            initialDelaySeconds: 180
+            periodSeconds: 120
+            timeoutSeconds: 30
+          name: dask-cuda-worker
+          ports:
+            - containerPort: 8787
+          resources:
+          {{- toYaml .Values.DaskWorkerResources | nindent 10 }}
+          volumeMounts:
+            - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /dask-shared
+              name: data-mount
+      restartPolicy: {{ .Values.global.restartPolicy }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: data-mount
+          persistentVolumeClaim:
+            claimName: data-mount
+      {{- with .Values.global.imagePullSecrets }}
+      imagePullSecrets:
+        {{- toYaml . | nindent 8 }}
+      {{- end }}     
+      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  annotations:
+    autoheal: "true"
+    kompose.cmd: kompose --file ./compose/release.yml convert -c
+    kompose.version: 1.26.0 (40646f47)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: dask-cuda-worker
+  name: dask-cuda-worker
+spec:
+  ports:
+    - name: "8786"
+      port: 8786
+      targetPort: 8786
+    - name: "8787"
+      port: 8787
+      targetPort: 8787
+  selector:
+    io.kompose.service: dask-cuda-worker
+status:
+  loadBalancer: {}
+
+{{ end }}  

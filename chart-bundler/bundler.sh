@@ -125,4 +125,4 @@ rm -rf argo-helm
 cd argo-cd && helm repo add redis-ha https://dandydeveloper.github.io/charts/ && helm dep build && cd ../
 
 echo "checking charts dir"
-ls charts
+cd ../ && ls charts

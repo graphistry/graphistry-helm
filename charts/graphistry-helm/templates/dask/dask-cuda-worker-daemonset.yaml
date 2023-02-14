@@ -99,7 +99,8 @@ spec:
           ports:
             - containerPort: 8787
           resources:
-          {{- toYaml .Values.DaskWorkerResources | nindent 10 }}
+          {{- toYaml .Values.DaskWorkerResources | nindent 12 }}
+
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

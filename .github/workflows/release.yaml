@@ -23,6 +23,9 @@ jobs:
       - name: get aux charts for release
         run: bash chart-bundler/bundler.sh
 
+      - name: copy aux charts into charts dir
+        run: cp -r chart-bundle/* charts
+
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.2.1
         env:

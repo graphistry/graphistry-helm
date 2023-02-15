@@ -289,6 +289,11 @@ resource "helm_release" "morpheus-ai-engine" {
     name  = "ngc.apiKey"
     value = var.ngc-api-key
   }
+
+  set {
+    name  = "aiengine.args"
+    value = "{tritonserver,--model-repository=/common/models,--model-control-mode=explicit}"
+  }
 }
 
 resource "helm_release" "morpheus-mlflow" {

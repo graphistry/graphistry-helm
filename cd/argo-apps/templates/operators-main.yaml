@@ -15,7 +15,11 @@ spec:
   source:
     path: cd/argo-apps/templates/operators-cd-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: HEAD #BRANCH OR HEAD WHEN IN MAIN
+    directory: ####this section allows files to be ignored
+      recurse: true
+      jsonnet: {}
+      exclude: '{operators-cd-templates/dask-operator-cd.yaml}' #EXCLUDES THE DASK OPERATOR until it is fixed
   syncPolicy:
     automated:
       prune: true

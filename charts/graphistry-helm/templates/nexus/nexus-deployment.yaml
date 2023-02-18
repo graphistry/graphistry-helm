@@ -100,7 +100,7 @@ spec:
           - name: STRIPE_LIVE_SECRET_KEY
             valueFrom: { secretKeyRef: { name: stripe-secret , key: live-secret-key , optional: true } }
           - name: DJSTRIPE_WEBHOOK_VALIDATION
-            value: {{ .Values.djstripeWebhookValidation | quote  }}
+            value: 'retrieve_event'
           - name: STRIPE_PRODUCT_INDIVIDUAL_ID
             valueFrom: { secretKeyRef: { name: stripe-secret , key: product-indiv-id , optional: true } }
           - name: STRIPE_PRODUCT_TEAM_ID

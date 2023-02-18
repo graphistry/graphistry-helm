@@ -37,21 +37,25 @@ spec:
     spec:
       initContainers:
       - name: "streamgl-viz-wait-for-postgres"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "pod"
         - "-lapp=postgres"
       - name: "streamgl-viz-wait-for-redis"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
@@ -85,7 +89,7 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}   
           livenessProbe:
             exec:
@@ -100,7 +104,8 @@ spec:
           name: streamgl-viz
           ports:
             - containerPort: 8080
-          resources: {}
+          resources:
+            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
           volumeMounts:
             - mountPath: /opt/graphistry/data
               name: data-mount

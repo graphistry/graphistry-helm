@@ -1,10 +1,9 @@
-
 global:
    #- Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   provisioner: kubernetes.io/aws-ebs #storage class provisioner
   multiNode: false # multinode selector switch to determine if going multi/single node
   containerregistry:  #container registry name
-    name: acrgraphistryk8s.azurecr.io
+    name: docker.io/graphistry
   devMode: false  #dev mode for debugging with nexus, postgres and nginx
   postgres:
     repository: graphistry-postgres  #postgres repository name 
@@ -27,3 +26,15 @@ global:
     LogLevel: INFO
     GraphistryLogLevel: INFO
   postgresVolumeLabel:  #postgres volume label
+  PostgresResources: #{}  # Resources for the postgres pods
+    # We usually recommend not to specify default resources and to leave this as a conscious
+    # choice for the user. This also increases chances charts run on environments with little
+    # resources, such as Minikube. If you do want to specify resources, uncomment the following
+    # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
+     limits:
+       cpu: 100m
+       memory: 128Mi
+    # requests:
+    #   cpu: 100m
+    #   memory: 128Mi
+

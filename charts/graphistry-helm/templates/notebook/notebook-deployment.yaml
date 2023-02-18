@@ -38,17 +38,21 @@ spec:
     spec:
       initContainers:
       - name: "notebook-wait-for-streamgl-vgraph-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "streamgl-vgraph-etl"
       - name: volume-mount-hack
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks"]
         volumeMounts:
         - mountPath: /home/graphistry/notebooks
@@ -60,6 +64,10 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          {{- if eq .Values.vgpu true  }}
+          - name: RMM_ALLOCATOR
+            value: "default"
+        {{- end }}
           - name: POSTGRES_HOST
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
           - name: POSTGRES_PORT
@@ -76,7 +84,7 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.notebook.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.notebook.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}          
           livenessProbe:
             exec:
@@ -90,9 +98,9 @@ spec:
             timeoutSeconds: 30
           name: notebook
           ports:
-
             - containerPort: 8888
-          resources: {}
+          resources:
+            {{- toYaml .Values.NotebookResources | nindent 12 }}
           volumeMounts:
             - mountPath: /home/graphistry/notebooks
               subPath: notebooks

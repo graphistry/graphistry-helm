@@ -57,7 +57,7 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.caddy.repository}}:{{.Values.global.tag}}-universal
+          image: {{.Values.global.containerregistry.name}}/{{.Values.caddy.repository}}:{{.Values.global.tag}}-universal
           imagePullPolicy: {{.Values.global.imagePullPolicy }}
           livenessProbe:
             exec:
@@ -70,7 +70,8 @@ spec:
           ports:
             - containerPort: 80
             - containerPort: 443
-          resources: {}
+          resources:
+            {{- toYaml .Values.CaddyResources | nindent 12 }}
           volumeMounts:
             - mountPath: /etc/caddy/Caddyfile
               name: caddy-config

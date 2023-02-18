@@ -7,6 +7,8 @@ on:
 
 jobs:
   release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,8 +21,14 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
+## docker compose build
+      - name: Get aux charts for release
+        run: bash chart-bundler/bundler.sh
+
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.1
+        uses: helm/chart-releaser-action@v1.5.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_RELEASE_NOTES_FILE: "CHANGELOG.md"
+        with:
+          charts_dir: /home/runner/work/graphistry-helm/graphistry-helm/charts
+          config: .github/config/chart-releaser.yaml

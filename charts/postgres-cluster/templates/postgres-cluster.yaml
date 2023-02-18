@@ -6,12 +6,11 @@ spec:
   metadata:
     labels:
       app: postgres
-  #{{ if eq .Values.global.devMode false }}
-  #image: {{.Values.global.containerregistry.name}}/{{.Values.global.graphistry}}:{{.Values.global.postgres.repository}}-{{.Values.global.tag}}-universal
-  #{{ else }}  
-  #image: graphistry/{{.Values.global.postgres.repository}}:{{.Values.global.tag}}-universal-dev
-  #{{ end }}    
-  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
+  {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+  image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1 #crunchydata
+  {{ else }}
+  image: {{.Values.global.containerregistry.name}}/crunchy-postgres:ubi8-14.5-1
+  {{- end }}    
   port: {{ .Values.global.postgres.port }}
   postgresVersion: 14
   users:
@@ -24,6 +23,27 @@ spec:
   instances:
     - name: instance1
       replicas: 1
+      resources:
+        {{- toYaml .Values.global.PostgresResources | nindent 8 }}
+      sidecars:
+        replicaCertCopy:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      #affinity:
+      #  nodeAffinity:
+      #    requiredDuringSchedulingIgnoredDuringExecution:
+      #      nodeSelectorTerms:
+      #      - matchExpressions:
+      #        - key: apptype
+      #          operator: In
+      #          values:
+      #          - gpu
+                
       dataVolumeClaimSpec:
       {{- if eq .Values.global.multiNode true  }}
         accessModes:
@@ -36,7 +56,7 @@ spec:
       {{- end }}
         resources:
           requests:
-            storage: 4Gi   
+            storage: 4Gi
 {{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
@@ -51,7 +71,54 @@ spec:
   
   backups:
     pgbackrest:
-      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1
+      repoHost:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      sidecars:
+        pgbackrest:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+        pgbackrestConfig:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+      jobs:
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      restore:
+        repoName: repo1
+        enabled: false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+      {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+      image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1 #crunchydata
+      {{ else }}
+      image: {{.Values.global.containerregistry.name}}/crunchy-pgbackrest:ubi8-2.40-1
+      {{- end }}    
       repos:
         - name: repo1
           volume:
@@ -67,13 +134,16 @@ spec:
             {{- end }}
               resources:
                 requests:
-                  storage: 4Gi
+                  storage: 4Gi     
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:
     {{- toYaml . | nindent 3 }}
   {{- end }}
-#  imagePullSecrets:
-#    - name: {{ .Values.global.imagePullSecrets  }}
 
 
+#spec.backups.pgbackrest.repoHost.resources section, which sets the resources for the pgBackRest repo host container, as well as any init containers in the associated pod and containers created by the pgBackRestVolume data migration job.
+#spec.backups.pgbackrest.sidecars.pgbackrest.resources section, which sets the resources for the pgbackrest sidecar container.
+#spec.backups.pgbackrest.sidecars.pgbackrestConfig.resources section, which sets the resources for the pgbackrest-config sidecar container.
+#spec.backups.pgbackrest.jobs.resources section, which sets the resources for any pgBackRest backup job.
+#spec.backups.pgbackrest.restore.resources section, which sets the resources for manual pgBackRest restore jobs.

@@ -40,57 +40,69 @@ spec:
       initContainers:
       {{ if eq .Values.global.devMode false }} 
       - name: "nginx-wait-for-forge-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "forge-etl"
       - name: "nginx-wait-for-forge-etl-python"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "forge-etl-python"
       - name: "nginx-wait-for-streamgl-gpu"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "streamgl-gpu"
       - name: "nginx-wait-for-streamgl-sessions"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "streamgl-sessions"
       - name: "nginx-wait-for-streamgl-vgraph-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "streamgl-vgraph-etl"       
       - name: nginx-init-streamgl-viz
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: 
         - sh 
         - -c 
@@ -101,10 +113,12 @@ spec:
       {{ end }}          
       - name: nginx-init-pivot
         {{ if eq .Values.global.devMode false }}
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
       {{ else }}
         image: {{.Values.graphistry}}/{{.Values.pivotDev.repository}}:{{.Values.global.tag}}-dev
-    {{ end }}   
+    {{ end }}  
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
         command: 
         - sh 
         - -c
@@ -143,6 +157,10 @@ spec:
             value: "1"
           - name: NGINX_RESOLVER
             value: kube-dns.kube-system.svc.cluster.local
+          - name: ST_PUBLIC_BASE_PATH
+            value: "/dashboard"
+          - name: ST_PRIVATE_BASE_PATH
+            value: "/dashboard"  
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
@@ -153,7 +171,7 @@ spec:
           {{ end }}
    {{ if eq .Values.global.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.global.tag}}-universal
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nginx.repository}}-{{.Values.global.tag}}-universal
     {{ else }}
           image: {{.Values.graphistry}}/{{.Values.nginxDev.repository}}:{{.Values.global.tag}}-universal-dev
     {{ end }}      
@@ -175,7 +193,8 @@ spec:
               name: http
               protocol: TCP
             - containerPort: {{.Values.nginxPorts.portTwo}}
-          resources: {}
+          resources:
+            {{- toYaml .Values.NginxResources | nindent 12 }}
           volumeMounts:
         {{ if eq .Values.global.devMode true }}
             - mountPath: /opt/graphistry/apps/core/viz/www/public
@@ -196,16 +215,18 @@ spec:
         - env:         
           - name: PROMETHEUS_PORT
             value: "4040"
-          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2
+          {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2 #DockerHub
+          {{ else }}
+          image: {{.Values.global.containerregistry.name}}/prometheus-nginxlog-exporter:v1.9.2
+          {{- end }}
           args: ["-config-file", "/etc/prometheus-nginxlog-exporter/config.hcl"]
           imagePullPolicy: {{.Values.global.imagePullPolicy }}
           name: nginx-log-exporter
           ports:
             - containerPort: 4040
-          resources: 
-            limits:
-              memory: 128Mi
-              cpu: 500m
+          resources:
+            {{- toYaml .Values.NginxResources | nindent 12 }}
           volumeMounts:
           - name: exporter-config
             mountPath: /etc/prometheus-nginxlog-exporter

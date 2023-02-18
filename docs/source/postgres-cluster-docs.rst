@@ -29,12 +29,11 @@ Configuring Postgres Cluster
 ----------------------------
 
 After Cluster is deployed, find the pv that is created and add the following label to it. This will allow the cluster to bind the pv to the pod upon redeployment.
-Once that is completed add the label to your values.yaml file under postgresVolumeLabel. This will allow the cluster to bind the pv to the pod upon redeployment.
       
     .. code-block:: shell-session
 
 
-      kubectl get pv -n graphistry && kubectl label pv <pv name> pgo-postgres-cluster=graphistry-postgres        
+      kubectl get pv -n graphistry && kubectl label pv <pv name for the postgres instance> pgo-postgres-cluster=graphistry-postgres        
 
 Change the postgres password if needed. The default password is randomly generated AlphaNumeric string.
 

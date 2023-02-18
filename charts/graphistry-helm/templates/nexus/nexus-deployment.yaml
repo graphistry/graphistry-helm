@@ -64,6 +64,8 @@ spec:
             value: {{ .Values.jwtExpirationDelta | quote }}
           - name : ENABLE_DJANGO_SILK
             value: {{ .Values.enableDjangoSilk | quote  }}
+          - name: STRIPE_LIVE_MODE
+            value: {{ .Values.stripeLiveMode | quote  }}
           - name: STRIPE_LIVE_PUBLIC_KEY
             value: {{ .Values.stripeLivePublicKey | quote  }}
           - name: STRIPE_LIVE_SECRET_KEY

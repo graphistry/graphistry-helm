@@ -66,40 +66,6 @@ spec:
             value: {{ .Values.jwtExpirationDelta | quote }}
           - name : ENABLE_DJANGO_SILK
             value: {{ .Values.enableDjangoSilk | quote  }}
-          - name: STRIPE_LIVE_MODE
-            value: {{ .Values.stripeLiveMode | quote  }}
-          - name: STRIPE_LIVE_PUBLIC_KEY
-            value: {{ .Values.stripeLivePublicKey | quote  }}
-          - name: STRIPE_LIVE_SECRET_KEY
-            value: {{ .Values.stripeLiveSecretKey | quote  }}
-          - name: STRIPE_TEST_PUBLIC_KEY
-            value: {{ .Values.stripeTestPublicKey | quote  }}
-          - name: STRIPE_TEST_SECRET_KEY
-            value: {{ .Values.stripeTestSecretKey | quote  }}
-          - name: DJSTRIPE_WEBHOOK_SECRET
-            value: {{ .Values.djstripeWebhookSecret | quote  }}
-          - name: DJSTRIPE_WEBHOOK_VALIDATION
-            value: {{ .Values.djstripeWebhookValidation | quote  }}
-          - name: STRIPE_PRODUCT_INDIVIDUAL_ID
-            value: {{ .Values.stripeProductIndividualID | quote  }}
-          - name: STRIPE_PRODUCT_TEAM_ID
-            value: {{ .Values.stripeProductTeamID | quote  }}
-          - name: STRIPE_PRODUCT_ENTERPRISE_ID
-            value: {{ .Values.stripeProductEnterpriseID | quote  }}
-          - name: STRIPE_PLAN_INDIVIDUAL_MONTHLY_ID
-            value: {{ .Values.stripePlanIndividualMonthlyID | quote  }}
-          - name: STRIPE_PLAN_INDIVIDUAL_ANNUALLY_ID
-            value: {{ .Values.stripePlanIndividualAnnuallyID | quote  }}
-          - name: STRIPE_PLAN_TEAM_MONTHLY_ID
-            value: {{ .Values.stripePlanTeamMonthlyID | quote  }}
-          - name: STRIPE_PLAN_TEAM_ANNUALLY_ID
-            value: {{ .Values.stripePlanTeamAnnuallyID | quote  }}
-          - name: STRIPE_PLAN_ENTERPRISE_MONTHLY_ID
-            value: {{ .Values.stripePlanEnterpriseMonthlyID | quote  }}
-          - name: STRIPE_PLAN_ENTERPRISE_ANNUALLY_ID
-            value: {{ .Values.stripePlanEnterpriseAnnuallyID | quote  }}
-         
-
           {{- if eq .Values.tls true  }}
           - name: COOKIE_SECURE
             value: "True"
@@ -120,13 +86,39 @@ spec:
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
           - name: DATABASE_URL
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
-
+            #stripe stuff
           - name: STRIPE_TEST_PUBLIC_KEY
-            valueFrom: { secretKeyRef: { name: stripe-secret , key: public-key , optional: true } }
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: test-public-key , optional: true } }
           - name: STRIPE_TEST_SECRET_KEY
-            valueFrom: { secretKeyRef: { name: stripe-secret , key: secret-key , optional: true } }
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: test-secret-key , optional: true } }
           - name: DJSTRIPE_WEBHOOK_SECRET
-            valueFrom: { secretKeyRef: { name: stripe-secret, key: webhook-secret , optional: true } }
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: webhook-secret , optional: true } }
+          - name: STRIPE_LIVE_MODE
+            value: {{ .Values.stripeLiveMode | quote  }}
+          - name: STRIPE_LIVE_PUBLIC_KEY
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: live-public-key , optional: true } }
+          - name: STRIPE_LIVE_SECRET_KEY
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: live-secret-key , optional: true } }
+          - name: DJSTRIPE_WEBHOOK_VALIDATION
+            value: {{ .Values.djstripeWebhookValidation | quote  }}
+          - name: STRIPE_PRODUCT_INDIVIDUAL_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: product-indiv-id , optional: true } }
+          - name: STRIPE_PRODUCT_TEAM_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: product-team-id , optional: true } }
+          - name: STRIPE_PRODUCT_ENTERPRISE_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: product-enterprise-id , optional: true } }
+          - name: STRIPE_PLAN_INDIVIDUAL_MONTHLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-indiv-monthly-id , optional: true } }
+          - name: STRIPE_PLAN_INDIVIDUAL_ANNUALLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-indiv-annually-id , optional: true } }
+          - name: STRIPE_PLAN_TEAM_MONTHLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-team-monthly-id , optional: true } }
+          - name: STRIPE_PLAN_TEAM_ANNUALLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-team-annually-id , optional: true } }
+          - name: STRIPE_PLAN_ENTERPRISE_MONTHLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: enterprise-monthly-id , optional: true } }
+          - name: STRIPE_PLAN_ENTERPRISE_ANNUALLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: enterprise-annually-id , optional: true } }
 
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}

@@ -553,8 +553,7 @@ env: #environment variables
    value: "true"
  - name: ENABLE_TELEMETRY
    value: "false"
- - name: DJSTRIPE_WEBHOOK_VALIDATION
-   value: 'retrieve_event'
+
 
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \

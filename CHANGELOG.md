@@ -1,8 +1,6 @@
-
 # graphistry-helm Version Release Notes
 
 ## Changelog
-
 
 All notable changes to the graphistry-helm repo are documented in this file. Additional Graphistry components are tracked in the main [Graphistry major release history documentation](https://graphistry.zendesk.com/hc/en-us/articles/360033184174-Enterprise-Release-List-Downloads).
 
@@ -10,8 +8,12 @@ The changelog format is based on [Keep a Changelog](https://keepachangelog.com/e
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html) and all PyGraphistry-specific breaking changes are explictly noted here.
 
 ## [Development]
-
-
+*   Added Dask operator to control our Dask cuda Scheduler and Workers. 
+    This will allow us to scale up and down the number of workers as needed. 
+    Temporary workaround for service name issue with the operator, 
+    currently unable to set the service name to `dask-scheduler` in the scheduler.service spec 
+    so we are using a service named `dask-scheduler` instead. 
+    We are still utilizing the old cuda-worker daemonset and scheduler deployment setup until dask kubernetes operator fixes its pod restoration bug.
 ## [Version 0.3.5 - 2023-02-13]
 
 ### Breaking 🔥
@@ -25,11 +27,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 *   Added Postgres operator and changed our postgres deployment into an operator controlled PostgresCluster.
     This allows us to use the Postgres operator to manage our Postgres deployment and also allows us to use the Postgres operator to manage our Postgres backups, as well as giving us the option to run postgres in a Highly Available configuration for redundancy. The Operator also allows us to backup our Postgres database to S3/GCS/Azure storage and other S3 compatible storage. As well as giving us the option to encrypt communication between our database and our services.
 
-*   Added Dask operator to control our Dask cuda Scheduler and Workers. 
-    This will allow us to scale up and down the number of workers as needed. 
-    Temporary workaround for service name issue with the operator, 
-    currently unable to set the service name to `dask-scheduler` in the scheduler.service spec 
-    so we are using a service named `dask-scheduler` instead.
 
 *   Added ArgoCD with a "app of apps" deployment pattern to manage our deployment. This gives us the 
     the ability to manage our deployment with a gitops pattern.     
@@ -60,4 +57,3 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ### Fixed
 
 *   Fixed the pvc retention issue by setting the pvc name in the values.yaml so the PV and PVC automatically bind after provisioning upon redeployment
-

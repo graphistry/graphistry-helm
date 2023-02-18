@@ -1,3 +1,4 @@
+{{ if eq .Values.global.operator true }} #this is a dummy condition *WILL REMOVE WHEN DKO IS READY *
 {{ if eq .Values.global.devMode false }}
 apiVersion: kubernetes.dask.org/v1
 kind: DaskCluster
@@ -220,3 +221,4 @@ spec:
       dask.org/cluster-name: dask
       dask.org/component: scheduler
 {{ end }}     
+{{ end }}    

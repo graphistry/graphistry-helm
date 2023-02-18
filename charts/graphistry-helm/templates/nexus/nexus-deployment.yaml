@@ -86,12 +86,13 @@ spec:
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
           - name: DATABASE_URL
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+            #stripe stuff
           - name: STRIPE_TEST_PUBLIC_KEY
             valueFrom: { secretKeyRef: { name: stripe-secret , key: test-public-key , optional: true } }
           - name: STRIPE_TEST_SECRET_KEY
             valueFrom: { secretKeyRef: { name: stripe-secret , key: test-secret-key , optional: true } }
           - name: DJSTRIPE_WEBHOOK_SECRET
-            valueFrom: { secretKeyRef: { name: stripe-secret, key: webhook-secret , optional: true } }
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: webhook-secret , optional: true } }
           - name: STRIPE_LIVE_MODE
             value: {{ .Values.stripeLiveMode | quote  }}
           - name: STRIPE_LIVE_PUBLIC_KEY
@@ -118,6 +119,7 @@ spec:
             valueFrom: { secretKeyRef: { name: stripe-secret , key: enterprise-monthly-id , optional: true } }
           - name: STRIPE_PLAN_ENTERPRISE_ANNUALLY_ID
             valueFrom: { secretKeyRef: { name: stripe-secret , key: enterprise-annually-id , optional: true } }
+            
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL

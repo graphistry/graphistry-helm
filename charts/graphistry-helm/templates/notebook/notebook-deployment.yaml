@@ -115,6 +115,9 @@ spec:
               name: gak-public
             - mountPath: /home/graphistry/graph-app-kit-private/
               name: gak-private
+              #*WILL REMOVE FOR RELEASE , THIS IS FOR A DATA PROJECT*
+            - mountPath: /home/graphistry/data-pv/
+              name: data-pvc
             
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
@@ -128,6 +131,10 @@ spec:
         - name: gak-private
           persistentVolumeClaim:
             claimName: gak-private
+        ###data pvc *WILL REMOVE FOR RELEASE , THIS IS FOR A DATA PROJECT*
+        - name: data-pvc
+          persistentVolumeClaim:
+            claimName: data-pvc
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

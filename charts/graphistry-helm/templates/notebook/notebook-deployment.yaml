@@ -120,7 +120,8 @@ spec:
             - mountPath: /home/graphistry/graph-app-kit-private/
               name: gak-private
               #*WILL REMOVE FOR RELEASE , THIS IS FOR A DATA PROJECT*
-            - mountPath: /home/graphistry/data-pv/
+            - mountPath: /home/graphistry/data-pv
+              subPath: data-pv
               name: data-pvc
             
       restartPolicy: {{ .Values.global.restartPolicy }}

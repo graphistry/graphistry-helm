@@ -53,11 +53,19 @@ spec:
         resources:
           {{- toYaml .Values.InitContainerResources | nindent 10 }}
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
-        command: ["sh", "-c", "chown -R 1000:1000 /home/graphistry/notebooks" , "chown -R 1000:1000 /home/graphistry/data-pv"]
+        command: ["sh", "-c"]
+        args: ["chown -R 1000:1000 /home/graphistry/notebooks" ]
         volumeMounts:
         - mountPath: /home/graphistry/notebooks
           subPath: notebooks
           name: data-mount
+      - name: volume-mount-hack-data-pv
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        command: ["sh", "-c"]
+        args: ["chown -R 1000:1000 /home/graphistry/data-pv"]
+        volumeMounts:
       ##data project
         - mountPath: /home/graphistry/data-pv
           subPath: data-pv

@@ -1,11 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    autoheal: "true"
-    kompose.cmd: kompose --file ./compose/release.yml convert -c
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     io.kompose.service: nexus
     app: nexus
@@ -26,11 +21,6 @@ spec:
 {{- end }}
   template:
     metadata:
-      annotations:
-        autoheal: "true"
-        kompose.cmd: kompose --file ./compose/release.yml convert -c
-        kompose.version: 1.26.0 (40646f47)
-      creationTimestamp: null
       labels:
         io.kompose.network/grph: "true"
         io.kompose.service: nexus
@@ -181,11 +171,6 @@ status: {}
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    autoheal: "true"
-    kompose.cmd: kompose --file ./compose/release.yml convert -c
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     io.kompose.service: nexus
   name: nexus

@@ -1,30 +1,26 @@
 {{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
-  annotations:
-    autoheal: "true"
-    kompose.cmd: kompose --file ./compose/release.yml convert -c
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     io.kompose.service: dask-cuda-worker
   name: dask-cuda-worker
 spec:
+  replicas: {{ .Values.dask.workers }}  #needs to de num dask workers
   selector:
     matchLabels:
       io.kompose.service: dask-cuda-worker
-  updateStrategy:
+  strategy:
+{{ if eq .Values.rollingUpdate true }}
     type: RollingUpdate
     rollingUpdate:
-      maxUnavailable: 1
+      maxSurge: {{.Values.maxSurge}}
+      maxUnavailable: "0%"
+{{ else }}
+    type: Recreate
+{{- end }}
   template:
     metadata:
-      annotations:
-        autoheal: "true"
-        kompose.cmd: kompose --file ./compose/release.yml convert -c
-        kompose.version: 1.26.0 (40646f47)
-      creationTimestamp: null
       labels:
         io.kompose.network/grph: "true"
         io.kompose.service: dask-cuda-worker
@@ -116,17 +112,14 @@ spec:
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
       {{- end }}     
-      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+{{ if eq .Values.multiNode false }}
+      nodeSelector:  {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+{{- end }} 
 ---
 #service
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    autoheal: "true"
-    kompose.cmd: kompose --file ./compose/release.yml convert -c
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     io.kompose.service: dask-cuda-worker
   name: dask-cuda-worker

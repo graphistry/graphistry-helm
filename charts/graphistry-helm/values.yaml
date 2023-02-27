@@ -413,7 +413,7 @@ vgpu: false #enables vgpu mode for bigger than memory workloads on VGPU
 daskcudaworker:
   repository: etl-server-python #dask-cuda-worker repository name
 
-forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
+forgeWorkers: "4" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
 ProxyBodySize: 20000m #sets the proxy body size for ingress controller and uploads to 20 GB
 

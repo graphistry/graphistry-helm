@@ -10,6 +10,9 @@ fwdHeaders: true
 #  gakPrivate: pvc-75bb5fd0-ab86-49c4-afed-6e261161808c
 networkPolicy:
   strict: true
+cuda:
+  version: "11.5" #cuda version
+
 
 graphistryResources:
   storageClassParameters:
@@ -27,7 +30,7 @@ k8sDashboard:
 
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.43
+  tag: v2.40.3
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
   #logs:

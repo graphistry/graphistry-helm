@@ -1,8 +1,8 @@
 apiVersion: v2
 name: dask-kubernetes-operator-subchart
 type: application
-version: 2022.11.2
+version: 2023.1.1
 dependencies:
 - name: dask-kubernetes-operator
-  version: 2022.11.2
+  version: 2023.1.1 
   repository: https://helm.dask.org

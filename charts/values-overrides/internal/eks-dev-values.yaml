@@ -1,7 +1,7 @@
 domain: eks-dev.grph.xyz 
 tlsEmail: "cody@graphistry.com" 
 tls: true
-metrics: false
+metrics: true
 fwdHeaders: true
 volumeName:
   dataMount: pvc-c3e768a1-29a8-42ad-95e0-692b608dd19f
@@ -50,3 +50,6 @@ global:
 
 #helm upgrade -i prometheus-community ./charts/kube-prometheus-stack --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
 #helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace --dry-run 
+
+
+#helm upgrade -i ingress-nginx ./chart-bundle/ingress-nginx --values ./charts/values-overrides/auxiliary/ingress-nginx-values.yaml --namespace ingress-nginx --dry-run 

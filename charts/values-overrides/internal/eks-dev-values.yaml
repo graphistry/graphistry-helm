@@ -12,7 +12,8 @@ networkPolicy:
   strict: true
 cuda:
   version: "11.5" #cuda version
-elk: true
+elk: 
+  enabled: true
 
 
 graphistryResources:

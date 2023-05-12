@@ -13,8 +13,8 @@ networkPolicy:
 cuda:
   version: "11.5" #cuda version
 
-elk: 
-  enabled: true
+#elk: 
+#  enabled: true
 
 graphistryResources:
   storageClassParameters:

@@ -158,7 +158,7 @@ spec:
             value: {{ .Values.global.logs.LogLevel | quote }} 
           {{if eq .Values.metrics true }} 
           - name: EXTRA_NGINX_LOGS
-            value: access_log syslog:server=127.0.0.1:5531,tag=nginx,severity=info custom;
+            value: access_log  /var/log/nginx/access-prometheus.log prometheus;
           {{ end }}
    {{ if eq .Values.global.devMode false }}
           #image: acrgraphistryk8s.azurecr.io/graphistry/streamgl-nginx:v2.39.12-universal

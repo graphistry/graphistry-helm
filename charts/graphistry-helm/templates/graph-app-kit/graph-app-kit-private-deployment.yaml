@@ -57,9 +57,9 @@ spec:
           - name: GRAPHISTRY_SERVER
             value: "nginx"
           - name: GRAPHISTRY_USERNAME
-            valueFrom: { secretKeyRef: { name: gak-secret, key: username } }
+            valueFrom: { secretKeyRef: { name: gak-secret, key: username , optional: true } }
           - name: GRAPHISTRY_PASSWORD
-            valueFrom: { secretKeyRef: { name: gak-secret, key: password } }
+            valueFrom: { secretKeyRef: { name: gak-secret, key: password , optional: true } }
           #image: acrgraphistryk8s.azurecr.io/graphistry/graph-app-kit-st:development
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphAppKit.repository}}:{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}

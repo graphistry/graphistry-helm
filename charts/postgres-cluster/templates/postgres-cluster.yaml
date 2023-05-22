@@ -52,7 +52,7 @@ spec:
       {{- else }}
         accessModes:
           - "ReadWriteOnce"
-        storageClassName: retain-sc-{{ .Release.Namespace }}
+        storageClassName: retain-sc
       {{- end }}
         resources:
           requests:

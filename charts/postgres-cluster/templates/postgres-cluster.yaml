@@ -48,7 +48,7 @@ spec:
       {{- if eq .Values.global.multiNode true  }}
         accessModes:
           - "ReadWriteMany"
-        storageClassName: postgres-longhorn-{{ .Release.Namespace }}
+        storageClassName: postgres-longhorn
       {{- else }}
         accessModes:
           - "ReadWriteOnce"

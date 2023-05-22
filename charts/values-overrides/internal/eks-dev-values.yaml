@@ -43,7 +43,7 @@ global:
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod
-  postgresVolumeLabel: #graphistry-postgres
+  postgresVolumeLabel: graphistry-postgres
   #dev mode for debugging with nexus, postgres and nginx
   #devMode: true
 

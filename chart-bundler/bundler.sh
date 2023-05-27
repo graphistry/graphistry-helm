@@ -2,13 +2,16 @@
 
 set -e
 
-rm -rf chart-bundle
+AUX_BUNDLE_DIR=${charts-aux-bundled:-}
+echo "AUX_BUNDLE_DIR: ${AUX_BUNDLE_DIR}"
+
+rm -rf ${AUX_BUNDLE_DIR}
 
 echo "checking working directory"
 echo "$PWD"
-#mkdir chart-bundle
-#cd chart-bundle
-cd charts
+mkdir -p ${AUX_BUNDLE_DIR}
+cd ${AUX_BUNDLE_DIR}
+
 # This script is used to generate a chart bundle from the forks of charts we use to suport the graphistry helm chart deployment.    
 
 echo "gathering kube prometheus stack charts"
@@ -125,4 +128,4 @@ rm -rf argo-helm
 cd argo-cd && helm repo add redis-ha https://dandydeveloper.github.io/charts/ && helm dep build && cd ../
 
 echo "checking charts dir"
-cd ../ && ls -la
+cd ../ && ls -la charts-aux-bundled

@@ -129,6 +129,9 @@ cd argo-cd && helm repo add redis-ha https://dandydeveloper.github.io/charts/ &&
 
 echo "checking charts dir ${AUX_BUNDLE_DIR}"
 cd ../ && ls -alh ${AUX_BUNDLE_DIR}
+du -sh ${AUX_BUNDLE_DIR}
+df -h
 
+## bundle folder xyz into asdf.tar.gz
 tar -czvf ${AUX_BUNDLE_DIR}.tgz ${AUX_BUNDLE_DIR}
 ls -alh ${AUX_BUNDLE_DIR}.tgz

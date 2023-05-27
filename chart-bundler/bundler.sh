@@ -2,7 +2,7 @@
 
 set -e
 
-AUX_BUNDLE_DIR=${charts-aux-bundled:-}
+AUX_BUNDLE_DIR=${AUX_BUNDLE_DIR:-charts-aux-bundled}
 echo "AUX_BUNDLE_DIR: ${AUX_BUNDLE_DIR}"
 
 rm -rf ${AUX_BUNDLE_DIR}

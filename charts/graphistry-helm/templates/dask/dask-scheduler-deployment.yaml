@@ -1,3 +1,4 @@
+{{ if eq .Values.dask.operator false }}
 {{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
@@ -131,4 +132,5 @@ spec:
     io.kompose.service: dask-scheduler
 status:
   loadBalancer: {}
-{{ end }}   
+{{ end }} 
+{{ end }}  

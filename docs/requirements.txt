@@ -3,3 +3,4 @@ sphinx-click
 sphinx
 sphinx-tabs
 sphinx-rtd-theme
+myst-parser

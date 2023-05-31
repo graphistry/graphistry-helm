@@ -46,3 +46,7 @@ frigate:
 #$(FRIGATE) ../charts/dask-kubernetes-operator -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/dask-kubernetes-operator-docs.$(FRIGATE_OUTPUT) && \
 #$(FRIGATE) ../charts/cert-manager -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/cert-manager-docs.$(FRIGATE_OUTPUT) && \
 #$(FRIGATE) ../charts/argo-cd -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/argo-cd-docs.$(FRIGATE_OUTPUT) && \
+
+
+terraform:
+	terraform-docs markdown document ../terraform/aws > ./$(SOURCEDIR)/terraform-docs.md

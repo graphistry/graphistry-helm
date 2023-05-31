@@ -1,7 +1,7 @@
 domain: eks-dev.grph.xyz 
 tlsEmail: "cody@graphistry.com" 
 tls: true
-metrics: false
+#metrics: true
 fwdHeaders: true
 #volumeName:
 #  dataMount: pvc-c3e768a1-29a8-42ad-95e0-692b608dd19f
@@ -10,6 +10,11 @@ fwdHeaders: true
 #  gakPrivate: pvc-75bb5fd0-ab86-49c4-afed-6e261161808c
 networkPolicy:
   strict: true
+cuda:
+  version: "11.5" #cuda version
+
+#elk: 
+#  enabled: true
 
 graphistryResources:
   storageClassParameters:
@@ -27,7 +32,7 @@ k8sDashboard:
 
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.39.43
+  tag: v2.40.3
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
   #logs:
@@ -47,3 +52,6 @@ global:
 
 #helm upgrade -i prometheus-community ./charts/kube-prometheus-stack --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run
 #helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace graphistry --create-namespace --dry-run 
+
+
+#helm upgrade -i ingress-nginx ./chart-bundle/ingress-nginx --values ./charts/values-overrides/auxiliary/ingress-nginx-values.yaml --namespace ingress-nginx --dry-run 

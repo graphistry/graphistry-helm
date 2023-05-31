@@ -48,11 +48,11 @@ spec:
       {{- if eq .Values.global.multiNode true  }}
         accessModes:
           - "ReadWriteMany"
-        storageClassName: postgres-longhorn-{{ .Release.Namespace }}
+        storageClassName: postgres-longhorn
       {{- else }}
         accessModes:
           - "ReadWriteOnce"
-        storageClassName: retain-sc-{{ .Release.Namespace }}
+        storageClassName: retain-sc
       {{- end }}
         resources:
           requests:
@@ -126,11 +126,11 @@ spec:
             {{- if eq .Values.global.multiNode true  }}
               accessModes:
                 - "ReadWriteMany"
-              storageClassName: postgres-longhorn-{{ .Release.Namespace }}
+              storageClassName: postgres-longhorn
             {{- else }}
               accessModes:
                 - "ReadWriteOnce"
-              storageClassName: retain-sc-{{ .Release.Namespace }}
+              storageClassName: retain-sc
             {{- end }}
               resources:
                 requests:

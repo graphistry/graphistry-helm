@@ -401,6 +401,7 @@ forgeetl:
 #sets the number of dask cuda workers
 dask:
   workers: 1 #sets the number of dask cuda workers
+  operator: false #enables dask operator 
 
 #dask-scheduler repository name 
 daskscheduler:
@@ -553,6 +554,7 @@ env: #environment variables
    value: "true"
  - name: ENABLE_TELEMETRY
    value: "false"
+
 
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \

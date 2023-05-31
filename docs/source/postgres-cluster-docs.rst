@@ -53,7 +53,7 @@ Parameter                                          Description                  
 ================================================== ==================================================================================================== ==================================================
 ``global.provisioner``                             storage class provisioner                                                                            ``"kubernetes.io/aws-ebs"``                       
 ``global.multiNode``                               multinode selector switch to determine if going multi/single node                                    ``false``                                         
-``global.containerregistry.name``                                                                                                                       ``"acrgraphistryk8s.azurecr.io"``                 
+``global.containerregistry.name``                                                                                                                       ``"docker.io/graphistry"``                        
 ``global.devMode``                                 dev mode for debugging with nexus, postgres and nginx                                                ``false``                                         
 ``global.postgres.repository``                     postgres repository name                                                                             ``"graphistry-postgres"``                         
 ``global.postgres.name``                           postgres db name                                                                                     ``"graphistry"``                                  
@@ -68,6 +68,8 @@ Parameter                                          Description                  
 ``global.logs.LogLevel``                                                                                                                                ``"INFO"``                                        
 ``global.logs.GraphistryLogLevel``                                                                                                                      ``"INFO"``                                        
 ``global.postgresVolumeLabel``                     postgres volume label                                                                                ``null``                                          
+``global.PostgresResources.limits.cpu``                                                                                                                 ``"100m"``                                        
+``global.PostgresResources.limits.memory``                                                                                                              ``"128Mi"``                                       
 ================================================== ==================================================================================================== ==================================================
 
 

@@ -1,3 +1,5 @@
+## make sure to change the bucket config for state file storage in the  in the state_file_bucket.conf file
+
 variable "cluster_name" {
   description = "the cluster name"
   type    = string
@@ -17,6 +19,31 @@ variable "availability_zone_name" {
   description = "the availability zone names"
   type    = string
   default = "us-east-1"
+}
+
+
+variable "cidr" {
+  description = "the cidr block"
+  type    = string
+  default = "10.0.0.0/16"
+}
+
+variable "availability_zone_subnet" {
+  description = "the availability zone subnets"
+  type = list
+  default = ["us-east-1a", "us-east-1b", "us-east-1c"]
+}
+
+variable "public_subnet" {
+  description = "value of public subnet"
+  type = list
+  default = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"] # in order of availability zone subnets
+}
+
+variable "private_subnet" {
+  description = "value of private subnet"
+  type = list
+  default = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"] # in order of availability zone subnets
 }
 
 variable "cluster_endpoint_public_access_cidrs" {

@@ -49,18 +49,6 @@ spec:
         - mountPath: /home/graphistry/notebooks
           subPath: notebooks
           name: data-mount
-      ##dataproject initcontainer#### **THIS WILL BE REMOVED after data project *
-      - name: volume-mount-hack-data-pv
-        resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
-        command: ["sh", "-c"]
-        args: ["chown -R 1000:1000 /home/graphistry/data-pv"]
-        volumeMounts:
-      ##data project
-        - mountPath: /home/graphistry/data-pv
-          subPath: data-pv
-          name: data-pvc
       containers:
         - env:
    {{- range .Values.env }}
@@ -117,12 +105,7 @@ spec:
             - mountPath: /home/graphistry/graph-app-kit-public/
               name: gak-public
             - mountPath: /home/graphistry/graph-app-kit-private/
-              name: gak-private
-              #*WILL REMOVE FOR RELEASE , THIS IS FOR A DATA PROJECT*
-            - mountPath: /home/graphistry/data-pv
-              subPath: data-pv
-              name: data-pvc
-            
+              name: gak-private           
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
@@ -135,10 +118,7 @@ spec:
         - name: gak-private
           persistentVolumeClaim:
             claimName: gak-private
-        ###data pvc *WILL REMOVE FOR RELEASE , THIS IS FOR A DATA PROJECT*
-        - name: data-pvc
-          persistentVolumeClaim:
-            claimName: data-pvc
+
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

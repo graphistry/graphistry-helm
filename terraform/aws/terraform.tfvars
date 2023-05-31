@@ -4,6 +4,14 @@ cluster_name = "eks-dev-tf-cluster"
 kubernetes_version="1.24"
 ##cluster availability zone
 availability_zone_name = "us-east-1"
+###cluster availability zone subnet
+availability_zone_subnet = ["us-east-1b","us-east-1c"]
+##cidr block
+#cidr = "10.0.0.0/16"
+## private subnet
+#private_subnet = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
+## public subnet
+#public_subnet = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
 #instance type
 instance_types = ["g4dn.2xlarge"]
 ###change cluster size
@@ -13,7 +21,7 @@ addons = [
     #{"name":"kube-proxy", "version":"v1.21.2-eksbuild.2"},
     #{"name":"coredns", "version":"v1.8.4-eksbuild.1"},
     #{"name":"vpc-cni", "version":"v3.9.0-eksbuild.2"},
-    {"name":"aws-ebs-csi-driver","version":"v1.11.4-eksbuild.1"}
+    {"name":"aws-ebs-csi-driver","version":"v1.19.0-eksbuild.1"}
         ]
 ###enable various deployment addons ####
 enable-ingress-nginx = true

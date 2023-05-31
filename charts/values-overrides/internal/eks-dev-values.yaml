@@ -1,7 +1,7 @@
 domain: eks-dev.grph.xyz 
 tlsEmail: "cody@graphistry.com" 
 tls: true
-metrics: true
+#metrics: true
 fwdHeaders: true
 volumeName:
   dataMount: pvc-c3e768a1-29a8-42ad-95e0-692b608dd19f

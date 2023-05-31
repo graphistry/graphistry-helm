@@ -401,6 +401,7 @@ forgeetl:
 #sets the number of dask cuda workers
 dask:
   workers: 1 #sets the number of dask cuda workers
+  operator: false #enables dask operator 
 
 #dask-scheduler repository name 
 daskscheduler:

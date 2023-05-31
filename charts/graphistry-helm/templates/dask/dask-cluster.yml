@@ -1,4 +1,4 @@
-{{ if eq .Values.global.operator true }} #this is a dummy condition *WILL REMOVE WHEN DKO IS READY *
+{{ if eq .Values.dask.operator true }} 
 {{ if eq .Values.global.devMode false }}
 apiVersion: kubernetes.dask.org/v1
 kind: DaskCluster
@@ -203,22 +203,6 @@ spec:
         port: 8787
         targetPort: "http-dashboard"
 
----
-#service
-apiVersion: v1
-kind: Service
-metadata:
-  name: dask-scheduler
-spec:
-  ports:
-    - name: "8786"
-      port: 8786
-      targetPort: 8786
-    - name: "8787"
-      port: 8787
-      targetPort: 8787
-  selector:
-      dask.org/cluster-name: dask
-      dask.org/component: scheduler
+
 {{ end }}     
 {{ end }}    

@@ -104,18 +104,17 @@ spec:
           resources:
             {{- toYaml .Values.NotebookResources | nindent 12 }}
           volumeMounts:
-            - mountPath: /home/graphistry/notebooks
-              subPath: notebooks
-              name: data-mount
+#            - mountPath: /home/graphistry/notebooks
+#              subPath: notebooks
+#              name: data-mount
             - mountPath: /home/graphistry
-              subPath: graphistry
               name: data-mount
-            - mountPath: /home/graphistry/dask-shared
-              subPath: dask-shared
-              name: data-mount
-            - mountPath: /opt/graphistry/data
-              subPath: data
-              name: data-mount
+#            - mountPath: /home/graphistry/dask-shared
+#              subPath: dask-shared
+#              name: data-mount
+#            - mountPath: /opt/graphistry/data
+#              subPath: data
+#              name: data-mount
             - mountPath: /home/graphistry/graph-app-kit-public/
               name: gak-public
             - mountPath: /home/graphistry/graph-app-kit-private/

@@ -107,7 +107,7 @@ spec:
 #            - mountPath: /home/graphistry/notebooks
 #              subPath: notebooks
 #              name: data-mount
-            - mountPath: /home/graphistry
+            - mountPath: /home/graphistry/notebooks
               name: data-mount
 #            - mountPath: /home/graphistry/dask-shared
 #              subPath: dask-shared

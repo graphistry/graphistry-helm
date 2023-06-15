@@ -151,3 +151,4 @@ charts/graphistry-helm/templates/postgres/pg-sts.yaml
 
 
 chart-bundle
+docs/source/index.rst

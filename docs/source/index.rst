@@ -28,4 +28,8 @@ We have sections for most of the charts we have in our Helm repo. For a quick st
    morpheus-docs
    morpheus-mlflow-docs
    ingress-nginx-docs
+.. toctree::
+   :maxdepth: 20
+   :numbered:
+   :hidden:
    terraform-docs

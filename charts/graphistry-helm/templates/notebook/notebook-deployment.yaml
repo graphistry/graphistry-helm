@@ -105,7 +105,7 @@ spec:
           resources:
             {{- toYaml .Values.NotebookResources | nindent 12 }}
           volumeMounts:
-            - mountPath: /home/graphistry
+            - mountPath: /home/graphistry/notebooks/notebooks
               subPath: notebooks
               name: data-mount
             - mountPath: /home/graphistry/dask-shared

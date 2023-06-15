@@ -44,10 +44,9 @@ spec:
           {{- toYaml .Values.InitContainerResources | nindent 10 }}
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.nexus.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         command: ["sh", "-c"]
-        args: ["chown -R 1000:1000 /home/graphistry/notebooks" ]
+        args: ["chown -R 1000:1000 /home/graphistry" ]
         volumeMounts:
-        - mountPath: /home/graphistry/notebooks
-          subPath: notebooks
+        - mountPath: /home/graphistry
           name: data-mount
       ##dataproject initcontainer#### **THIS WILL BE REMOVED after data project *
       - name: volume-mount-hack-data-pv

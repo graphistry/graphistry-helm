@@ -38,13 +38,13 @@ git clone https://github.com/graphistry/NVIDIA-morpheus-mlflow-plugin
 echo "gathering dask operator charts"
 
 helm fetch \
-  --version 2022.12.0 \
+  --version 2023.7.2 \
   --repo https://helm.dask.org \
   --untar \
   --untardir . \
   dask-kubernetes-operator
 
-rm -rf dask-kubernetes-operator-2022.12.0.tgz
+rm -rf dask-kubernetes-operator-2023.7.2.tgz
 
 
 echo "gathering cert-manager charts"

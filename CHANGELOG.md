@@ -15,6 +15,34 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
     currently unable to set the service name to `dask-scheduler` in the scheduler.service spec 
     so we are using a service named `dask-scheduler` instead. 
     We are still utilizing the old cuda-worker daemonset and scheduler deployment setup until dask kubernetes operator fixes its pod restoration bug.
+
+## [Version 0.3.6 - 2023-07-25]
+
+### Breaking 🔥
+*   Nothing
+### Added
+
+*   Added optional GAK secret so it doesnt hold up the deployment if the secret is not present
+
+
+*   Added Bundler for auxiliary charts for airgap deployments.    
+
+
+
+### Changed
+
+*   Made Dask Kubernetes operator Optional, will deploy standard scheduler/worker if not present
+
+*   Changed Terraform design to use charts from Chart bundle instead of using the charts from the repo directly.
+    
+### Fixed
+
+*   Dask Kubernetes operator fixed the scheduler bug upstream
+
+*   Fixed hardcoded service name in dask scheduler service spec
+
+
+
 ## [Version 0.3.5 - 2023-02-13]
 
 ### Breaking 🔥

@@ -33,7 +33,7 @@ spec:
             - --interface
             - eth0
             - --dashboard-address localhost:8787
-            - --resources GPU=10
+            #- --resources GPU=10
             #- dask-scheduler:8786
         command:
             - /entrypoints/rapids-entrypoint.sh

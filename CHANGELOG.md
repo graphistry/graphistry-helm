@@ -19,7 +19,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Version 0.3.6 - 2023-07-25]
 
 ### Breaking 🔥
-
+* None
 ### Added
 
 *   Added optional GAK secret so it doesnt hold up the deployment if the secret is not present

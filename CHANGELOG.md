@@ -25,7 +25,9 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 *   Added optional GAK secret so it doesnt hold up the deployment if the secret is not present
 
 
-*   Added Bundler for auxiliary charts for airgap deployments.    
+*   Added Bundler for auxiliary charts for airgap deployments.  
+
+*   Added github action for aux charts bundle release.
 
 
 

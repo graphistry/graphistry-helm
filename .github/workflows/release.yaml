@@ -33,14 +33,20 @@ jobs:
           charts_dir: /home/runner/work/graphistry-helm/graphistry-helm/charts
           config: .github/config/chart-releaser.yaml
 
+      - name: Get Chart version
+        id: get_chart_version
+        uses: mikefarah/yq@master
+        with:
+          cmd: echo "TAG_NAME=$(cat graphistry-helm/charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
+
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
+          tag_name: ${{ env.TAG_NAME }}
+          release_name: Bundle Charts Release ${{ env.TAG_NAME }}
           draft: false
           prerelease: false
 

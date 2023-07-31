@@ -1,15 +1,16 @@
+{{ if eq .Values.dask.operator false }}
 {{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    io.kompose.service: streamgl-viz
-  name: streamgl-viz
+    io.kompose.service: dask-cuda-worker
+  name: dask-cuda-worker
 spec:
-  replicas: 1
+  replicas: {{ .Values.dask.workers }}  #needs to be num dask workers
   selector:
     matchLabels:
-      io.kompose.service: streamgl-viz
+      io.kompose.service: dask-cuda-worker
   strategy:
 {{ if eq .Values.rollingUpdate true }}
     type: RollingUpdate
@@ -23,46 +24,44 @@ spec:
     metadata:
       labels:
         io.kompose.network/grph: "true"
-        io.kompose.service: streamgl-viz
+        io.kompose.service: dask-cuda-worker
     spec:
       initContainers:
-      - name: "streamgl-viz-wait-for-postgres"
+      - name: "{{ lower .Chart.Name }}-init"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
         image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "pod"
-        - "-lapp=postgres"
-      - name: "streamgl-viz-wait-for-redis"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
-        - "redis"
+        - "nexus"
       containers:
-        - env:
-          - name : NODE_ENV
-            value: {{ .Values.nodeEnv | quote }}
-      #{{ if eq .Values.devMode true }}
-          #- name: SKIP_ACTIVATE
-          #  value: "true"
-
-      #{{- end }}
+        - args:
+            - dask-cuda-worker
+            - --interface
+            - eth0
+            - --dashboard-address localhost:8787
+            #- --resources GPU=10
+            - dask-scheduler:8786
+          command:
+            - /entrypoints/rapids-entrypoint.sh
+          env:
+          - name: GRAPHISTRY_CPU_MODE
+            value: {{.Values.graphistryCPUMode | quote }}
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
    {{- end }}
+          {{- if eq .Values.vgpu true  }}
+          - name: RMM_ALLOCATOR
+            value: "default"
+        {{- end }}
+          - name: REMOTE_DASK
+            value: {{.Values.daskscheduler.location | quote }}
           - name: POSTGRES_HOST
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
           - name: POSTGRES_PORT
@@ -79,25 +78,30 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
-          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
-          imagePullPolicy: {{.Values.global.imagePullPolicy }}   
+          image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+
+          imagePullPolicy: {{.Values.global.imagePullPolicy }}
           livenessProbe:
             exec:
               command:
-                - curl
-                - -Lf
-                - http://localhost:8080/health
-            failureThreshold: 3
+                - sh
+                - -c
+                - "curl -Lf http://localhost:8787/health && curl -f http://forge-etl-python:8080/workerhealth"
+
+            failureThreshold: 1
             initialDelaySeconds: 180
             periodSeconds: 120
             timeoutSeconds: 30
-          name: streamgl-viz
+          name: dask-cuda-worker
           ports:
-            - containerPort: 8080
+            - containerPort: 8787
           resources:
-            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
+          {{- toYaml .Values.DaskWorkerResources | nindent 12 }}
+
           volumeMounts:
             - mountPath: /opt/graphistry/data
+              name: data-mount
+            - mountPath: /dask-shared
               name: data-mount
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
@@ -108,31 +112,30 @@ spec:
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}
-      {{- end }}
-#      imagePullSecrets:
-#          - name: {{ .Values.global.imagePullSecrets }} 
-{{ if eq .Values.global.multiNode false }}
-      nodeSelector: {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
+      {{- end }}     
+{{ if eq .Values.multiNode false }}
+      nodeSelector:  {{- .Values.global.nodeSelector | toYaml | nindent 8 }}
 {{- end }} 
-status: {}
-
-
 ---
 #service
 apiVersion: v1
 kind: Service
 metadata:
   labels:
-    io.kompose.service: streamgl-viz
-  name: streamgl-viz
+    io.kompose.service: dask-cuda-worker
+  name: dask-cuda-worker
 spec:
   ports:
-    - name: "8080"
-      port: 8080
-      targetPort: 8080
+    - name: "8786"
+      port: 8786
+      targetPort: 8786
+    - name: "8787"
+      port: 8787
+      targetPort: 8787
   selector:
-    io.kompose.service: streamgl-viz
+    io.kompose.service: dask-cuda-worker
 status:
   loadBalancer: {}
 
-{{- end }}    
+{{ end }}  
+{{ end }}

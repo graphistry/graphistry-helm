@@ -22,8 +22,7 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-## docker compose build
-      - name: Get aux charts for release
+      - name: get aux charts for release
         run: bash chart-bundler/bundler.sh
 
       - name: Run chart-releaser
@@ -33,3 +32,22 @@ jobs:
         with:
           charts_dir: /home/runner/work/graphistry-helm/graphistry-helm/charts
           config: .github/config/chart-releaser.yaml
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: Release ${{ github.ref }}
+          draft: false
+          prerelease: false
+
+      - name: Upload the artifacts
+        uses: skx/github-action-publish-binaries@release-1.3
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          releaseId: ${{ needs.create_release.outputs.id }}
+          args: 'charts-aux-bundled.tgz'

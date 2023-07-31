@@ -1,11 +1,6 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  annotations:
-    autoheal: "true"
-    kompose.cmd: kompose --file ./compose/release.yml convert -c
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     io.kompose.service: nexus
     app: nexus
@@ -26,11 +21,6 @@ spec:
 {{- end }}
   template:
     metadata:
-      annotations:
-        autoheal: "true"
-        kompose.cmd: kompose --file ./compose/release.yml convert -c
-        kompose.version: 1.26.0 (40646f47)
-      creationTimestamp: null
       labels:
         io.kompose.network/grph: "true"
         io.kompose.service: nexus
@@ -86,6 +76,40 @@ spec:
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: password } }
           - name: DATABASE_URL
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: uri } }
+            #stripe stuff
+          - name: STRIPE_TEST_PUBLIC_KEY
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: test-public-key , optional: true } }
+          - name: STRIPE_TEST_SECRET_KEY
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: test-secret-key , optional: true } }
+          - name: DJSTRIPE_WEBHOOK_SECRET
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: webhook-secret , optional: true } }
+          - name: STRIPE_LIVE_MODE
+            value: {{ .Values.stripeLiveMode | quote  }}
+          - name: STRIPE_LIVE_PUBLIC_KEY
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: live-public-key , optional: true } }
+          - name: STRIPE_LIVE_SECRET_KEY
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: live-secret-key , optional: true } }
+          - name: DJSTRIPE_WEBHOOK_VALIDATION
+            value: 'retrieve_event'
+          - name: STRIPE_PRODUCT_INDIVIDUAL_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: product-indiv-id , optional: true } }
+          - name: STRIPE_PRODUCT_TEAM_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: product-team-id , optional: true } }
+          - name: STRIPE_PRODUCT_ENTERPRISE_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: product-enterprise-id , optional: true } }
+          - name: STRIPE_PLAN_INDIVIDUAL_MONTHLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-indiv-monthly-id , optional: true } }
+          - name: STRIPE_PLAN_INDIVIDUAL_ANNUALLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-indiv-annually-id , optional: true } }
+          - name: STRIPE_PLAN_TEAM_MONTHLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-team-monthly-id , optional: true } }
+          - name: STRIPE_PLAN_TEAM_ANNUALLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: plan-team-annually-id , optional: true } }
+          - name: STRIPE_PLAN_ENTERPRISE_MONTHLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: enterprise-monthly-id , optional: true } }
+          - name: STRIPE_PLAN_ENTERPRISE_ANNUALLY_ID
+            valueFrom: { secretKeyRef: { name: stripe-secret , key: enterprise-annually-id , optional: true } }
+            
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
@@ -147,11 +171,6 @@ status: {}
 apiVersion: v1
 kind: Service
 metadata:
-  annotations:
-    autoheal: "true"
-    kompose.cmd: kompose --file ./compose/release.yml convert -c
-    kompose.version: 1.26.0 (40646f47)
-  creationTimestamp: null
   labels:
     io.kompose.service: nexus
   name: nexus

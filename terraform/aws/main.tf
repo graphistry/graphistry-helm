@@ -7,11 +7,7 @@
 terraform {
   required_version = "~> 1.0"
 
-  backend "s3" {
-    bucket         = "graphistry-tf-state"
-    key            = "terraform.tfstate"
-    region         = "us-east-1"
-  }
+  backend "s3" {}
 
   required_providers {
     aws = {
@@ -90,11 +86,11 @@ module "vpc" {
   version = "3.12.0"
 
   name = local.cluster_name
-  cidr = "10.0.0.0/16"
+  cidr = var.cidr
 
-  azs             = ["us-east-1a", "us-east-1b", "us-east-1c"]
-  private_subnets = ["10.0.1.0/24", "10.0.2.0/24", "10.0.3.0/24"]
-  public_subnets  = ["10.0.101.0/24", "10.0.102.0/24", "10.0.103.0/24"]
+  azs             = var.availability_zone_subnet
+  private_subnets = var.private_subnet 
+  public_subnets  = var.public_subnet 
 
 
   enable_nat_gateway     = true
@@ -204,6 +200,7 @@ resource "null_resource" "patch_aws_cni" {
   provisioner "local-exec" {
     command = <<EOF
 # do all those commands to get kubectl and auth info, then run:
+aws eks update-kubeconfig --region ${var.availability_zone_name} --name ${var.cluster_name}
 kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=2
 EOF
   }
@@ -213,7 +210,7 @@ resource "helm_release" "ingress-nginx" {
   count      = var.enable-ingress-nginx && !var.enable-grafana ? 1 : 0
 
   name       = "ingress-nginx"
-  chart      = "../../charts/ingress-nginx"
+  chart      = "../../chart-bundle/ingress-nginx"
   namespace  = "ingress-nginx"
   create_namespace = true
 
@@ -225,7 +222,7 @@ resource "helm_release" "ingress-nginx" {
 resource "helm_release" "ingress-nginx-grafana" {
   count      =  var.enable-ingress-nginx  && var.enable-grafana ? 1 : 0
   name       = "ingress-nginx"
-  chart      = "../../charts/ingress-nginx"
+  chart      = "../../chart-bundle/ingress-nginx"
   namespace  = "ingress-nginx"
   create_namespace = true
 
@@ -288,6 +285,11 @@ resource "helm_release" "morpheus-ai-engine" {
   set {
     name  = "ngc.apiKey"
     value = var.ngc-api-key
+  }
+
+  set {
+    name  = "aiengine.args"
+    value = "{tritonserver,--model-repository=/common/models,--model-control-mode=explicit}"
   }
 }
 
@@ -553,3 +555,6 @@ module "eks" {
 ##delete terraform state file for some reason or other..
 #terraform state rm $(terraform state list | grep aws_instance)
 #terraform state list | cut -f 1 -d '[' | xargs -L 0 terraform state rm
+
+#to set statefile to a bucket, edit the state_file_bucket.conf file and run the following command:
+#terraform init -backend-config=state_file_bucket.conf

@@ -33,11 +33,13 @@ jobs:
           charts_dir: /home/runner/work/graphistry-helm/graphistry-helm/charts
           config: /home/runner/work/graphistry-helm/graphistry-helm/.github/config/chart-releaser.yaml
 
+      - name: install yq
+        run: |
+          sudo snap install yq
+
       - name: Get Chart version
-        id: get_chart_version
-        uses: mikefarah/yq@master
-        with:
-          cmd: echo "TAG_NAME=$(cat /home/runner/work/graphistry-helm/graphistry-helm/charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
+        run: |
+          echo "TAG_NAME=$(cat /home/runner/work/graphistry-helm/graphistry-helm/charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release

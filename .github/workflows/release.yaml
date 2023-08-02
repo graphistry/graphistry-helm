@@ -43,22 +43,10 @@ jobs:
           AUX_BUNDLE_DIR: Bundle-Charts-Release-${{ env.TAG_NAME }}
         run: bash chart-bundler/bundler.sh
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Creates a release in GitHub and uploads attachments
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ env.TAG_NAME }}
-          release_name: Bundle-Charts-Release-${{ env.TAG_NAME }}
-          draft: false
-          prerelease: false
-
-      - name: Upload the artifacts
-        uses: skx/github-action-publish-binaries@master
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          releaseId: ${{ needs.create_release.outputs.id }}
-          args: 'Bundle-Charts-Release-${{ env.TAG_NAME }}.tgz'
+          GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN  }}
+        shell: bash
+        run: |
+          gh release create Bundle-Charts-Release-${{ env.TAG_NAME }} Bundle-Charts-Release-${{ env.TAG_NAME }}.tgz
 

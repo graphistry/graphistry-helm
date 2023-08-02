@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   Graphistry-Helm-Chart:
   - apiVersion: v1
+    created: "2023-08-02T05:15:06.0638352Z"
+    description: 'Helm Charts to deploy Graphistry to kubernetes for 100x visualizations '
+    digest: b10cf0de37a892a29fd0118403a2c6806c89013782c37e00e264fa668433c18b
+    keywords:
+    - Graphistry
+    - Helm Charts
+    - 100x
+    - visualizations
+    - kubernetes
+    name: Graphistry-Helm-Chart
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/Graphistry-Helm-Chart-0.3.6/Graphistry-Helm-Chart-0.3.6.tgz
+    version: 0.3.6
+  - apiVersion: v1
     created: "2023-02-13T18:23:22.878508594Z"
     description: 'Helm Charts to deploy Graphistry to kubernetes for 100x visualizations '
     digest: 64dcc8018d9620150a7f5283c6e2f3f173311522166c7c19880729289f8c0cd1
@@ -484,6 +498,14 @@ entries:
     version: 0.0.1
   graphistry-resources:
   - apiVersion: v1
+    created: "2023-08-02T05:15:06.25975259Z"
+    description: 'A chart to deploy graphistry resources  '
+    digest: dd63668570e704329a3644954c8a36b12cf094a970049cebaafada471d8b7962
+    name: graphistry-resources
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/graphistry-resources-0.3.6/graphistry-resources-0.3.6.tgz
+    version: 0.3.6
+  - apiVersion: v1
     created: "2023-02-13T18:23:23.094196935Z"
     description: 'A chart to deploy graphistry resources  '
     digest: 79724d7dc65b8f031b395e02820289b1351046116f174c59e27da64af13625e5
@@ -513,4 +535,4 @@ entries:
     urls:
     - https://github.com/graphistry/graphistry-helm/releases/download/postgrescluster-0.6.0/postgrescluster-0.6.0.tgz
     version: 0.6.0
-generated: "2023-02-13T18:23:23.508312342Z"
+generated: "2023-08-02T05:15:06.260126594Z"

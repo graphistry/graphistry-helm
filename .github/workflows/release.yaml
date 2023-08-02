@@ -41,12 +41,12 @@ jobs:
       - name: get aux charts for release
         env:
           AUX_BUNDLE_DIR: Bundle-Charts-Release-${{ env.TAG_NAME }}
-        run: bash chart-bundler/bundler.sh
+        run: bash chart-bundler/bundler.sh && echo AUX_BUNDLE_DIR = $AUX_BUNDLE_DIR >> $GITHUB_ENV
 
       - name: Creates a release in GitHub and uploads attachments
         env:
           GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN  }}
         shell: bash
         run: |
-          gh release create Bundle-Charts-Release-${{ env.TAG_NAME }} Bundle-Charts-Release-${{ env.TAG_NAME }}.tgz
+          gh release create ${{ env.AUX_BUNDLE_DIR }} ${{ env.AUX_BUNDLE_DIR }}.tgz
 

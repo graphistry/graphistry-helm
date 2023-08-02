@@ -37,7 +37,7 @@ jobs:
         id: get_chart_version
         uses: mikefarah/yq@master
         with:
-          cmd: echo "TAG_NAME=$(cat graphistry-helm/charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
+          cmd: echo "TAG_NAME=$(cat /home/runner/work/graphistry-helm/graphistry-helm/charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
 
       - name: Create Release
         id: create_release

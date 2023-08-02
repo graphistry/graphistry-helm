@@ -48,5 +48,5 @@ jobs:
           GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN  }}
         shell: bash
         run: |
-          gh release create ${{ env.BUNDLE_NAME }} ${{ env.BUNDLE_NAME }}.tgz
+          gh release create Bundle-Charts-Release-${{ env.TAG_NAME }} Bundle-Charts-Release-${{ env.TAG_NAME }}.tgz
 

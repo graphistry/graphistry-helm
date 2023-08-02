@@ -30,6 +30,14 @@ jobs:
         run: |
           echo "TAG_NAME=$(cat charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
 
+      - name: Run chart-releaser
+        uses: helm/chart-releaser-action@v1.5.0
+        env:
+          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
+        with:
+          charts_dir: charts
+          config: .github/config/chart-releaser.yaml
+
       - name: get aux charts for release
         env:
           AUX_BUNDLE_DIR: Bundle-Charts-Release-${{ env.TAG_NAME }}
@@ -54,10 +62,3 @@ jobs:
           releaseId: ${{ needs.create_release.outputs.id }}
           args: 'Bundle-Charts-Release-${{ env.TAG_NAME }}.tgz'
 
-      - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.5.0
-        env:
-          CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-        with:
-          charts_dir: charts
-          config: .github/config/chart-releaser.yaml

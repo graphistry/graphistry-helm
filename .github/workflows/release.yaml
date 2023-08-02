@@ -22,16 +22,13 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-      - name: get aux charts for release
-        run: bash chart-bundler/bundler.sh
-
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
-          charts_dir: /home/runner/work/graphistry-helm/graphistry-helm/charts
-          config: /home/runner/work/graphistry-helm/graphistry-helm/.github/config/chart-releaser.yaml
+          charts_dir: charts
+          config: .github/config/chart-releaser.yaml
 
       - name: install yq
         run: |
@@ -39,7 +36,12 @@ jobs:
 
       - name: Get Chart version
         run: |
-          echo "TAG_NAME=$(cat /home/runner/work/graphistry-helm/graphistry-helm/charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
+          echo "TAG_NAME=$(cat charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
+
+      - name: get aux charts for release
+        env:
+          AUX_BUNDLE_DIR: Bundle-Charts-Release-${{ env.TAG_NAME }}
+        run: bash chart-bundler/bundler.sh
 
       - name: Create Release
         id: create_release

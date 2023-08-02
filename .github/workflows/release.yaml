@@ -31,7 +31,7 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           charts_dir: /home/runner/work/graphistry-helm/graphistry-helm/charts
-          config: .github/config/chart-releaser.yaml
+          config: /home/runner/work/graphistry-helm/graphistry-helm/.github/config/chart-releaser.yaml
 
       - name: Get Chart version
         id: get_chart_version

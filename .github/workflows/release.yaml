@@ -1,12 +1,15 @@
 name: Release Charts
 
 on:
+  workflow_dispatch:
   push:
     branches:
       - main
 
 jobs:
   release:
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,15 +22,33 @@ jobs:
           git config user.name "$GITHUB_ACTOR"
           git config user.email "$GITHUB_ACTOR@users.noreply.github.com"
 
-## docker compose build
+      - name: install yq
+        run: |
+          sudo snap install yq
+
+      - name: Get Chart version
+        run: |
+          echo "TAG_NAME=$(cat charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
+
       - name: get aux charts for release
-        run: bash chart-bundler/bundler.sh
+        env:
+          AUX_BUNDLE_DIR: Bundle-Charts-${{ env.TAG_NAME }}
+        run: bash chart-bundler/bundler.sh 
+
+      - name: Creates a release in GitHub and uploads attachments
+        env:
+          GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN  }}
+        shell: bash
+        run: |
+          gh release create Bundle-Charts-${{ env.TAG_NAME }} Bundle-Charts-${{ env.TAG_NAME }}.tgz
 
       - name: copy aux charts into charts dir
         run: cp -r chart-bundle/* charts
 
       - name: Run chart-releaser
-        uses: helm/chart-releaser-action@v1.2.1
+        uses: helm/chart-releaser-action@v1.5.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
-          CR_RELEASE_NOTES_FILE: "CHANGELOG.md"
+        with:
+          charts_dir: charts
+          config: .github/config/chart-releaser.yaml

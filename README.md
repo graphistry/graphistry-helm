@@ -1,7 +1,7 @@
 # graphistry-helm
 Run Graphistry in Kubernetes using this live helm repository and supporting automation scripts & documentation 
 
-For contributing to this repository as a developer, see [DEVELOP.md](DEVELOP.md)
+See [CHANGELOG.md](CHANGELOG.md) for version history. For contributing to this repository as a developer, see [DEVELOP.md](DEVELOP.md)
 
 ## Private docker image repositories
 
@@ -89,4 +89,6 @@ and then set the nodeSelector value to the hostname of the selected node along w
      --set imagePullSecrets=<secrets_name>  (has to go last) 
 > **Note:** different labels can be used for the nodeSelector value, but some labels between the nodes may not be unique.
 
+
 [ReadTheDocs](docs/build/html/index.html)
+

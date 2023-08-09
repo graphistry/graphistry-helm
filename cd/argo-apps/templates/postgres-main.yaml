@@ -15,7 +15,7 @@ spec:
   source:
     path: cd/argo-apps/templates/postgres-cd-templates
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: HEAD #BRANCH OR HEAD WHEN IN MAIN
   syncPolicy:
     automated:
       prune: true

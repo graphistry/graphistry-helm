@@ -2,10 +2,16 @@
 
 set -e
 
-rm -rf chart-bundle
-mkdir chart-bundle
-cd chart-bundle
-#cd charts
+AUX_BUNDLE_DIR=${AUX_BUNDLE_DIR:-charts-aux-bundled}
+echo "AUX_BUNDLE_DIR: ${AUX_BUNDLE_DIR}"
+
+rm -rf ${AUX_BUNDLE_DIR}
+
+echo "checking working directory"
+echo "$PWD"
+mkdir -p ${AUX_BUNDLE_DIR}
+cd ${AUX_BUNDLE_DIR}
+
 # This script is used to generate a chart bundle from the forks of charts we use to suport the graphistry helm chart deployment.    
 
 echo "gathering kube prometheus stack charts"
@@ -35,13 +41,13 @@ git clone https://github.com/graphistry/NVIDIA-morpheus-mlflow-plugin
 echo "gathering dask operator charts"
 
 helm fetch \
-  --version 2022.12.0 \
+  --version 2023.7.2 \
   --repo https://helm.dask.org \
   --untar \
   --untardir . \
   dask-kubernetes-operator
 
-rm -rf dask-kubernetes-operator-2022.12.0.tgz
+rm -rf dask-kubernetes-operator-2023.7.2.tgz
 
 
 echo "gathering cert-manager charts"
@@ -120,3 +126,12 @@ cp -r argo-helm/charts/argo-cd/* argo-cd
 rm -rf argo-helm
 
 cd argo-cd && helm repo add redis-ha https://dandydeveloper.github.io/charts/ && helm dep build && cd ../
+
+echo "checking charts dir ${AUX_BUNDLE_DIR}"
+cd ../ && ls -alh ${AUX_BUNDLE_DIR}
+du -sh ${AUX_BUNDLE_DIR}
+df -h
+
+## bundle folder xyz into asdf.tar.gz
+tar -czvf ${AUX_BUNDLE_DIR}.tgz ${AUX_BUNDLE_DIR}
+ls -alh ${AUX_BUNDLE_DIR}.tgz

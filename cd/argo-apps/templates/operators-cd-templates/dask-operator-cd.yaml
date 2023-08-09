@@ -15,7 +15,7 @@ spec:
   source:
     path: cd/repo
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: terraform #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: nightly #BRANCH OR HEAD WHEN IN MAIN
 #    helm:
 #      valueFiles:
 #        - values.yaml # resolved against source.repoURL and source.path

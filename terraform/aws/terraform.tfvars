@@ -31,6 +31,7 @@ enable-cert-manager = true
 ####ssh access with key
 #key_pair_name = "<your key here>"
 enable-ssh = true
+enable-telemetry = true
 
 #if enable-morpheus is set to true apply terraform as below
 #terraform apply -var=ngc_api_key="<api key here>"

@@ -150,5 +150,5 @@ cluster-config/cluster-config.yaml
 charts/graphistry-helm/templates/postgres/pg-sts.yaml
 
 
-chart-bundle
+charts-aux-bundled
 docs/source/index.rst

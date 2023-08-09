@@ -85,6 +85,12 @@ variable "enable-cert-manager" {
   default = false
 }
 
+variable "enable-telemetry" {
+  description = "If set to true, it will create a opentelemetry namespace and install opentelemetry operator"
+  type = bool
+  default = false
+}
+
 variable "ngc-api-key" {
   type = string
   description = "value of NGC api key"

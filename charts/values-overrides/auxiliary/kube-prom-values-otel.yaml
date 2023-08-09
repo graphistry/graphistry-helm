@@ -1,0 +1,18 @@
+grafana:
+  grafana.ini:
+      server:
+        domain: "eks-dev.grph.xyz"
+        root_url: "https://eks-dev.grph.xyz/grafana"
+        serve_from_sub_path: true
+      auth.anonymous:
+        enabled: true
+
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    additionalScrapeConfigs:
+      - job_name: 'otel-collector'
+        scrape_interval: 10s
+        static_configs:
+          - targets: ['otel-collector:8889']
+          - targets: ['otel-collector:8888']

@@ -127,6 +127,17 @@ rm -rf argo-helm
 
 cd argo-cd && helm repo add redis-ha https://dandydeveloper.github.io/charts/ && helm dep build && cd ../
 
+echo "gathering opentelemetry operator charts"
+
+helm fetch \
+  --version 0.34.1 \
+  --repo https://open-telemetry.github.io/opentelemetry-helm-charts \
+  --untar \
+  --untardir . \
+  opentelemetry-operator
+rm -rf opentelemetry-operator-0.34.1.tgz
+
+
 echo "checking charts dir ${AUX_BUNDLE_DIR}"
 cd ../ && ls -alh ${AUX_BUNDLE_DIR}
 du -sh ${AUX_BUNDLE_DIR}

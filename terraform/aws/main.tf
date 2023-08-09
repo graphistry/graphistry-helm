@@ -276,7 +276,7 @@ resource "helm_release" "grafana-stack-otel" {
   depends_on = [
         kubectl_manifest.argo_apps
     ]
-  count      = var.enable-grafana ? 1 : 0 && var.enable-telemetry ? 1 : 0
+  count      = var.enable-telemetry ? 1 : 0
   name       = "prometheus"
   chart      = "../../charts-aux-bundled/kube-prom-stack"
   namespace  = "prometheus"

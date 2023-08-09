@@ -86,7 +86,7 @@ variable "enable-cert-manager" {
 }
 
 variable "enable-telemetry" {
-  description = "If set to true, it will create a opentelemetry namespace and install opentelemetry operator *MUST HAVE GRAFANA ENABLED*"
+  description = "If set to true, it will create a opentelemetry namespace and install opentelemetry operator and enable grafana"
   type = bool
   default = false
 }

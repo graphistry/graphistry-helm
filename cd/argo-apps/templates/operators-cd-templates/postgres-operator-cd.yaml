@@ -15,7 +15,7 @@ spec:
   source:
     path: helm/install
     repoURL: https://github.com/CrunchyData/postgres-operator-examples.git
-    targetRevision: terraform #terraform #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: HEAD #terraform #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
         - values.yaml # resolved against source.repoURL and source.path

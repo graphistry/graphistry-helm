@@ -27,7 +27,7 @@ addons = [
 enable-ingress-nginx = true
 enable-cert-manager = true
 #enable-grafana = true
-#enable-telemetry = true #must have grafa enabled
+#enable-telemetry = true #will deploy grafana by default
 #enable-morpheus = true
 ####ssh access with key
 #key_pair_name = "<your key here>"

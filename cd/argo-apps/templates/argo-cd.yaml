@@ -26,6 +26,6 @@ spec:
     syncOptions:
       - CreateNamespace=true
 
-##helm template charts/argo-cd/apps/ | kubectl apply -f -
+##helm template helm template cd/argo-apps/ | kubectl apply -f -
 
 #helm upgrade -i argo ./charts/argo-cd  --namespace argo --create-namespace

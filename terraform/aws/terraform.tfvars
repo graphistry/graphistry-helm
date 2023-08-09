@@ -27,11 +27,12 @@ addons = [
 enable-ingress-nginx = true
 enable-cert-manager = true
 #enable-grafana = true
+#enable-telemetry = true #must have grafa enabled
 #enable-morpheus = true
 ####ssh access with key
 #key_pair_name = "<your key here>"
 enable-ssh = true
-enable-telemetry = true
+
 
 #if enable-morpheus is set to true apply terraform as below
 #terraform apply -var=ngc_api_key="<api key here>"

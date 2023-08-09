@@ -1,5 +1,5 @@
 ## Graphistry Terraform AWS utilizing karpenter for autoscaling nodes and argoCD for helm chart management
-## must run bundler.sh first from root dir - $bash chart-bundler/bundler.sh 
+## must run bundler.sh first from root dir - $bash charts-aux-bundled/bundler.sh 
 ##
 ##
 ##this aws terraform utilizes karpenter.sh to create a kubernetes cluster with autoscaling
@@ -210,7 +210,7 @@ resource "helm_release" "ingress-nginx" {
   count      = var.enable-ingress-nginx && !var.enable-grafana ? 1 : 0
 
   name       = "ingress-nginx"
-  chart      = "../../chart-bundle/ingress-nginx"
+  chart      = "../../charts-aux-bundled/ingress-nginx"
   namespace  = "ingress-nginx"
   create_namespace = true
 
@@ -222,7 +222,7 @@ resource "helm_release" "ingress-nginx" {
 resource "helm_release" "ingress-nginx-grafana" {
   count      =  var.enable-ingress-nginx  && var.enable-grafana ? 1 : 0
   name       = "ingress-nginx"
-  chart      = "../../chart-bundle/ingress-nginx"
+  chart      = "../../charts-aux-bundled/ingress-nginx"
   namespace  = "ingress-nginx"
   create_namespace = true
 
@@ -261,14 +261,29 @@ resource "helm_release" "grafana-stack" {
   depends_on = [
         kubectl_manifest.argo_apps
     ]
-  count      = var.enable-grafana ? 1 : 0
+  count      = var.enable-grafana ? 1 : 0 && var.enable-telemetry ? 0 : 1
   name       = "prometheus"
-  chart      = "../../chart-bundle/kube-prom-stack"
+  chart      = "../../charts-aux-bundled/kube-prom-stack"
   namespace  = "prometheus"
   create_namespace = true
 
   values = [
     "${file("../../charts/values-overrides/auxiliary/kube-prom-values.yaml")}"
+  ]
+}
+
+resource "helm_release" "grafana-stack-otel" {
+  depends_on = [
+        kubectl_manifest.argo_apps
+    ]
+  count      = var.enable-grafana ? 1 : 0 && var.enable-telemetry ? 1 : 0
+  name       = "prometheus"
+  chart      = "../../charts-aux-bundled/kube-prom-stack"
+  namespace  = "prometheus"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts/values-overrides/auxiliary/kube-prom-values-otel.yaml")}"
   ]
 }
 
@@ -278,7 +293,7 @@ resource "helm_release" "morpheus-ai-engine" {
     ]
   count      = var.enable-morpheus ? 1 : 0 
   name       = "morpheus"
-  chart      = "../../chart-bundle/Morpheus-ai-engine"
+  chart      = "../../charts-aux-bundled/Morpheus-ai-engine"
   namespace  = "morpheus"
   create_namespace = true
 
@@ -300,7 +315,7 @@ resource "helm_release" "morpheus-mlflow" {
     ]
   count      = var.enable-morpheus ? 1 : 0
   name       = "morpheus-mlflow"
-  chart      = "../../chart-bundle/NVIDIA-morpheus-mlflow-plugin"
+  chart      = "../../charts-aux-bundled/NVIDIA-morpheus-mlflow-plugin"
   namespace  = "morpheus"
   create_namespace = true
 
@@ -310,6 +325,23 @@ resource "helm_release" "morpheus-mlflow" {
   }
 }
 
+resource "helm_release" "opentelemetry" {
+  depends_on = [
+        kubectl_manifest.argo_apps,
+        helm.helm_release.grafana-stack-otel
+    ]
+
+  count      = var.enable-telemetry ? 1 : 0 && var.enable-grafana ? 1 : 0
+  name       = "opentelemetry-operator"
+  chart      = "../../charts-aux-bundled/opentelemetry-operator"
+  namespace  = "opentelemetry"
+  create_namespace = true
+
+  values = [
+    "${file("../../charts-aux-bundled/opentelemetry-operator/values.yaml")}"
+  ]
+}
+
 resource "helm_release" "cert-manager" {
   depends_on = [
         kubectl_manifest.argo_apps
@@ -317,7 +349,7 @@ resource "helm_release" "cert-manager" {
 
   count      = var.enable-cert-manager ? 1 : 0
   name       = "cert-manager"
-  chart      = "../../chart-bundle/cert-manager"
+  chart      = "../../charts-aux-bundled/cert-manager"
   namespace  = "cert-manager"
   create_namespace = true
 
@@ -328,12 +360,12 @@ resource "helm_release" "cert-manager" {
 
 resource "helm_release" "argo" {
   name       = "argo-cd"
-  chart      = "../../chart-bundle/argo-cd"
+  chart      = "../../charts-aux-bundled/argo-cd"
   namespace  = "argo-cd"
   create_namespace = true
 
   values = [
-    "${file("../../chart-bundle/argo-cd/argo-values.yaml")}"
+    "${file("../../charts-aux-bundled/argo-cd/argo-values.yaml")}"
   ]
 }
 

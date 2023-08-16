@@ -35,10 +35,20 @@ spec:
         - "nexus"
       containers:
         - env:
-   {{- range .Values.env }}
+        #sets the env vars in the pod
+        {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
-   {{- end }}
+        {{- end }}
+        ### enables telemetry with otel-collector * MUST HAVE OTEL-COLLECT OPERATOR AND KUBE-PROM STACK DEPLOYED
+          {{ if eq .Values.telemetry true }}
+           {{- range .Values.otel }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+            {{- end }}
+          - name: OTEL_SERVICE_NAME
+            value: "streamgl-gpu"
+          {{ end }}
           {{- if eq .Values.vgpu true  }}
           - name: RMM_ALLOCATOR
             value: "default"

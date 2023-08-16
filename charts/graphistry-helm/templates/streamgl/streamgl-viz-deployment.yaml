@@ -59,10 +59,20 @@ spec:
           #  value: "true"
 
       #{{- end }}
-   {{- range .Values.env }}
+      ### sets env vars in the pod from values
+        {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}
-   {{- end }}
+        {{- end }}
+      ### enables telemetry with otel-collector * MUST HAVE OTEL-COLLECT OPERATOR AND KUBE-PROM STACK DEPLOYED
+        {{ if eq .Values.telemetry true }}
+           {{- range .Values.otel }}
+          - name: {{ .name  }}
+            value: {{ .value | quote }}
+          - name: OTEL_SERVICE_NAME
+            value: "streamgl-viz"
+            {{- end }}
+        {{ end }}
           - name: POSTGRES_HOST
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
           - name: POSTGRES_PORT

@@ -28,6 +28,7 @@ k8sDashboard:
   createServiceAccount: false
 
 
+telemetry: true
 
 
 global:

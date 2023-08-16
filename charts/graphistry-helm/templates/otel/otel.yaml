@@ -1,3 +1,4 @@
+{{ if eq .Values.telemetry true }}
 apiVersion: opentelemetry.io/v1alpha1
 kind: OpenTelemetryCollector
 metadata:
@@ -45,3 +46,4 @@ spec:
         receivers: [otlp]
         processors: [batch]
         exporters: [logging, prometheus]
+{{ end }}

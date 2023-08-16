@@ -46,8 +46,6 @@ spec:
           - name: {{ .name  }}
             value: {{ .value | quote }}
             {{- end }}
-          - name: OTEL_SERVICE_NAME
-            value: "streamgl-gpu"
           {{ end }}
           {{- if eq .Values.vgpu true  }}
           - name: RMM_ALLOCATOR

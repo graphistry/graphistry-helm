@@ -9,7 +9,7 @@ volumeName:
   gakPublic: pvc-eec4b0d9-b074-4117-9093-276912661f8a
   gakPrivate: pvc-75bb5fd0-ab86-49c4-afed-6e261161808c
 networkPolicy:
-  strict: true
+  strict: false
 cuda:
   version: "11.5" #cuda version
 

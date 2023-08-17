@@ -41,17 +41,23 @@ spec:
         - "nexus"
       containers:
         - args:
-            - dask-cuda-worker
+            - dask
+            - cuda
+            - worker
             - --interface
             - eth0
+            - --nthreads
+            - "2"
             - --dashboard-address localhost:8787
-            #- --resources GPU=10
+            - --resources "GPU=10,PROCESS=2"
             - dask-scheduler:8786
           command:
             - /entrypoints/rapids-entrypoint.sh
           env:
           - name: GRAPHISTRY_CPU_MODE
             value: {{.Values.graphistryCPUMode | quote }}
+          - name: SKIP_SERVER
+            value: 1
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

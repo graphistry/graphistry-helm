@@ -29,10 +29,15 @@ spec:
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         imagePullPolicy: {{.Values.global.imagePullPolicy }}
         args:
-            - dask-cuda-worker
+            - dask
+            - cuda
+            - worker
             - --interface
             - eth0
+            - --nthreads
+            - "2"
             - --dashboard-address localhost:8787
+            - --resources "GPU=10,PROCESS=2"
             #- --resources GPU=10
             #- dask-scheduler:8786
         command:
@@ -40,6 +45,8 @@ spec:
         env:
           - name: GRAPHISTRY_CPU_MODE
             value: {{.Values.graphistryCPUMode | quote }}
+          - name: SKIP_SERVER
+            value: 1
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

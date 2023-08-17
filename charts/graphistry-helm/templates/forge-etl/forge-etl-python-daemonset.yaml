@@ -97,7 +97,7 @@ spec:
               command:
                 - sh
                 - -c
-                - "curl -f http://localhost:8080/cudfhealth && curl -f http://localhost:8080/blazinghealth"
+                - "curl -f http://localhost:8080/cudfhealth && curl -f http://localhost:8080/dasksqlhealth"
             failureThreshold: 3
             initialDelaySeconds: 180
             periodSeconds: 120

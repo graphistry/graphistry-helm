@@ -36,8 +36,8 @@ global:
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
   logs:
-    LogLevel: "TRACE"
-    GraphistryLogLevel: "TRACE"
+    LogLevel: "DEBUG"
+    GraphistryLogLevel: "DEBUG"
   #multinode setting
   #multiNode: true
   imagePullPolicy: Always

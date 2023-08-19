@@ -49,7 +49,9 @@ spec:
             - --nthreads
             - "2"
             - --dashboard-address localhost:8787
-            - --resources "GPU=10,PROCESS=2"
+            - --resources 
+            - GPU=10
+            - PROCESS=2
             - {{.Values.daskscheduler.location | quote }}
           command:
             - /entrypoints/rapids-entrypoint.sh

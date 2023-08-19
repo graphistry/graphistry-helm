@@ -40,7 +40,7 @@ spec:
             - --resources 
             - GPU=10
             - PROCESS=2
-            - {{.Values.daskscheduler.location | quote }}
+            {{.Values.daskscheduler.location | quote }}
         command:
             - /entrypoints/rapids-entrypoint.sh
         env:

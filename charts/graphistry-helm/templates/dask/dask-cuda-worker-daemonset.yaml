@@ -46,8 +46,7 @@ spec:
             - eth0
             - --dashboard-address localhost:8787
             - --resources GPU=10 PROCESS=2
-            - --nthreads 2
-            - dask-scheduler:8786
+            - ${REMOTE_DASK}
           command:
             - /entrypoints/rapids-entrypoint.sh
           env:

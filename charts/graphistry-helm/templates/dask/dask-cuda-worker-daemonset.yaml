@@ -46,8 +46,6 @@ spec:
             - worker
             - --interface
             - eth0
-            - --nthreads
-            - "2"
             - --dashboard-address localhost:8787
             - --resources 
             - GPU=10

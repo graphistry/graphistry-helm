@@ -48,7 +48,7 @@ global:
   #devMode: true
 
 dask:
-  operator: true
+  operator: false
 
 
 #helm upgrade -i prometheus-community ./charts/kube-prometheus-stack --values ./charts/values-overrides/internal/eks-dev-values.yaml --namespace prometheus --create-namespace --dry-run

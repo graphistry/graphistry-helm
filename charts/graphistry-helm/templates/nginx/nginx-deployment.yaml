@@ -207,7 +207,7 @@ spec:
           - name: PROMETHEUS_PORT
             value: "4040"
           {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-          image: quay.io/martinhelmich/prometheus-nginxlog-exporter:v1.9.2 #DockerHub
+          image: ghcr.io/martin-helmich/prometheus-nginxlog-exporter/exporter:v1.9.2 #DockerHub
           {{ else }}
           image: {{.Values.global.containerregistry.name}}/prometheus-nginxlog-exporter:v1.9.2
           {{- end }}

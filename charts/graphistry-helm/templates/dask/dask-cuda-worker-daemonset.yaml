@@ -53,6 +53,8 @@ spec:
           env:
           - name: GRAPHISTRY_CPU_MODE
             value: {{.Values.graphistryCPUMode | quote }}
+          - name: SKIP_SERVER
+            value: "1"
    {{- range .Values.env }}
           - name: {{ .name  }}
             value: {{ .value | quote }}

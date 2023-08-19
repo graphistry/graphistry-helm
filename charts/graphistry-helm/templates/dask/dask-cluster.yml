@@ -29,12 +29,13 @@ spec:
         image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         imagePullPolicy: {{.Values.global.imagePullPolicy }}
         args:
-            - dask-cuda-worker
+            - dask cuda worker
             - --interface
             - eth0
             - --dashboard-address localhost:8787
-            #- --resources GPU=10
-            #- dask-scheduler:8786
+            - --resources GPU=10,PROCESS=2
+            - --nthreads 2
+            - {{.Values.daskscheduler.location | quote }}
         command:
             - /entrypoints/rapids-entrypoint.sh
         env:

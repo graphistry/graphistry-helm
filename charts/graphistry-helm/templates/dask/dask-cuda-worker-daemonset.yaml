@@ -49,17 +49,8 @@ spec:
             - --nthreads
             - "2"
             - --dashboard-address localhost:8787
-            - --resources 
-            - GPU=10
-            - PROCESS=2
+            - --resources "GPU=10,PROCESS=2"
             {{.Values.daskscheduler.location | quote }}
-
-      "dask", "cuda", "worker",
-        "--interface", "eth0",
-        "--dashboard-address", "dask-cuda-worker:8787",
-        "--resources", "GPU=10,PROCESS=2",
-        "--nthreads 2",
-        "dask-scheduler:8786"
           command:
             - /entrypoints/rapids-entrypoint.sh
           env:

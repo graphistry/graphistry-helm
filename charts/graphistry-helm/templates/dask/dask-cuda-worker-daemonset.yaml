@@ -47,7 +47,7 @@ spec:
             - --dashboard-address localhost:8787
             - --resources GPU=10,PROCESS=2
             - --nthreads 2
-            - ${REMOTE_DASK}
+            - {{.Values.daskscheduler.location | quote }}
           command:
             - /entrypoints/rapids-entrypoint.sh
           env:

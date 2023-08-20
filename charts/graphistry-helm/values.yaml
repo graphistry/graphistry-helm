@@ -406,7 +406,7 @@ dask:
 #dask-scheduler repository name 
 daskscheduler:
   repository: etl-server-python #dask-scheduler repository name 
-  location: "dask-scheduler:8786" #dask-scheduler location
+  location: dask-scheduler:8786 #dask-scheduler location
 
 vgpu: false #enables vgpu mode for bigger than memory workloads on VGPU
 

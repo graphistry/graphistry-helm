@@ -3,7 +3,7 @@ name: postgrescluster
 description: A postgres cluster Helm chart for Graphistry on Kubernetes
 type: application
 # The version below should match the version on the PostgresCluster CRD
-version: 0.6.0
+version: 0.7.0
 appVersion: 5.2.0
 
 

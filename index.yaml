@@ -527,6 +527,16 @@ entries:
   postgrescluster:
   - apiVersion: v2
     appVersion: 5.2.0
+    created: "2023-08-20T19:52:27.744092318Z"
+    description: A postgres cluster Helm chart for Graphistry on Kubernetes
+    digest: 84180216bd1babc6d11776ec670d104bd0eef0d4e333e2806d1fa1db5cd509c7
+    name: postgrescluster
+    type: application
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/postgrescluster-0.7.0/postgrescluster-0.7.0.tgz
+    version: 0.7.0
+  - apiVersion: v2
+    appVersion: 5.2.0
     created: "2023-02-13T18:23:23.507987936Z"
     description: A postgres cluster Helm chart for Graphistry on Kubernetes
     digest: e6e38dc7c8e0e9b760386cf60b8c00ccc92ca959e39bc74ae8c9d6eb13934ee4
@@ -535,4 +545,4 @@ entries:
     urls:
     - https://github.com/graphistry/graphistry-helm/releases/download/postgrescluster-0.6.0/postgrescluster-0.6.0.tgz
     version: 0.6.0
-generated: "2023-08-02T05:15:06.260126594Z"
+generated: "2023-08-20T19:52:27.744180118Z"

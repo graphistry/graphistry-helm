@@ -32,12 +32,12 @@ k8sDashboard:
 
 global:
   provisioner: ebs.csi.aws.com
-  tag: v2.40.27
+  tag: v2.40.31
   nodeSelector: {"accelerator": "nvidia"}
   #change log levels
-  logs:
-    LogLevel: "DEBUG"
-    GraphistryLogLevel: "DEBUG"
+  #logs:
+  #  LogLevel: "DEBUG"
+  #  GraphistryLogLevel: "DEBUG"
   #multinode setting
   #multiNode: true
   imagePullPolicy: Always

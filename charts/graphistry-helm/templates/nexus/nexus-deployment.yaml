@@ -54,6 +54,10 @@ spec:
             value: {{ .Values.sessionCookieAge | quote }}
           - name : JWT_EXPIRATION_DELTA 
             value: {{ .Values.jwtExpirationDelta | quote }}
+          - name : GRAPHISTRY_NEXUS_SIGNING_KEY
+            value: {{ .Values.graphistryNexusSigningKey | quote }}
+          - name : GRAPHISTRY_NEXUS_SIGNING_SALT
+            value: {{ .Values.graphistryNexusSigningSalt | quote }}
           - name : ENABLE_DJANGO_SILK
             value: {{ .Values.enableDjangoSilk | quote  }}
           {{- if eq .Values.tls true  }}

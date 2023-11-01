@@ -162,6 +162,8 @@ Parameter                                          Description                  
 ``rollingUpdate``                                  rolling update deployment strategy switch                                                            ``false``                                         
 ``sessionCookieAge``                               django session cookie timeout (seconds)                                                              ``"1209600"``                                     
 ``jwtExpirationDelta``                             django drf-jwt, jwt token timeout (seconds)                                                          ``"3600"``                                        
+``graphistryNexusSigningKey``                      nexus key (unique per deployment)                                                                    ``""``                                          
+``graphistryNexusSigningSalt``                     nexus signing salt (unique per deployment)                                                           ``""``                                          
 ``enableDjangoSilk``                               ENABLE django silk - performance analysis library                                                    ``"False"``                                       
 ``domain``                                         domain - set to a domain of your choosing                                                            ``null``                                          
 ``tlsStaging``                                     set tlsStaging to true to enable use of LetsEncrypt staging environment                              ``false``                                         

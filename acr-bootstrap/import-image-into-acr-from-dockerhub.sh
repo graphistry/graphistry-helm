@@ -132,13 +132,13 @@ echo "postgres operator into acr"
 
 SOURCE_REGISTRY=registry.developers.crunchydata.com/crunchydata
 
-import_into_acr "crunchy-pgbackrest" "ubi8-2.47-2"
+import_into_acr "crunchy-pgbackrest" "ubi8-2.40-1"
 
-import_into_acr "crunchy-postgres" "ubi8-14.10-0"
+import_into_acr "crunchy-postgres" "ubi8-14.5-1"
 
-import_into_acr "postgres-operator" "ubi8-5.5.0-0"
+import_into_acr "postgres-operator" "ubi8-5.2.0-0"
 
-import_into_acr "postgres-operator-upgrade" "ubi8-5.5.0-0"
+import_into_acr "postgres-operator-upgrade" "ubi8-5.2.0-0"
 
 #import_into_acr "crunchy-upgrade" "ubi8-5.2.0-0"
 

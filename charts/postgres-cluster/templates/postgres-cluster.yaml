@@ -56,7 +56,7 @@ spec:
       {{- end }}
         resources:
           requests:
-            storage: 4Gi
+            storage: 20Gi
 {{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
@@ -134,7 +134,7 @@ spec:
             {{- end }}
               resources:
                 requests:
-                  storage: 4Gi     
+                  storage: 20Gi     
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:

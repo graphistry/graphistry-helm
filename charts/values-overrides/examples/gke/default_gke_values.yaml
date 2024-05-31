@@ -1,0 +1,72 @@
+cuda:
+  version: "11.5" #cuda version
+
+
+global:
+  imagePullPolicy: Always
+  imagePullSecrets: 
+    - name: dockerhub-secret
+  provisioner: pd.csi.storage.gke.io #storage class provisioner.
+  nodeSelector:
+    nvidia.com/gpu.present: "true"
+    cloud.google.com/gke-accelerator: nvidia-tesla-t4
+  multiNode: false #multinode selector switch to determine if going multi/single node
+  devMode: false   #dev mode for debugging with nexus, postgres and nginx
+  postgres:
+    repository: graphistry-postgres #postgres repository name   
+    name: graphistry                #db name
+    user: graphistry                #db user
+    port: 5432                      #port for postgres service to listen on
+    host: postgres                  #hostname for postgres
+  postgresVolumeLabel: graphistry-postgres
+
+
+#domain: gke-dev.grph.xyz 
+#tlsEmail: "percy@graphistry.com" 
+tls: false
+fwdHeaders: true
+#volumeName:
+  #dataMount: pvc-c3e768a1-29a8-42ad-95e0-692b608dd19f
+  #localMediaMount: pvc-76551421-a3fb-4a24-9d35-62e7d470627b
+  #gakPublic: pvc-eec4b0d9-b074-4117-9093-276912661f8a
+  #gakPrivate: pvc-75bb5fd0-ab86-49c4-afed-6e261161808c
+networkPolicy:
+  strict: false
+
+#ingress management - determines if ingress is going to be on internal load balancer 
+# NOTICE these annotations make possible ingress can expose the port 80 to the local host
+#  kubernetes.io/ingress.class: public
+#  nginx.ingress.kubernetes.io/rewrite-target: /
+ingress:
+  management:
+    annotations:
+
+
+graphistryResources:
+  storageClassParameters:
+      pd.csi.storage.gke.io/fstype: ext4
+      type: gp2
+
+
+  ## createServiceAccount: true only true on initial deployment
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
+
+nodeEnv: production #sets the Node environment - set to development in dev mode
+appEnvironment: production #sets the appEnvironment for nexus - set to development in dev mode
+
+# djangoSettingsModule: "config.settings.production" #Sets the django settings - set to config.settings.dev in dev mode
+# djangoDebug: "True" #sets django in debug mode set to true in dev mode
+
+graphistryCPUMode: "0" #sets graphistry to cpu mode - to be used in dev mode set to 1
+metrics: false #enables metrics for prometheus - must have kube-prometheus-stack installed
+graphAppKitPublic: true # graph app kit public - determines if public dashboard is going to be deployed
+graphAppKitPrivate: true # graph app kit private - determines if private dashboard is going to be deployed
+forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
+
+
+dask:
+  operator: false

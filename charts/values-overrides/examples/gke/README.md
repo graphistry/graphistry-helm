@@ -133,8 +133,9 @@ kubectl get nodes -o json | jq '.items[].metadata.labels | keys | any(startswith
 helm install --wait --generate-name \
     -n gpu-operator --create-namespace nvidia/gpu-operator \
     --timeout 60m \
-    --set driver.version="515.105.01"
+    --set driver.version="550.90.07"
 ```
+Note: The recomended driver version can be found in the official [NVIDIA GPU Operator Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix).
 
 Check the cluster labels again, it should have GPU accelerator support for the K8s node selector:
 ```bash
@@ -261,10 +262,23 @@ kubectl get pods --watch
 ```
 
 ## Install Graphistry
+You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/gke/gke_values.yaml`:
+```yaml
+cuda:
+  version: "11.8" #cuda version
+
+global:  ## global settings for all charts
+  tag: v2.41.0
+```
+
+Install Graphistry using the next commands:
 ```bash
 helm show values ./charts/graphistry-helm
 kubectl get secret | grep dockerhub-secret
-helm upgrade -i g-chart ./charts/graphistry-helm --values ../default_gke_values.yaml -f ../gke_values.yaml --namespace graphistry --create-namespace
+helm upgrade -i g-chart ./charts/graphistry-helm \
+    --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
+    -f ./charts/values-overrides/examples/gke/gke_values.yaml \
+    --namespace graphistry --create-namespace
 ```
 
 Wait unilt all the pods are running and completed:
@@ -282,7 +296,14 @@ Once you open Graphistry in the browser, create an account for the admin user wi
 ## Update Graphistry deployment
 In case we want to change some values in `../gke_values.yaml` we need to reuse the volume names:
 ```bash
-helm upgrade -i g-chart ./charts/graphistry-helm --values ../default_gke_values.yaml --set volumeName.dataMount=$(kubectl get pv | grep "data-mount" | tail -n 1 | awk '{print $1;}') --set volumeName.localMediaMount=$(kubectl get pv | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') --set volumeName.gakPublic=$(kubectl get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') --set volumeName.gakPrivate=$(kubectl get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') -f ../gke_values.yaml --namespace graphistry --create-namespace
+helm upgrade -i g-chart ./charts/graphistry-helm \
+    --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
+    --set volumeName.dataMount=$(kubectl get pv | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
+    --set volumeName.localMediaMount=$(kubectl get pv | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
+    --set volumeName.gakPublic=$(kubectl get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
+    --set volumeName.gakPrivate=$(kubectl get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
+    -f ./charts/values-overrides/examples/gke/gke_values.yaml \
+    --namespace graphistry --create-namespace
 kubectl get pods --watch
 ```
 

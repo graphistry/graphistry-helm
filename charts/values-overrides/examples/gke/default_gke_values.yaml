@@ -44,7 +44,7 @@ graphistryResources:
       type: gp2
 
 
-  ## createServiceAccount: true only true on initial deployment
+## createServiceAccount: true only true on initial deployment
 k8sDashboard:
   enabled: true
   readonly: false

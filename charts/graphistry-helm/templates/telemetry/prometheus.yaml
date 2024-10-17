@@ -1,0 +1,95 @@
+{{- if .Values.telemetryEnv.ENABLE_PROMETHEUS }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: prometheus
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: prometheus
+    spec:
+      containers:
+        - env:
+            - name: NODE_ENV
+              value: {{ .Values.nodeEnv | quote }}
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+            - name: GRAPHISTRY_LOG_LEVEL
+              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.global.logs.LogLevel | quote }}
+          image: prom/prometheus:v2.47.2
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "500m"
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -Lf
+                - http://localhost:9090/-/healthy
+            failureThreshold: 3
+            initialDelaySeconds: 180
+            periodSeconds: 120
+            timeoutSeconds: 30
+          name: prometheus
+          ports:
+            - containerPort: 4317
+            - containerPort: 9090
+            - containerPort: 8889  # Prometheus exporter metrics
+          resources:
+            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
+          volumeMounts:
+            - name: prometheus-config-mount
+              mountPath: /etc/prometheus/
+              readOnly: true
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: prometheus-config-mount
+          configMap:
+            name: prometheus-configmap
+            items:
+            - key: prometheus.yml
+              path: prometheus.yml
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  ports:
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "9091"
+      port: 9091
+      targetPort: 9090
+    - name: "8889"
+      port: 8889
+      targetPort: 8889
+  selector:
+    io.kompose.service: prometheus
+status:
+  loadBalancer: {}
+{{- end }}

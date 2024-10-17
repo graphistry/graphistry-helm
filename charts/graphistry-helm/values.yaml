@@ -552,9 +552,11 @@ env: #environment variables
    value: "false"
  - name: ACME_AGREE
    value: "true"
- - name: ENABLE_TELEMETRY
-   value: "false"
 
+ - name: OTEL_EXPORTER_OTLP_ENDPOINT
+   value: "http://otel-collector:4317"
+ - name: ENABLE_OPEN_TELEMETRY
+   value: "false"
 
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \
@@ -601,4 +603,13 @@ streamlitEnv: #graph-app-kit (streamlit) environment variables
  - name: TIGERGRAPH_SECRET
    value: 
 
-
+#telemetry environment variables
+# can be set like helm upgrade -i chart_name --name release_name \
+#--set stENVPublic.LOG_LEVEL="FOO"
+telemetryEnv:
+  OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
+  OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
+  OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+  OTEL_COLLECTOR_CONFIG_MAP: "otel-collector-configmap"
+  ENABLE_JAEGER: false
+  ENABLE_PROMETHEUS: false

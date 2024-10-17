@@ -79,6 +79,14 @@ spec:
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}  
+
+          - name: OTEL_SERVICE_NAME
+            value: "streamgl-viz"
+          - name: OT_METRIC_EXPORT_INTERVAL
+            value: "2000"
+          - name: OT_METRIC_EXPORT_TIMEOUT
+            value: "2000"
+
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}   
           livenessProbe:

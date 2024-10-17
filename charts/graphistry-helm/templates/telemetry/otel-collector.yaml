@@ -1,0 +1,127 @@
+{{- if .Values.telemetryEnv.OTEL_COLLECTOR_CONFIG_MAP }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: otel-collector
+  name: otel-collector
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: otel-collector
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: otel-collector
+    spec:
+      {{- if eq .Values.telemetryEnv.OTEL_COLLECTOR_CONFIG_MAP "otel-collector-configmap-dev" }}
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init-prometheus"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "prometheus"
+      - name: "{{ lower .Chart.Name }}-init-jaeger"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "jaeger"
+      {{- end }}
+      containers:
+        - env:
+            - name: NODE_ENV
+              value: {{ .Values.nodeEnv | quote }}
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+            - name: GRAPHISTRY_LOG_LEVEL
+              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.global.logs.LogLevel | quote }}
+            - name: OTEL_LOG_LEVEL
+              value: "warn"
+            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              value: "jaeger:4317"
+            - name: OTEL_COLLECTOR_OTLP_USERNAME
+              value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_USERNAME | quote }}
+            - name: OTEL_COLLECTOR_OTLP_PASSWORD
+              value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_PASSWORD | quote }}
+            - name: OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT
+              value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
+          image: otel/opentelemetry-collector-contrib:0.87.0
+          args:
+            - "--config=/etc/otelcol/otel-collector-config.yml"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -Lf
+                - http://localhost:13133
+            failureThreshold: 3
+            initialDelaySeconds: 180
+            periodSeconds: 120
+            timeoutSeconds: 30
+          name: otel-collector
+          ports:
+            - containerPort: 4317
+            - containerPort: 8889  # Prometheus exporter metrics
+          resources:
+            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
+          volumeMounts:
+            - name: otel-collector-config-mount
+              mountPath: /etc/otelcol
+              readOnly: true
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: otel-collector-config-mount
+          configMap:
+            name: {{ .Values.telemetryEnv.OTEL_COLLECTOR_CONFIG_MAP | quote }}
+            items:
+            - key: otel-collector-config.yml
+              path: otel-collector-config.yml
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: otel-collector
+  name: otel-collector
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "8889"
+      port: 8889
+      targetPort: 8889
+  selector:
+    io.kompose.service: otel-collector
+status:
+  loadBalancer: {}
+{{ end }}

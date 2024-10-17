@@ -1,0 +1,85 @@
+{{ if eq .Values.telemetryEnv.ENABLE_JAEGER true }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: jaeger
+  name: jaeger
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: jaeger
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: jaeger
+    spec:
+      containers:
+        - env:
+            - name: NODE_ENV
+              value: {{ .Values.nodeEnv | quote }}
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+          image: jaegertracing/all-in-one:1.50.0
+          #args:
+          #  - "--query.ui-config /etc/jaeger/jaeger-ui.json"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          livenessProbe:
+            exec:
+              command:
+                - curl
+                - -Lf
+                - http://localhost:16686
+            failureThreshold: 3
+            initialDelaySeconds: 180
+            periodSeconds: 120
+            timeoutSeconds: 30
+          name: jaeger
+          ports:
+            - containerPort: 4317
+            - containerPort: 16686
+          resources:
+            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
+          #volumeMounts:
+          #  - name: jaeger-config-mount
+          #    mountPath: /etc/jaeger/
+          #    readOnly: true
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      serviceAccountName: job-robot
+      #volumes:
+      #  - name: jaeger-config-mount
+      #    configMap:
+      #      name: jaeger-ui-configmap
+      #      items:
+      #      - key: jaeger-ui.json
+      #        path: jaeger-ui.json
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: jaeger
+  name: jaeger
+spec:
+  ports:
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "16686"
+      port: 16686
+      targetPort: 16686
+  selector:
+    io.kompose.service: jaeger
+status:
+  loadBalancer: {}
+{{ end }}

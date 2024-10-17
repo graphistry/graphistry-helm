@@ -1,0 +1,65 @@
+{{- if eq .Values.telemetryEnv.OTEL_COLLECTOR_CONFIG_MAP "otel-collector-configmap-dev" }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-configmap-dev
+data:
+  otel-collector-config.yml: |-
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        const_labels:
+          system: graphistry
+
+      logging:
+        loglevel: warn
+
+      otlp:
+        endpoint: ${env:OTEL_EXPORTER_JAEGER_ENDPOINT}
+        tls:
+          insecure: true
+
+    processors:
+      filter/ottl:
+        error_mode: ignore
+        traces:
+          span:
+            - IsMatch(attributes["http.route"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/health.*") or IsMatch(attributes["http.target"], "/health.*")
+            - name == "readHandler" and attributes["http.status_code"] == 200
+      batch:
+      memory_limiter:
+        check_interval: 1s
+        limit_percentage: 50
+        spike_limit_percentage: 30
+
+    extensions:
+      health_check:
+      pprof:
+        endpoint: :1888
+      zpages:
+        endpoint: :55679
+
+    service:
+      extensions: [pprof, zpages, health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [batch]
+          exporters: [logging, prometheus]
+
+        traces:
+          receivers: [otlp]
+          processors: [filter/ottl, batch]
+          exporters: [logging, otlp]
+{{- end }}

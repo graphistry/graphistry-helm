@@ -1,0 +1,40 @@
+#example values.yaml of an aws eks based deployment
+tls: false
+graphAppKitPublic: false
+graphAppKitPrivate: false
+#volume pv names go here after initial deployment and provisioning
+volumeName:
+  dataMount: 
+  localMediaMount: 
+  gakPublic: 
+  gakPrivate: 
+
+  ## createServiceAccount: true only true on initial deployment
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
+ingress:
+  management:
+    annotations:
+      kubernetes.io/ingress.class: traefik
+
+cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
+  namespace: cert-manager
+  installCRDs: true
+  createCustomResource: true
+
+cuda:
+  version: "11.8" #cuda version
+
+global:
+  tag: v2.41.10
+  imagePullSecrets: 
+    - name: dockerhub-secret
+  provisioner: rancher.io/local-path
+  postgresVolumeLabel:
+  nodeSelector: #node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}
+      nvidia.com/gpu.present: "true"
+
+#helm upgrade -i g-chart ./charts/graphistry-helm --values ./charts/graphistry-helm/overrides/k3s_example_values.yaml --set tag=v2.39.24-koa-sso-fix --set nodeSelector."kubernetes\\.io/hostname"=ip-172-31-29-0.us-east-2.compute.internal --namespace graphistry --create-namespace 

@@ -1,5 +1,5 @@
-{{- if .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY }}
-  {{ if eq .Values.telemetryEnv.ENABLE_JAEGER true }}
+{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -20,6 +20,8 @@ spec:
         - env:
             - name: NODE_ENV
               value: {{ .Values.nodeEnv | quote }}
+            - name: QUERY_BASE_PATH
+              value: "/jaeger"
           {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}

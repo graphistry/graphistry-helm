@@ -1,28 +1,41 @@
-{{- if eq .Values.telemetryEnv.OTEL_COLLECTOR_CONFIG_MAP "otel-collector-configmap-dev" }}
+{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+  {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE true }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: otel-collector-configmap-dev
+  name: otel-collector-cloud-configmap
 data:
   otel-collector-config.yml: |-
+    extensions:
+      pprof:
+        endpoint: :1888
+      zpages:
+        endpoint: :55679
+      health_check:
+      basicauth/otlp:
+        client_auth:
+          username: ${env:OTEL_COLLECTOR_OTLP_USERNAME}
+          password: ${env:OTEL_COLLECTOR_OTLP_PASSWORD}
+
     receivers:
       otlp:
         protocols:
           grpc:
 
     exporters:
-      prometheus:
-        endpoint: "0.0.0.0:8889"
-        const_labels:
-          system: graphistry
-
-      logging:
-        loglevel: warn
-
-      otlp:
-        endpoint: ${env:OTEL_EXPORTER_JAEGER_ENDPOINT}
-        tls:
-          insecure: true
+      otlphttp:
+        endpoint: ${env:OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT}
+        auth:
+          authenticator: "basicauth/otlp"
+        retry_on_failure:
+          enabled: true
+          initial_interval: 5s
+          max_interval: 30s
+          max_elapsed_time: 300s
+        sending_queue:
+          enabled: true
+          num_consumers: 2
+          queue_size: 5000
 
     processors:
       filter/ottl:
@@ -38,28 +51,25 @@ data:
             - IsMatch(attributes["http.route"], "/health.*") or IsMatch(attributes["http.target"], "/health.*")
             - name == "readHandler" and attributes["http.status_code"] == 200
       batch:
+        send_batch_size: 2000
+        timeout: 5s
+        send_batch_max_size: 0
       memory_limiter:
-        check_interval: 1s
-        limit_percentage: 50
-        spike_limit_percentage: 30
-
-    extensions:
-      health_check:
-      pprof:
-        endpoint: :1888
-      zpages:
-        endpoint: :55679
+        limit_mib: 450
+        check_interval: 5s
+        spike_limit_mib: 150
 
     service:
-      extensions: [pprof, zpages, health_check]
+      extensions: [pprof, zpages, health_check, basicauth/otlp]
       pipelines:
         metrics:
           receivers: [otlp]
-          processors: [batch]
-          exporters: [logging, prometheus]
+          processors: [memory_limiter, batch]
+          exporters: [otlphttp]
 
         traces:
           receivers: [otlp]
-          processors: [filter/ottl, batch]
-          exporters: [logging, otlp]
+          processors: [memory_limiter, filter/ottl, batch]
+          exporters: [otlphttp]
+{{- end }}
 {{- end }}

@@ -60,7 +60,11 @@ spec:
           - name: GRAPHISTRY_LOG_LEVEL
             value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
           - name: LOG_LEVEL
-            value: {{ .Values.global.logs.LogLevel | quote }}  
+            value: {{ .Values.global.logs.LogLevel | quote }}
+          - name: ENABLE_OPEN_TELEMETRY
+            value: {{ .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY | quote }}
+          - name: OTEL_SERVICE_NAME
+            value: "streamgl-gpu"
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglgpu.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}        
           livenessProbe:

@@ -3,7 +3,7 @@
 apiVersion: networking.k8s.io/v1
 kind: Ingress
 metadata:
-  name: prometheus-ingress
+  name: jaeger-ingress
   namespace: {{ .Release.Namespace }}
   annotations:
     nginx.ingress.kubernetes.io/affinity: "cookie"
@@ -28,12 +28,12 @@ spec:
   rules:
     - http:
         paths:
-          - path: /prometheus
+          - path: /jaeger
             pathType: Prefix
             backend:
               service:
-                name: prometheus
+                name: jaeger
                 port:
-                  number: 9090
+                  number: 16686
 {{- end }}
 {{- end }}

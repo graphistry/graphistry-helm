@@ -1,5 +1,5 @@
-{{- if .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY }}
-  {{- if .Values.telemetryEnv.ENABLE_PROMETHEUS }}
+{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -29,6 +29,13 @@ spec:
             - name: LOG_LEVEL
               value: {{ .Values.global.logs.LogLevel | quote }}
           image: prom/prometheus:v2.47.2
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+            - '--web.console.templates=/usr/share/prometheus/consoles'
+            - '--web.external-url=/prometheus/'
+            - '--web.route-prefix=/prometheus/'
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             limits:
@@ -83,8 +90,8 @@ spec:
     - name: "4317"
       port: 4317
       targetPort: 4317
-    - name: "9091"
-      port: 9091
+    - name: "9090"
+      port: 9090
       targetPort: 9090
     - name: "8889"
       port: 8889

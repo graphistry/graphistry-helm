@@ -38,16 +38,17 @@ spec:
             - '--web.route-prefix=/prometheus/'
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
-            limits:
-              memory: "500Mi"
+            requests:
               cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
           name: prometheus
           ports:
             - containerPort: 4317
             - containerPort: 9090
             - containerPort: 8889  # Prometheus exporter metrics
-          resources:
-            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
           volumeMounts:
             - name: prometheus-config-mount
               mountPath: /etc/prometheus/prometheus.yml

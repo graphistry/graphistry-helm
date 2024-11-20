@@ -86,7 +86,12 @@ spec:
             - containerPort: 4317
             - containerPort: 8889  # Prometheus exporter metrics
           resources:
-            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
           volumeMounts:
             - name: otel-collector-config-mount
               mountPath: /etc/otelcol

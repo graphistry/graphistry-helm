@@ -46,14 +46,15 @@ spec:
           image: grafana/grafana:11.0.0
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
-            limits:
+            requests:
+              cpu: "250m"
               memory: "500Mi"
+            limits:
               cpu: "500m"
+              memory: "1Gi"
           name: grafana
           ports:
             - containerPort: 3000
-          resources:
-            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
           volumeMounts:
             - name: grafana-datasources-mount
               mountPath: /etc/grafana/provisioning/datasources

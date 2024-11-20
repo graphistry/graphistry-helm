@@ -35,7 +35,12 @@ spec:
             - containerPort: 4317
             - containerPort: 16686
           resources:
-            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
           volumeMounts:
            - name: jaeger-ui-config-mount
              mountPath: /tmp/jaeger-ui.json

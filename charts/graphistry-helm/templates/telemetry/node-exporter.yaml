@@ -33,14 +33,15 @@ spec:
             - '--collector.processes'
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
             limits:
-              memory: "500Mi"
-              cpu: "500m"
+              cpu: "200m"
+              memory: "200Mi"
           name: node-exporter
           ports:
             - containerPort: 9100
-          resources:
-            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
       serviceAccountName: job-robot
       imagePullSecrets:

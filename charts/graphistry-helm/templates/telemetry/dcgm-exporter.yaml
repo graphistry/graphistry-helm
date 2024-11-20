@@ -33,14 +33,15 @@ spec:
           image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
+            requests:
+              cpu: "200m"
+              memory: "200Mi"
             limits:
-              memory: "500Mi"
               cpu: "500m"
+              memory: "500Mi"
           name: dcgm-exporter
           ports:
             - containerPort: 9400
-          resources:
-            {{- toYaml .Values.StreamglVizResources | nindent 12 }}
           securityContext:
             capabilities:
               add:

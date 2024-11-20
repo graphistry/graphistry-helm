@@ -451,8 +451,10 @@ global:  ## global settings for all charts
 #telemetry environment variables
 # can be set like helm upgrade -i chart_name --name release_name \
 #--set stENVPublic.LOG_LEVEL="FOO"
+# Telemetry documentation:
+# https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
 telemetryEnv:
-  ENABLE_OPEN_TELEMETRY: true
+  ENABLE_OPEN_TELEMETRY: false
   OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
   OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
   OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP

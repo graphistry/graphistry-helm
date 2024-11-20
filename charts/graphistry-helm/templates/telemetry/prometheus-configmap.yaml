@@ -1,3 +1,5 @@
+{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -10,3 +12,13 @@ data:
         static_configs:
           - targets: ['otel-collector:8889']
           - targets: ['otel-collector:8888']
+      - job_name: 'dcgm-exporter'
+        scrape_interval: 1s
+        static_configs:
+          - targets: ['dcgm-exporter:9400']
+      - job_name: 'node-exporter'
+        scrape_interval: 1s
+        static_configs:
+          - targets: ['node-exporter:9100']
+{{ end }}
+{{ end }}

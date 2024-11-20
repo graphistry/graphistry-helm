@@ -1,3 +1,5 @@
+{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -12,3 +14,5 @@ data:
         "menuEnabled": true
       }
     }
+{{ end }}
+{{ end }}

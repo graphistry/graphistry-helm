@@ -4,52 +4,49 @@ apiVersion: apps/v1
 kind: DaemonSet
 metadata:
   labels:
-    io.kompose.service: jaeger
-  name: jaeger
+    io.kompose.service: dcgm-exporter
+  name: dcgm-exporter
 spec:
   selector:
     matchLabels:
-      io.kompose.service: jaeger
+      io.kompose.service: dcgm-exporter
   template:
     metadata:
       labels:
         io.kompose.network/grph: "true"
-        io.kompose.service: jaeger
+        io.kompose.service: dcgm-exporter
     spec:
       containers:
         - env:
             - name: NODE_ENV
               value: {{ .Values.nodeEnv | quote }}
-            - name: QUERY_BASE_PATH
-              value: "/jaeger"
           {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-          image: jaegertracing/all-in-one:1.50.0
-          args: 
-            - "--query.ui-config=/tmp/jaeger-ui.json"
+            - name: GRAPHISTRY_LOG_LEVEL
+              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
+            - name: LOG_LEVEL
+              value: {{ .Values.global.logs.LogLevel | quote }}
+            - name: DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE
+              value: {{ .Values.telemetryEnv.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
+          image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
-          name: jaeger
+          resources:
+            limits:
+              memory: "500Mi"
+              cpu: "500m"
+          name: dcgm-exporter
           ports:
-            - containerPort: 4317
-            - containerPort: 16686
+            - containerPort: 9400
           resources:
             {{- toYaml .Values.StreamglVizResources | nindent 12 }}
-          volumeMounts:
-           - name: jaeger-ui-config-mount
-             mountPath: /tmp/jaeger-ui.json
-             subPath: jaeger-ui.json
-             readOnly: true
+          securityContext:
+            capabilities:
+              add:
+                - SYS_ADMIN  # Add the SYS_ADMIN capability
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
       serviceAccountName: job-robot
-      volumes:
-       - name: jaeger-ui-config-mount
-         configMap:
-           name: jaeger-ui-configmap
-           items:
-           - key: jaeger-ui.json
-             path: jaeger-ui.json
       imagePullSecrets:
         {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
 {{- if eq .Values.global.multiNode false }}
@@ -62,19 +59,16 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    io.kompose.service: jaeger
-  name: jaeger
+    io.kompose.service: dcgm-exporter
+  name: dcgm-exporter
 spec:
   ports:
-    - name: "4317"
-      port: 4317
-      targetPort: 4317
-    - name: "16686"
-      port: 16686
-      targetPort: 16686
+    - name: "9400"
+      port: 9400
+      targetPort: 9400
   selector:
-    io.kompose.service: jaeger
+    io.kompose.service: dcgm-exporter
 status:
   loadBalancer: {}
-  {{ end }}
-{{ end }}
+  {{- end }}
+{{- end }}

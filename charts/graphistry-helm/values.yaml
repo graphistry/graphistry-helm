@@ -457,6 +457,9 @@ telemetryEnv:
   OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
   OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
   OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
+  DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000
+  GF_SERVER_ROOT_URL: "/grafana"
+  GF_SERVER_SERVE_FROM_SUB_PATH: "true"
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \
@@ -564,8 +567,18 @@ env: #environment variables
    value: "true"
  - name: OTEL_EXPORTER_OTLP_ENDPOINT
    value: "http://otel-collector:4317"
- - name: ENABLE_OPEN_TELEMETRY
-   value: "{{ .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY | ternary 'true' 'false' }}"
+ - name: OTEL_EXPORTER_OTLP_TIMEOUT
+   value: "60000"
+ - name: OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
+   value: "60000"
+ - name: OTEL_EXPORTER_OTLP_METRICS_TIMEOUT
+   value: "60000"
+ - name: OTEL_EXPORTER_OTLP_LOGS_TIMEOUT
+   value: "60000"
+ - name: OT_METRIC_EXPORT_INTERVAL
+   value: "60000"
+ - name: OT_METRIC_EXPORT_TIMEOUT
+   value: "30000"
 
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \

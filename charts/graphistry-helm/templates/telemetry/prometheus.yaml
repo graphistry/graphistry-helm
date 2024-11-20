@@ -41,16 +41,6 @@ spec:
             limits:
               memory: "500Mi"
               cpu: "500m"
-          livenessProbe:
-            exec:
-              command:
-                - curl
-                - -Lf
-                - http://localhost:9090/-/healthy
-            failureThreshold: 3
-            initialDelaySeconds: 180
-            periodSeconds: 120
-            timeoutSeconds: 30
           name: prometheus
           ports:
             - containerPort: 4317
@@ -60,7 +50,8 @@ spec:
             {{- toYaml .Values.StreamglVizResources | nindent 12 }}
           volumeMounts:
             - name: prometheus-config-mount
-              mountPath: /etc/prometheus/
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yml
               readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
       serviceAccountName: job-robot

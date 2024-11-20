@@ -1,0 +1,20 @@
+{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-configmap
+data:
+  datasource.yml: |
+{{ .Files.Get "grafana-config-files/provisioning/datasources/datasource.yml" | indent 4 }}
+
+  dashboard.yml: |
+{{ .Files.Get "grafana-config-files/provisioning/dashboards/dashboard.yml" | indent 4 }}
+
+  dcgm-exporter-dashboard.json: |
+{{ .Files.Get "grafana-config-files/provisioning/dashboards/dcgm-exporter-dashboard.json" | indent 4 }}
+
+  node-exporter-dashboard.json: |
+{{ .Files.Get "grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
+{{- end }}
+{{- end }}

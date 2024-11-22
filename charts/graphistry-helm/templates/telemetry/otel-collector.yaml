@@ -66,7 +66,7 @@ spec:
             - name: OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT
               value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
           {{- end }}
-          image: {{ .Values.telemetryEnv.opentelemetryCollector.image | quote }}
+          image: otel/opentelemetry-collector-contrib:0.87.0
           args:
             - "--config=/etc/otelcol/otel-collector-config.yml"
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
@@ -97,6 +97,7 @@ spec:
               mountPath: /etc/otelcol
               readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      serviceAccountName: job-robot
       volumes:
         - name: otel-collector-config-mount
           {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}

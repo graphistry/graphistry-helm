@@ -47,7 +47,6 @@ spec:
              subPath: jaeger-ui.json
              readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
-      serviceAccountName: job-robot
       volumes:
        - name: jaeger-ui-config-mount
          configMap:

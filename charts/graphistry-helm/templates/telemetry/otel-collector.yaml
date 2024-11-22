@@ -97,7 +97,6 @@ spec:
               mountPath: /etc/otelcol
               readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
-      serviceAccountName: job-robot
       volumes:
         - name: otel-collector-config-mount
           {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}

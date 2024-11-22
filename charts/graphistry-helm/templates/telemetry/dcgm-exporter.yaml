@@ -47,7 +47,6 @@ spec:
               add:
                 - SYS_ADMIN  # Add the SYS_ADMIN capability
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
-      serviceAccountName: job-robot
       imagePullSecrets:
         {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
 {{- if eq .Values.global.multiNode false }}

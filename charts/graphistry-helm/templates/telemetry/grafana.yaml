@@ -63,7 +63,6 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
-      serviceAccountName: job-robot
       volumes:
         - name: grafana-dashboards-mount
           configMap:

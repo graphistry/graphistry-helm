@@ -55,7 +55,6 @@ spec:
               subPath: prometheus.yml
               readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
-      serviceAccountName: job-robot
       volumes:
         - name: prometheus-config-mount
           configMap:

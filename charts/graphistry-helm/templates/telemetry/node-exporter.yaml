@@ -43,7 +43,6 @@ spec:
           ports:
             - containerPort: 9100
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
-      serviceAccountName: job-robot
       imagePullSecrets:
         {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
 {{- if eq .Values.global.multiNode false }}

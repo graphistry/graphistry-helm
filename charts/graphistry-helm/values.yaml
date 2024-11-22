@@ -462,6 +462,18 @@ telemetryEnv:
   DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000
   GF_SERVER_ROOT_URL: "/grafana"
   GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+  dcgmExporter:
+    image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
+  grafana:
+    image: "grafana/grafana:11.0.0"
+  jaeger:
+    image: "jaegertracing/all-in-one:1.50.0"
+  nodeExporter:
+    image: "prom/node-exporter:v1.8.2"
+  opentelemetryCollector:
+    image: "otel/opentelemetry-collector-contrib:0.87.0"
+  prometheus:
+    image: "prom/prometheus:v2.47.2"
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \

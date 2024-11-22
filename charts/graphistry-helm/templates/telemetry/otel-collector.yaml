@@ -66,7 +66,7 @@ spec:
             - name: OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT
               value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
           {{- end }}
-          image: otel/opentelemetry-collector-contrib:0.87.0
+          image: {{ .Values.telemetryEnv.opentelemetryCollector.image | quote }}
           args:
             - "--config=/etc/otelcol/otel-collector-config.yml"
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}

@@ -26,7 +26,7 @@ spec:
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-          image: jaegertracing/all-in-one:1.50.0
+          image: {{ .Values.telemetryEnv.jaeger.image | quote }}
           args: 
             - "--query.ui-config=/tmp/jaeger-ui.json"
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}

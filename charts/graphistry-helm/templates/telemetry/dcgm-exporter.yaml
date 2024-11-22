@@ -30,7 +30,7 @@ spec:
               value: {{ .Values.global.logs.LogLevel | quote }}
             - name: DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE
               value: {{ .Values.telemetryEnv.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
-          image: nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04
+          image: {{ .Values.telemetryEnv.dcgmExporter.image | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:

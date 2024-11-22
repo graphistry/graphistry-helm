@@ -28,7 +28,7 @@ spec:
               value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
             - name: LOG_LEVEL
               value: {{ .Values.global.logs.LogLevel | quote }}
-          image: prom/prometheus:v2.47.2
+          image: {{ .Values.telemetryEnv.prometheus.image | quote }}
           args:
             - '--config.file=/etc/prometheus/prometheus.yml'
             - '--storage.tsdb.path=/prometheus'

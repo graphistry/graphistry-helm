@@ -43,7 +43,7 @@ spec:
               value: {{ .Values.telemetryEnv.GF_SERVER_ROOT_URL | quote }}
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
               value: {{ .Values.telemetryEnv.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
-          image: grafana/grafana:11.0.0
+          image: {{ .Values.telemetryEnv.grafana.image | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:

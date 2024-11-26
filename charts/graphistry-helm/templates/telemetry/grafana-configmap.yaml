@@ -7,7 +7,7 @@ metadata:
   name: grafana-datasource-configmap
 data:
   datasource.yml: |
-    {{ .Files.Get "grafana-config-files/provisioning/datasources/datasource.yml" | indent 4 }}
+{{ .Files.Get "grafana-config-files/provisioning/datasources/datasource.yml" | indent 4 }}
 
 ---
 
@@ -17,7 +17,7 @@ metadata:
   name: grafana-dashboard-configmap
 data:
   dashboard.yml: |
-    {{ .Files.Get "grafana-config-files/provisioning/dashboards/dashboard.yml" | indent 4 }}
+{{ .Files.Get "grafana-config-files/provisioning/dashboards/dashboard.yml" | indent 4 }}
 
 ---
 
@@ -27,7 +27,7 @@ metadata:
   name: grafana-dcgm-dashboard-configmap
 data:
   dcgm-exporter-dashboard.json: |
-    {{ .Files.Get "grafana-config-files/provisioning/dashboards/dcgm-exporter-dashboard.json" | indent 4 }}
+{{ .Files.Get "grafana-config-files/provisioning/dashboards/dcgm-exporter-dashboard.json" | indent 4 }}
 
 ---
 
@@ -37,7 +37,7 @@ metadata:
   name: grafana-node-exporter-dashboard-configmap
 data:
   node-exporter-dashboard.json: |
-    {{ .Files.Get "grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
+{{ .Files.Get "grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
 
-{{ end }}
-{{ end }}
+{{- end }}
+{{- end }}

@@ -66,17 +66,23 @@ spec:
       volumes:
         - name: grafana-dashboards-mount
           configMap:
-            name: grafana-configmap
+            name: grafana-dashboard-configmap
             items:
             - key: dashboard.yml
               path: dashboard.yml
+          configMap:
+            name: grafana-dcgm-dashboard-configmap
+            items:
             - key: dcgm-exporter-dashboard.json
               path: dcgm-exporter-dashboard.json
+          configMap:
+            name: grafana-node-exporter-dashboard-configmap
+            items:
             - key: node-exporter-dashboard.json
               path: node-exporter-dashboard.json
         - name: grafana-datasources-mount
           configMap:
-            name: grafana-configmap
+            name: grafana-datasource-configmap
             items:
             - key: datasource.yml
               path: datasource.yml

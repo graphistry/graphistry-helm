@@ -263,10 +263,10 @@ djangoDebug: "True" #sets django in debug mode set to true in dev mode
 metrics: false #enables metrics for prometheus - must have kube-prometheus-stack installed
 
 # graph app kit public - determines if public dashboard is going to be deployed
-graphAppKitPublic: false # graph app kit public - determines if public dashboard is going to be deployed
+graphAppKitPublic: true # graph app kit public - determines if public dashboard is going to be deployed
 
 # graph app kit private - determines if private dashboard is going to be deployed
-graphAppKitPrivate: false # graph app kit private - determines if private dashboard is going to be deployed
+graphAppKitPrivate: true # graph app kit private - determines if private dashboard is going to be deployed
 
 forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 

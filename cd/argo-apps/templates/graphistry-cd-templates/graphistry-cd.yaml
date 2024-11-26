@@ -15,10 +15,11 @@ spec:
   source:
     path: charts/graphistry-helm
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: HEAD #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: dev/opentelemetry #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:
-        - ../values-overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+        # - ../values-overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+        - ../values-overrides/examples/k3s_example_values.yaml
   syncPolicy:
     automated:
       prune: true

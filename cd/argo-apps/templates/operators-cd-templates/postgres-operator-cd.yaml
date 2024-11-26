@@ -13,8 +13,8 @@ spec:
     namespace: postgres-operator
   project: default
   source:
-    path: helm/install
-    repoURL: https://github.com/CrunchyData/postgres-operator-examples.git
+    path: charts-aux-bundled/postgres-operator
+    repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: HEAD #terraform #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:

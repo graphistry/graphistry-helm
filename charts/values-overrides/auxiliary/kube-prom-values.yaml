@@ -10,3 +10,5 @@ grafana:
 prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
+
+# TODO grafana + node exporter

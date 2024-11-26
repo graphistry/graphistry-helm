@@ -39,5 +39,5 @@ data:
   node-exporter-dashboard.json: |
     {{ .Files.Get "grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
 
-{{- end }}
-{{- end }}
+{{ end }}
+{{ end }}

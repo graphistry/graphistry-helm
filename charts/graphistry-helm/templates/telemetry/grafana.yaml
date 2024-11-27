@@ -60,10 +60,10 @@ spec:
               mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
             - name: grafana-dcgm-dashboard-mount
-              mountPath: /etc/grafana/provisioning/datasources
+              mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
             - name: grafana-node-exporter-dashboard-mount
-              mountPath: /etc/grafana/provisioning/datasources
+              mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
             - name: grafana-datasource-mount
               mountPath: /etc/grafana/provisioning/datasources

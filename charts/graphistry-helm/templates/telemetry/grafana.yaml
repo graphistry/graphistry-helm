@@ -65,9 +65,6 @@ spec:
             - name: grafana-node-exporter-dashboard-mount
               mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
-            - name: grafana-datasource-mount
-              mountPath: /etc/grafana/provisioning/datasources
-              readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
       volumes:
         - name: grafana-dashboard-mount

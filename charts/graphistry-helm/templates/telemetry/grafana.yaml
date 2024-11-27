@@ -56,25 +56,33 @@ spec:
           ports:
             - containerPort: 3000
           volumeMounts:
-            - name: grafana-datasources-mount
+            - name: grafana-dashboard-mount
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: grafana-dcgm-dashboard-mount
               mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
-            - name: grafana-dashboards-mount
-              mountPath: /etc/grafana/provisioning/dashboards
+            - name: grafana-node-exporter-dashboard-mount
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            - name: grafana-datasource-mount
+              mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
       volumes:
-        - name: grafana-dashboards-mount
+        - name: grafana-dashboard-mount
           configMap:
             name: grafana-dashboard-configmap
             items:
             - key: dashboard.yml
               path: dashboard.yml
+        - name: grafana-dcgm-dashboard-mount
           configMap:
             name: grafana-dcgm-dashboard-configmap
             items:
             - key: dcgm-exporter-dashboard.json
               path: dcgm-exporter-dashboard.json
+        - name: grafana-node-exporter-dashboard-mount
           configMap:
             name: grafana-node-exporter-dashboard-configmap
             items:

@@ -1,0 +1,169 @@
+name: Graphistry-Helm-Chart
+version: 0.3.6
+apiVersion: v1
+description: >
+ Helm Charts to deploy Graphistry to kubernetes for 100x visualizations
+
+long_description: | 
+
+
+
+  Install Graphistry
+  -------------------
+    .. tabs::
+
+      .. tab:: From source
+        .. code-block:: shell-session            
+                  
+          git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
+          helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
+
+      .. tab:: From Helm Repo
+        .. code-block:: shell-session            
+                  
+          helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/       
+          helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
+
+
+  **NOTE:** graphistry resources must be installed first as this contains the storageclasses that the PVCs rely on in the graphistry-helm deployment.
+
+  Create a Secret for Graph App Kit (OPTIONAL)
+  ---------------------------------------------
+  If you have a Graph App Kit enabled, you can create a secret to use it.
+
+
+  .. code-block:: yaml            
+      :caption: gak-secret.yaml        
+
+      apiVersion: v1
+      kind: Secret
+      metadata:  
+        name: gak-secret
+        namespace: graphistry
+      type: Opaque
+      stringData:
+        username: <username here>
+        password: <password here>
+        
+  Create the secret above as gak-secret.yaml and run the following command to create the secret:
+
+  .. code-block:: shell-session            
+      
+      kubectl apply -f gak-secret.yaml  
+
+  Once you have Created the user provided in the secret in Graphistry, Graph App Kit will display dashboards.
+
+  Configuring Graphistry
+  ----------------------
+
+  It is recommended to create a values.yaml override file to configure the chart. The default values.yaml file can be found in the chart directory. Examples can be found in the ./charts/values-overrides directory.
+  There are some Deployment specifc values which will need to be set, such as the **global.provisioner**, and **graphistryResources.storageClassParameters**, **global.nodeSelector**, and the **global.Tag** depending on your release. An example values.yaml can be 
+  seen below. This is an example based on an AWS EKS deployment's values.yaml
+
+      .. code-block:: yaml
+
+          volumeName:
+              dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
+              localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
+              gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
+              gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
+
+
+          graphistryResources:
+              storageClassParameters:
+                  csi.storage.k8s.io/fstype: ext4
+                  type: gp2
+
+              
+          global:
+              provisioner: ebs.csi.aws.com
+              tag: v2.39.28-admin
+              nodeSelector: {"kubernetes.io/hostname": "ip-171-00-00-0.us-east-2.compute.internal"}
+              imagePullPolicy: Always
+              imagePullSecrets: 
+                - name: docker-secret-prod
+
+  Once a values.yaml has been created it can be deployed with the following command:
+
+      .. code-block:: shell-session
+
+          helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./values.yaml
+
+  Once the deployment is complete, the Graphistry UI can be accessed from the caddy ingress endpoint. The ingress endpoint can be found by running the following command:
+
+      .. code-block:: shell-session
+
+          kubectl get ingress -n graphistry
+
+
+  Volume Binding
+  --------------
+  After initial deployment , the PVCs (**gak-private,gak-public,data-mount,local-media-mount**) for graphistry will have PVs
+  dynamically provisioned for them by the storageclasses that graphistry-resources deploy, and the pods will bind to them
+  automatically. If the cluster is redeployed, the PVs will be released and the pods will not be able to bind to them. To fix this, 
+  the PVCs must include the volumename from the PV that was provisioned for it. 
+  Find the volume name by running the following command:
+
+      .. code-block:: shell-session
+
+          kubectl get pv -n graphistry
+
+  This will return a list of PVs that were provisioned for the PVCs. The volumename can be found in the output of the command 
+  corresponding to the PVC. Add the name to your values.yaml file under the volumeName section. An example values.yaml can be:
+
+      .. code-block:: yaml
+
+          volumeName:
+              dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
+              localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
+              gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
+              gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
+
+  Once you have updated your values.yaml file the deployment can be redeployed/upgraded and the Pods will bind to the PVs automatically.
+
+      .. code-block:: shell-session
+
+          helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./<your-values.yaml>  
+
+keywords:
+  - Graphistry
+  - Helm Charts
+  - 100x
+  - visualizations
+  - kubernetes
+
+
+
+
+
+#dependencies:
+#  - name: graphistry-helm-resources
+#    version: "0.3.5"
+#    repository: "file://../graphistry-helm-resources"
+#  - name: dask-kubernetes-operator
+#    version: "2022.7.0"
+#    repository: https://helm.dask.org
+#  - name: kube-prometheus-stack
+#    version: "40.0.*"
+#    repository: https://prometheus-community.github.io/helm-charts
+#  - name: dcgm-exporter
+#    version: "40.0.*"
+#    repository: https://nvidia.github.io/dcgm-exporter/helm-charts
+#  - name: pgo
+#    version: "0.6.0"
+#    repository: file://../postgres-operator
+#  - name: postgres-cluster
+#    version: "0.6.0"
+#    repository: file://../postgres-cluster
+#  - name: k8s-dashboard
+#    version: "2.6.1"
+#    repository: file://../k8s-dashboard
+#  - name: ingress-nginx
+#    version: "4.2.5"
+#    repository: file://../ingress-nginx
+#  - name: cert-manager
+#    version: "v1.9.1"
+#    repository: file://../cert-manager
+
+footnotes: | 
+  See :doc:`values-override` for more details on how to configure the chart. 

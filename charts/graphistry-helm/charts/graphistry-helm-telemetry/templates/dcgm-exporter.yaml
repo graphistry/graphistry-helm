@@ -18,20 +18,14 @@ spec:
     spec:
       containers:
         - env:
-            - name: NODE_ENV
-              value: {{ .Values.nodeEnv | quote }}
           {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-            - name: GRAPHISTRY_LOG_LEVEL
-              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
-            - name: LOG_LEVEL
-              value: {{ .Values.global.logs.LogLevel | quote }}
             - name: DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE
               value: {{ .Values.telemetryEnv.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
           image: {{ .Values.telemetryEnv.dcgmExporter.image | quote }}
-          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "200m"
@@ -46,12 +40,12 @@ spec:
             capabilities:
               add:
                 - SYS_ADMIN  # Add the SYS_ADMIN capability
-      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
       imagePullSecrets:
-        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.global.multiNode false }}
+        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.parent.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

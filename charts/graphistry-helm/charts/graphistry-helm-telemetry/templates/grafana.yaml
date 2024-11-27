@@ -19,16 +19,10 @@ spec:
     spec:
       containers:
         - env:
-            - name: NODE_ENV
-              value: {{ .Values.nodeEnv | quote }}
           {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-            - name: GRAPHISTRY_LOG_LEVEL
-              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
-            - name: LOG_LEVEL
-              value: {{ .Values.global.logs.LogLevel | quote }}
             - name: GF_SECURITY_ADMIN_USER
               value: "admin"
             - name: GF_SECURITY_ADMIN_PASSWORD
@@ -44,7 +38,7 @@ spec:
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
               value: {{ .Values.telemetryEnv.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
           image: {{ .Values.telemetryEnv.grafana.image | quote }}
-          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "250m"
@@ -89,10 +83,10 @@ spec:
             - key: datasource.yml
               path: datasource.yml
       imagePullSecrets:
-        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.global.multiNode false }}
+        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.parent.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

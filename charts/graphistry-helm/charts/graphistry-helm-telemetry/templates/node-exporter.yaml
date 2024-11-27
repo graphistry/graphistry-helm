@@ -18,20 +18,14 @@ spec:
     spec:
       containers:
         - env:
-            - name: NODE_ENV
-              value: {{ .Values.nodeEnv | quote }}
           {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-            - name: GRAPHISTRY_LOG_LEVEL
-              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
-            - name: LOG_LEVEL
-              value: {{ .Values.global.logs.LogLevel | quote }}
           image: {{ .Values.telemetryEnv.nodeExporter.image | quote }}
           args: # Skip '--collector.systemd' since we're running in Docker.
             - '--collector.processes'
-          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "100m"
@@ -42,12 +36,12 @@ spec:
           name: node-exporter
           ports:
             - containerPort: 9100
-      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
       imagePullSecrets:
-        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.global.multiNode false }}
+        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.parent.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

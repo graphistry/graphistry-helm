@@ -18,16 +18,10 @@ spec:
     spec:
       containers:
         - env:
-            - name: NODE_ENV
-              value: {{ .Values.nodeEnv | quote }}
           {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-            - name: GRAPHISTRY_LOG_LEVEL
-              value: {{ .Values.global.logs.GraphistryLogLevel | quote }}
-            - name: LOG_LEVEL
-              value: {{ .Values.global.logs.LogLevel | quote }}
           image: {{ .Values.telemetryEnv.prometheus.image | quote }}
           args:
             - '--config.file=/etc/prometheus/prometheus.yml'
@@ -36,7 +30,7 @@ spec:
             - '--web.console.templates=/usr/share/prometheus/consoles'
             - '--web.external-url=/prometheus/'
             - '--web.route-prefix=/prometheus/'
-          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "500m"
@@ -54,7 +48,7 @@ spec:
               mountPath: /etc/prometheus/prometheus.yml
               subPath: prometheus.yml
               readOnly: true
-      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
       volumes:
         - name: prometheus-config-mount
           configMap:
@@ -63,10 +57,10 @@ spec:
             - key: prometheus.yml
               path: prometheus.yml
       imagePullSecrets:
-        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.global.multiNode false }}
+        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.parent.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

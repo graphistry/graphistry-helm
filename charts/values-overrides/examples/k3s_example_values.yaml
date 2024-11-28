@@ -301,6 +301,7 @@ global:  ## global settings for all charts
   logs:
     LogLevel: TRACE #log level for the application
     GraphistryLogLevel: TRACE #log level for graphistry
+  ENABLE_OPEN_TELEMETRY: true
 
 
 #telemetry environment variables
@@ -309,7 +310,6 @@ global:  ## global settings for all charts
 # Telemetry documentation:
 # https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
 telemetryEnv:
-  ENABLE_OPEN_TELEMETRY: true
   OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
   OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
   OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP

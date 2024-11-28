@@ -15,9 +15,6 @@ data:
   dcgm-exporter-dashboard.json: |
 {{ .Files.Get "files/grafana-config-files/provisioning/dashboards/dcgm-exporter-dashboard.json" | indent 4 }}
 
-  node-exporter-dashboard.json: |
-{{ .Files.Get "files/grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
-
 
 ---
 

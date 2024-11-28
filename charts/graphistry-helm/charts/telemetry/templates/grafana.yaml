@@ -24,6 +24,7 @@ spec:
             - /bin/sh
             - -c
             - |
+              base64 -d > /etc/grafana/provisioning/dashboards/node-exporter-dashboard.json.zip && \
               cd /etc/grafana/provisioning/dashboards && \
               unzip node-exporter-dashboard.json.zip && \
               rm node-exporter-dashboard.json.zip

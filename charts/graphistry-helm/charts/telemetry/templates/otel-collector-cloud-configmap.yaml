@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE true }}
 apiVersion: v1
 kind: ConfigMap

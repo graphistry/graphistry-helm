@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
@@ -10,20 +10,20 @@ metadata:
     nginx.ingress.kubernetes.io/session-cookie-name: "sessionid"
     nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
     nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
-    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.parent.ProxyBodySize }}
-{{- if eq .Values.parent.tls true  }}
+    nginx.ingress.kubernetes.io/proxy-body-size: {{ .Values.ProxyBodySize }}
+{{- if eq .Values.tls true  }}
   tls:
   - hosts:
-    - {{.Values.parent.domain}}
+    - {{.Values.domain}}
     secretName: letsencrypt-tls-{{ .Release.Namespace }}
-{{- else if eq .Values.parent.tlsStaging true }}
+{{- else if eq .Values.tlsStaging true }}
   tls:
   - hosts:
-    - {{.Values.parent.domain}}
+    - {{.Values.domain}}
     secretName: letsencrypt-staging-{{ .Release.Namespace }}
 {{- end }}
-{{- if .Values.parent.ingress.management.annotations }}
-{{ toYaml .Values.parent.ingress.management.annotations | indent 4 }}
+{{- if .Values.ingress.management.annotations }}
+{{ toYaml .Values.ingress.management.annotations | indent 4 }}
 {{- end }}
 
 spec:

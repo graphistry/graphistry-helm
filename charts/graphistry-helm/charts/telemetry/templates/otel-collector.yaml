@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -18,26 +18,26 @@ spec:
       {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
       initContainers:
       - name: "{{ lower .Chart.Name }}-init-prometheus"
-        {{- if eq .Values.parent.global.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
-        image: {{.Values.parent.global.containerregistry.name}}/k8s-wait-for:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-            {{- toYaml .Values.parent.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.parent.global.imagePullPolicy }} 
-        args: 
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args:
         - "service"
         - "prometheus"
       - name: "{{ lower .Chart.Name }}-init-jaeger"
-        {{- if eq .Values.parent.global.containerregistry.name "docker.io/graphistry" }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
-        image: {{.Values.parent.global.containerregistry.name}}/k8s-wait-for:latest
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
         {{- end }}
         resources:
-            {{- toYaml .Values.parent.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.parent.global.imagePullPolicy }} 
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
         args: 
         - "service"
         - "jaeger"
@@ -63,7 +63,7 @@ spec:
           image: otel/opentelemetry-collector-contrib:0.87.0
           args:
             - "--config=/etc/otelcol/otel-collector-config.yml"
-          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           # TODO It seems the healthcheck service has some issues:
           # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/30798
           # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.105.0/extension/healthcheckextension#health-check
@@ -90,7 +90,7 @@ spec:
             - name: otel-collector-config-mount
               mountPath: /etc/otelcol
               readOnly: true
-      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
       serviceAccountName: job-robot
       volumes:
         - name: otel-collector-config-mount
@@ -102,10 +102,10 @@ spec:
             name: otel-collector-configmap-cloud
           {{- end }}
       imagePullSecrets:
-        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.parent.global.multiNode false }}
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

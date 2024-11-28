@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -30,7 +30,7 @@ spec:
             - '--web.console.templates=/usr/share/prometheus/consoles'
             - '--web.external-url=/prometheus/'
             - '--web.route-prefix=/prometheus/'
-          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "500m"
@@ -48,7 +48,7 @@ spec:
               mountPath: /etc/prometheus/prometheus.yml
               subPath: prometheus.yml
               readOnly: true
-      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
       volumes:
         - name: prometheus-config-mount
           configMap:
@@ -57,10 +57,10 @@ spec:
             - key: prometheus.yml
               path: prometheus.yml
       imagePullSecrets:
-        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.parent.global.multiNode false }}
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

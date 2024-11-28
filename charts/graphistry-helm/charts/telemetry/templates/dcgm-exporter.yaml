@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -25,7 +25,7 @@ spec:
             - name: DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE
               value: {{ .Values.telemetryEnv.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
           image: {{ .Values.telemetryEnv.dcgmExporter.image | quote }}
-          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "200m"
@@ -40,13 +40,9 @@ spec:
             capabilities:
               add:
                 - SYS_ADMIN  # Add the SYS_ADMIN capability
-      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
       imagePullSecrets:
-        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.global.parent.multiNode false }}
-      nodeSelector:
-        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
-{{- end }}
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
 ---
 #service
 apiVersion: v1

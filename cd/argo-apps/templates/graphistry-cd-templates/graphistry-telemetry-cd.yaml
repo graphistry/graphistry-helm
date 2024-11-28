@@ -13,7 +13,7 @@ spec:
     namespace: graphistry
   project: default
   source:
-    path: charts/graphistry-helm/charts/graphistry-helm-telemetry
+    path: charts/graphistry-helm/charts/telemetry
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: dev/opentelemetry #BRANCH OR HEAD WHEN IN MAIN
     helm:

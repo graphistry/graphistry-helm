@@ -62,13 +62,9 @@ spec:
           - name: LOG_LEVEL
             value: {{ .Values.global.logs.LogLevel | quote }}
           - name: ENABLE_OPEN_TELEMETRY
-            value: {{ .Values.graphistry-helm-telemetry.telemetryEnv.ENABLE_OPEN_TELEMETRY | quote }}
+            value: {{ .Values.global.ENABLE_OPEN_TELEMETRY | quote }}
           - name: OTEL_SERVICE_NAME
             value: "streamgl-gpu"
-    {{- range .Values.graphistry-helm-telemetry.env }}
-          - name: {{ .name }}
-            value: {{ .value | quote }}
-    {{- end }}
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglgpu.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
           imagePullPolicy: {{.Values.global.imagePullPolicy }}        
           livenessProbe:

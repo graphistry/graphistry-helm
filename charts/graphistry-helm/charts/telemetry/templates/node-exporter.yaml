@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -25,7 +25,7 @@ spec:
           image: {{ .Values.telemetryEnv.nodeExporter.image | quote }}
           args: # Skip '--collector.systemd' since we're running in Docker.
             - '--collector.processes'
-          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "100m"
@@ -36,12 +36,12 @@ spec:
           name: node-exporter
           ports:
             - containerPort: 9100
-      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
       imagePullSecrets:
-        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.parent.global.multiNode false }}
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

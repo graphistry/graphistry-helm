@@ -6,7 +6,7 @@ metadata:
     io.kompose.service: caddyfile-configmap
   name: caddy-config
 data:
-{{ if eq .Values.graphistry-helm-telemetry.telemetryEnv.ENABLE_OPEN_TELEMETRY false }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY false }}
   Caddyfile: |
     :80 {
           respond /caddy/health/ 200 {

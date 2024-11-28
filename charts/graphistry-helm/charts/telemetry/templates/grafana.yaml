@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -38,7 +38,7 @@ spec:
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
               value: {{ .Values.telemetryEnv.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
           image: {{ .Values.telemetryEnv.grafana.image | quote }}
-          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:
               cpu: "250m"
@@ -50,43 +50,35 @@ spec:
           ports:
             - containerPort: 3000
           volumeMounts:
-            - mountPath: /etc/grafana/provisioning/dashboards
-              name: grafana-dashboards-mount
+            - name: grafana-datasources-mount
+              mountPath: /etc/grafana/provisioning/datasources
               readOnly: true
-            - mountPath: /etc/grafana/provisioning/datasources
-              name: grafana-datasources-mount
+            - name: grafana-dashboards-mount
+              mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
       volumes:
         - name: grafana-dashboards-mount
           configMap:
-            name: grafana-dashboard-configmap
+            name: grafana-configmap
             items:
             - key: dashboard.yml
               path: dashboard.yml
-        - name: grafana-dashboards-mount
-          configMap:
-            name: grafana-dcgm-dashboard-configmap
-            items:
             - key: dcgm-exporter-dashboard.json
               path: dcgm-exporter-dashboard.json
-        - name: grafana-dashboards-mount
-          configMap:
-            name: grafana-node-exporter-dashboard-configmap
-            items:
             - key: node-exporter-dashboard.json
               path: node-exporter-dashboard.json
         - name: grafana-datasources-mount
           configMap:
-            name: grafana-datasource-configmap
+            name: grafana-configmap
             items:
             - key: datasource.yml
               path: datasource.yml
       imagePullSecrets:
-        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
-{{- if eq .Values.parent.global.multiNode false }}
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

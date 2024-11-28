@@ -1,4 +1,4 @@
-{{ if eq .Values.telemetryEnv.ENABLE_OPEN_TELEMETRY true }}
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
 apiVersion: apps/v1
 kind: DaemonSet
@@ -27,7 +27,7 @@ spec:
           image: {{ .Values.telemetryEnv.jaeger.image | quote }}
           args: 
             - "--query.ui-config=/tmp/jaeger-ui.json"
-          imagePullPolicy: {{ .Values.parent.global.imagePullPolicy | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           name: jaeger
           ports:
             - containerPort: 4317
@@ -44,7 +44,7 @@ spec:
              mountPath: /tmp/jaeger-ui.json
              subPath: jaeger-ui.json
              readOnly: true
-      restartPolicy: {{ .Values.parent.global.restartPolicy | quote }}
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
       volumes:
        - name: jaeger-ui-config-mount
          configMap:
@@ -53,10 +53,10 @@ spec:
            - key: jaeger-ui.json
              path: jaeger-ui.json
       imagePullSecrets:
-        {{- toYaml .Values.parent.global.imagePullSecrets | nindent 8 }}
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
 {{- if eq .Values.global.multiNode false }}
       nodeSelector:
-        {{- toYaml .Values.parent.global.nodeSelector | nindent 8 }}
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
 {{- end }}
 ---
 #service

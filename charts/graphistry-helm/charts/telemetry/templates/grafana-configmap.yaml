@@ -24,8 +24,8 @@ kind: ConfigMap
 metadata:
   name: grafana-node-exporter-dashboard-configmap
 data:
-  node-exporter-dashboard.json.zip: |
-{{ .Files.Get "files/grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json.zip" | b64enc | indent 4 }}
+  node-exporter-dashboard.json: |
+{{ .Files.Get "files/grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
 
 
 {{- end }}

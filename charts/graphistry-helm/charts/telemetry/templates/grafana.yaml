@@ -17,29 +17,6 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: grafana
     spec:
-      initContainers:
-      - name: "{{ lower .Chart.Name }}-init-grafana"
-        image: busybox
-          command:
-            - /bin/sh
-            - -c
-            - |
-              base64 -d > /etc/grafana/provisioning/dashboards/node-exporter-dashboard.json.zip && \
-              cd /etc/grafana/provisioning/dashboards && \
-              unzip node-exporter-dashboard.json.zip && \
-              rm node-exporter-dashboard.json.zip
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        volumeMounts:
-          - name: grafana-dashboards-mount
-            mountPath: /etc/grafana/provisioning/dashboards/
-            readOnly: true
-        volumes:
-          - name: grafana-dashboards-mount
-            configMap:
-              name: grafana-node-exporter-dashboard-configmap
-              items:
-              - key: node-exporter-dashboard.json.zip
-                path: node-exporter-dashboard.json.zip
       containers:
         - env:
           {{- range .Values.env }}
@@ -89,6 +66,12 @@ spec:
               path: dashboard.yml
             - key: dcgm-exporter-dashboard.json
               path: dcgm-exporter-dashboard.json
+        - name: grafana-dashboards-mount
+          configMap:
+            name: grafana-node-exporter-dashboard-configmap
+            items:
+            - key: node-exporter-dashboard.json
+              path: node-exporter-dashboard.json
         - name: grafana-datasources-mount
           configMap:
             name: grafana-configmap

@@ -66,6 +66,10 @@ spec:
               path: dashboard.yml
             - key: dcgm-exporter-dashboard.json
               path: dcgm-exporter-dashboard.json
+        - name: grafana-dashboards-mount
+          configMap:
+            name: grafana-node-exporter-dashboard-configmap
+            items:
             - key: node-exporter-dashboard.json
               path: node-exporter-dashboard.json
         - name: grafana-datasources-mount

@@ -18,5 +18,18 @@ data:
   node-exporter-dashboard.json: |
 {{ .Files.Get "files/grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
 
+
+---
+
+
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: grafana-node-exporter-dashboard-configmap
+data:
+  node-exporter-dashboard.json: |
+{{ .Files.Get "files/grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json" | indent 4 }}
+
+
 {{- end }}
 {{- end }}

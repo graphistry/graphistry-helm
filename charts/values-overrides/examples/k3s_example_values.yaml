@@ -297,7 +297,7 @@ global:  ## global settings for all charts
   imagePullPolicy: Always   #image pull policy could also be Always
   restartPolicy: Always #restart policy
   imagePullSecrets:   #image pull secrets name
-    - name: dockerhub-secret
+    - name: docker-secret-prod
   logs:
     LogLevel: TRACE #log level for the application
     GraphistryLogLevel: TRACE #log level for graphistry

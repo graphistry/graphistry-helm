@@ -54,13 +54,13 @@ spec:
               value: "jaeger:4317"
           {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE true }}
             - name: OTEL_COLLECTOR_OTLP_USERNAME
-              value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_USERNAME | quote }}
+              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_USERNAME | quote }}
             - name: OTEL_COLLECTOR_OTLP_PASSWORD
-              value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_PASSWORD | quote }}
+              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_PASSWORD | quote }}
             - name: OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT
-              value: {{ .Values.telemetryEnv.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
+              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
           {{- end }}
-          image: otel/opentelemetry-collector-contrib:0.87.0
+          image: {{ .Values.telemetryEnv.openTelemetryCollector.image | quote }}
           args:
             - "--config=/etc/otelcol/otel-collector-config.yml"
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}

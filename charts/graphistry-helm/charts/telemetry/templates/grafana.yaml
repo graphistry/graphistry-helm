@@ -56,9 +56,9 @@ spec:
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
             - name: GF_SERVER_ROOT_URL
-              value: {{ .Values.telemetryEnv.GF_SERVER_ROOT_URL | quote }}
+              value: {{ .Values.telemetryEnv.grafana.GF_SERVER_ROOT_URL | quote }}
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
-              value: {{ .Values.telemetryEnv.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
+              value: {{ .Values.telemetryEnv.grafana.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
           image: {{ .Values.telemetryEnv.grafana.image | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:

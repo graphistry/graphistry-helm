@@ -303,30 +303,29 @@ global:  ## global settings for all charts
     GraphistryLogLevel: TRACE #log level for graphistry
   ENABLE_OPEN_TELEMETRY: true
 
-
-#telemetry environment variables
+# Graphistry Telemetry values and environment variables for observability tools
 # can be set like helm upgrade -i chart_name --name release_name \
 #--set stENVPublic.LOG_LEVEL="FOO"
 # Telemetry documentation:
 # https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
 telemetryEnv:
   OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
-  OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
-  OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
-  OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
-  DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000
-  GF_SERVER_ROOT_URL: "/grafana"
-  GF_SERVER_SERVE_FROM_SUB_PATH: "true"
-  dcgmExporter:
-    image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
+  opentelemetryCollector:
+    image: "otel/opentelemetry-collector-contrib:0.87.0"
+    OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+    OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
+    OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
   grafana:
     image: "grafana/grafana:11.0.0"
+    GF_SERVER_ROOT_URL: "/grafana"
+    GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+  dcgmExporter:
+    image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
+    DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
   jaeger:
     image: "jaegertracing/all-in-one:1.50.0"
   nodeExporter:
     image: "prom/node-exporter:v1.8.2"
-  opentelemetryCollector:
-    image: "otel/opentelemetry-collector-contrib:0.87.0"
   prometheus:
     image: "prom/prometheus:v2.47.2"
 

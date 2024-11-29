@@ -23,7 +23,7 @@ spec:
               value: {{ .value | quote }}
           {{- end }}
             - name: DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE
-              value: {{ .Values.telemetryEnv.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
+              value: {{ .Values.telemetryEnv.dcgmExporter.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
           image: {{ .Values.telemetryEnv.dcgmExporter.image | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:

@@ -15,7 +15,7 @@ spec:
   source:
     path: cd/repo
     repoURL: https://github.com/graphistry/graphistry-helm.git
-    targetRevision: dev/opentelemetry #BRANCH OR HEAD WHEN IN MAIN
+    targetRevision: HEAD #BRANCH OR HEAD WHEN IN MAIN
 #    helm:
 #      valueFiles:
 #        - values.yaml # resolved against source.repoURL and source.path

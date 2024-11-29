@@ -1,6 +1,5 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
-
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -15,5 +14,7 @@ data:
   dcgm-exporter-dashboard.json: |
 {{ .Files.Get "files/grafana-config-files/provisioning/dashboards/dcgm-exporter-dashboard.json" | indent 4 }}
 
+  node-exporter-dashboard.json.zip: |
+{{ .Files.Get "files/grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json.zip" | b64enc | indent 4 }}
 {{- end }}
 {{- end }}

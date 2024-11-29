@@ -18,18 +18,27 @@ spec:
         io.kompose.service: grafana
     spec:
       initContainers:
-        - name: copy-grafana-node-exporter-dashboard-file
+          # NOTE: We need this container to copy big json files into the Grafana pod (e.g. big dashboards, etc.)
+        - name: "{{ lower .Chart.Name }}-init-grafana"
           image: busybox
           command:
             - /bin/sh
             - -c
             - |
-              mkdir -p /etc/grafana/provisioning/dashboards
-              echo "{{ .Files.Get 'files/grafana-config-files/provisioning/dashboards/node-exporter-dashboard.json' }}" > /etc/grafana/provisioning/dashboards/node-exporter-dashboard.json
+                cd /etc/grafana/provisioning/dashboards && \
+                mkdir -p /mnt/grafana/provisioning/dashboards && \
+                cp ..data/node-exporter-dashboard.json.zip /mnt/grafana/provisioning/dashboards/node-exporter-dashboard.json.zip.b64 && \
+                cd /mnt/grafana/provisioning/dashboards && \
+                base64 -d node-exporter-dashboard.json.zip.b64 > node-exporter-dashboard.json.zip && \
+                unzip node-exporter-dashboard.json.zip
+          imagePullPolicy: {{.Values.global.imagePullPolicy }} 
           volumeMounts:
             - name: grafana-dashboards-mount
               mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
+            - name: grafana-big-dashboards-mount
+              mountPath: /mnt/grafana/provisioning/dashboards
+              readOnly: false
       containers:
         - env:
           {{- range .Values.env }}
@@ -69,6 +78,9 @@ spec:
             - name: grafana-dashboards-mount
               mountPath: /etc/grafana/provisioning/dashboards
               readOnly: true
+            - name: grafana-big-dashboards-mount
+              mountPath: /mnt/grafana/provisioning/dashboards
+              readOnly: true
       restartPolicy: {{ .Values.global.restartPolicy | quote }}
       volumes:
         - name: grafana-dashboards-mount
@@ -79,12 +91,16 @@ spec:
               path: dashboard.yml
             - key: dcgm-exporter-dashboard.json
               path: dcgm-exporter-dashboard.json
+            - key: node-exporter-dashboard.json.zip
+              path: node-exporter-dashboard.json.zip
         - name: grafana-datasources-mount
           configMap:
             name: grafana-configmap
             items:
             - key: datasource.yml
               path: datasource.yml
+        - name: grafana-big-dashboards-mount
+          emptyDir: {} 
       imagePullSecrets:
         {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
 {{- if eq .Values.global.multiNode false }}

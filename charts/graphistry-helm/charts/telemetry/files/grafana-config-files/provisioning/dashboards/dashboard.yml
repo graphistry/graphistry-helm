@@ -17,4 +17,4 @@ providers:
     disableDeletion: false
     updateIntervalSeconds: 1
     options:
-      path: /etc/grafana/provisioning/dashboards
+      path: /mnt/grafana/provisioning/dashboards

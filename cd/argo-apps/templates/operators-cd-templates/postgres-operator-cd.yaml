@@ -13,7 +13,7 @@ spec:
     namespace: postgres-operator
   project: default
   source:
-    path: charts-aux-bundled/postgres-operator
+    path: helm/install
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: HEAD #terraform #BRANCH OR HEAD WHEN IN MAIN
     helm:

@@ -10,6 +10,9 @@ https://cloud.google.com/sdk/docs/install
 Verify the installation using:
 ```bash
 cloud --version
+```
+The output should be similar to:
+```bash
 # Google Cloud SDK 477.0.0
 # beta 2024.05.17
 # bq 2.1.4
@@ -33,6 +36,10 @@ https://cloud.google.com/kubernetes-engine/docs/how-to/cluster-access-for-kubect
 Verify the installation using:
 ```bash
 kubectl version
+```
+
+The output should be similar to:
+```bash
 # WARNING: This version information is deprecated and will be replaced with the output from kubectl version --short.  Use --output=yaml|json to get the full version.
 # Client Version: version.Info{Major:"1", Minor:"27+", GitVersion:"v1.27.14-dispatcher", GitCommit:"643004a51a14c7a149377e6651fb926f17c06c5a", GitTreeState:"clean", BuildDate:"2024-05-15T21:18:29Z", GoVersion:"go1.21.9", Compiler:"gc", Platform:"linux/amd64"}
 # Kustomize Version: v5.0.1
@@ -45,13 +52,25 @@ https://github.com/helm/helm/releases
 Download the `linux-amd64` version and add the binaries to the prefix path:
 ```bash
 wget https://get.helm.sh/helm-v3.15.1-linux-amd64.tar.gz
+```
+
+Unzip the file:
+```bash
 tar xvf helm-v3.15.1-linux-amd64.tar.gz
+```
+
+Add the binary to the executable path:
+```bash
 export PATH=$PATH:$PWD/linux-amd64/
 ```
 
 Verify the installation using:
 ```bash
 helm version
+```
+
+The output should be similar to:
+```bash
 # version.BuildInfo{Version:"v3.15.1", GitCommit:"e211f2aa62992bd72586b395de50979e31231829", GitTreeState:"clean", GoVersion:"go1.22.3"}
 ```
 
@@ -89,18 +108,31 @@ USE_GKE_GCLOUD_AUTH_PLUGIN=True \
 Verify the credentials and the cluster labels:
 ```bash
 kubectl get nodes --show-labels
+```
+
+Also, let's print the current configuration:
+```bash
 cat ~/.kube/config
 ```
 
 ## Test the K8S cluster
 ```bash
 kubectl get nodes -o wide
+```
+
+Check the resources:
+```bash
 kubectl get all
 ```
 
 ## Setup the NVIDIA GPU Operator
+Create the namespace:
 ```bash
 kubectl create ns gpu-operator
+```
+
+Create the resource quota:
+```bash
 kubectl apply -n gpu-operator -f - <<EOF
 apiVersion: v1
 kind: ResourceQuota
@@ -117,33 +149,50 @@ spec:
         - system-node-critical
         - system-cluster-critical
 EOF
+
+Verify using:
+```bash
 kubectl get -n gpu-operator resourcequota
 ```
 
 ## Install the NVIDIA GPU Operator
+Remove the old `nvidia` repository from Helm:
 ```bash
 helm repo remove nvidia
+```
+
+Add the current `nvidia` repository to Helm:
+```bash
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
     && helm repo update
 ```
 
-Test if `nfd.enabled` is `false`, if is true then add `--set nfd.enabled=false` to the `helm install` command:
+Get the value of `nfd.enabled` using this command:
 ```bash
 kubectl get nodes -o json | jq '.items[].metadata.labels | keys | any(startswith("feature.node.kubernetes.io"))'
+```
+
+If `nfd.enabled` is true then add `--set nfd.enabled=false` to the `helm install` command:
+```bash
 helm install --wait --generate-name \
     -n gpu-operator --create-namespace nvidia/gpu-operator \
     --timeout 60m \
     --set driver.version="550.90.07"
 ```
+
 Note: The recomended driver version can be found in the official [NVIDIA GPU Operator Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix).
 
 Check the cluster labels again, it should have GPU accelerator support for the K8s node selector:
 ```bash
 kubectl get nodes --show-labels | grep "nvidia.com/gpu.present"
+```
+
+The output should be similar to:
+```bash
 # should contain something like: ...,nvidia.com/gpu.present=true,...
 ```
 
-Wait until all pods are running or completed:
+Wait until all pods are running or completed using th next command:
 ```bash
 kubectl get pods -n gpu-operator --watch
 ```
@@ -151,35 +200,63 @@ kubectl get pods -n gpu-operator --watch
 Test we have applied corrrectly the operator using:
 ```bash
 kubectl get nodes -ojson | jq .items[].status.capacity | grep nvidia.com/gpu
+```
+
+The output should be similar to:
+```bash
 # output example: "nvidia.com/gpu": "1",
 ```
 
 **Note**: We don't need to install the NVIDIA Device Plugin given that we are using the NVIDIA GPU Operator.
 
 ## Inspect the NVIDIA GPU Operator (optional)
+Print all resources of the `gpu-operator` namespace:
 ```bash
 kubectl get all -n gpu-operator
+```
+
+Get all NVIDIA resources:
+```bash
 kubectl get po -n gpu-operator -A | grep nvidia
+```
+
+Describe the operator:
+```bash
 kubectl describe deployment gpu-operator -n gpu-operator
+```
+
+Describe the replica set:
+```bash
 kubectl describe rs gpu-operator -n gpu-operator
 ```
 
 ## Create the graphistry namespace and set it as default
 ```bash
 kubectl create namespace graphistry
+```
+
+Print all namespaces:
+```bash
 kubectl get ns
+```
+
+Set the `graphistry` namespace as default:
+```bash
 kubectl config set-context --current --namespace=graphistry
-kubectl get all
 ```
 
 ## Create the Docker Hub secret
 Here you can use your Docker Hub user and password, your account must have access to the official Graphistry docker images.
 ```bash
-kubectl create secret docker-registry dockerhub-secret \
+kubectl create secret docker-registry docker-secret-prod \
     --namespace graphistry \
     --docker-server=docker.io \
     --docker-username=user123 \
     --docker-password=thepassword
+```
+
+Verify using:
+```bash
 kubectl get secret
 ```
 
@@ -202,8 +279,11 @@ EOF
 ## Get Graphistry Helm charts
 ```bash
 git clone https://github.com/graphistry/graphistry-helm
-cd graphistry-helm
-bash chart-bundler/bundler.sh
+```
+
+Run the bundler:
+```bash
+cd graphistry-helm && bash chart-bundler/bundler.sh
 ```
 
 ## Install NGINX Ingress Controller
@@ -239,13 +319,34 @@ helm upgrade -i postgres-operator ./charts-aux-bundled/postgres-operator --names
 ## Install Postgres Cluster
 ```bash
 helm show values ./charts/postgres-cluster
+```
+
+Install the cluster chart using this command:
+```bash
 helm upgrade -i postgres-cluster ./charts/postgres-cluster --set global.provisioner="pd.csi.storage.gke.io" --namespace graphistry --create-namespace
+```
+
+Wait until the pods are online (`postgres-repo-host-*` should be running):
+```bash
 kubectl get pods --watch
 ```
+
+The output should be similar to:
+```bash
+NAME                        READY   STATUS    RESTARTS   AGE
+postgres-instance1-5lkd-0   0/4     Pending   0          4m43s
+postgres-repo-host-0        2/2     Running   0          4m43s
+```
+
+The `postgres-instance` will run later (once we start the `graphistry-resources` chart).
 
 ## Install Dask Operator and CRDs
 ```bash
 cd charts-aux-bundled/dask-kubernetes-operator/ && helm dep build && cd ../..
+```
+
+Install the Dask operator chart using this command:
+```bash
 helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator --namespace dask-operator --create-namespace
 ```
 
@@ -257,7 +358,14 @@ kubectl get pods --watch --namespace dask-operator
 ## Install Graphistry Resources
 ```bash
 helm show values ./charts/graphistry-helm-resources
+```
+
+Install the `graphistry-resources` chart using this command:
+```bash
 helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources --set global.provisioner="pd.csi.storage.gke.io" --namespace graphistry --create-namespace
+
+Wait until the resources are online (i.e. `postgres-instance1-*` should be running after some seconds):
+```bash
 kubectl get pods --watch
 ```
 
@@ -268,13 +376,21 @@ cuda:
   version: "11.8" #cuda version
 
 global:  ## global settings for all charts
-  tag: v2.41.0
+  tag: v2.41.10
 ```
 
-Install Graphistry using the next commands:
+Print more values:
 ```bash
 helm show values ./charts/graphistry-helm
-kubectl get secret | grep dockerhub-secret
+```
+
+Check we have all the secrets:
+```bash
+kubectl get secret | grep docker-secret-prod
+```
+
+Install Graphistry using the next command:
+```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
     --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
     -f ./charts/values-overrides/examples/gke/gke_values.yaml \
@@ -294,7 +410,7 @@ kubectl get ingress -n graphistry
 Once you open Graphistry in the browser, create an account for the admin user with the email and password.
 
 ## Update Graphistry deployment
-In case we want to change some values in `../gke_values.yaml` we need to reuse the volume names:
+In case we want to change some values in `../gke_values.yaml` reusing the volume names:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
     --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
@@ -304,21 +420,76 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
     --set volumeName.gakPrivate=$(kubectl get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
     -f ./charts/values-overrides/examples/gke/gke_values.yaml \
     --namespace graphistry --create-namespace
+```
+
+Check the resources using this command:
+```bash
 kubectl get pods --watch
 ```
 
 ## Delete k8s cluster
+Delete the Graphistry chart:
 ```bash
 helm uninstall g-chart
+```
+
+Delete the `graphistry-resources` chart:
+```bash
 helm uninstall graphistry-resources
+```
 
+Delete the `postgres-cluster` chart:
+```bash
 helm uninstall postgres-cluster
-helm uninstall postgres-operator --namespace postgres-operator
-helm uninstall dask-operator --namespace dask-operator
+```
 
+Delete the `postgres-operator` chart:
+```bash
+helm uninstall postgres-operator --namespace postgres-operator
+```
+
+Delete the `dask-operator` chart:
+```bash
+helm uninstall dask-operator --namespace dask-operator
+```
+
+Delete the docker registry secrets:
+```bash
+kubectl delete secret docker-secret-prod --namespace graphistry
+```
+
+Print all namespaces:
+```bash
 kubectl get ns
+```
+
+Verify that no pods are running for the `graphistry` namespace using this command:
+```bash
+k3s kubectl get pods --watch --namespace graphistry
+```
+
+Restore the default namespace:
+```bash
 kubectl config set-context --current --namespace=default
+```
+
+Delete the `dask-operator` namespace:
+```bash
+k3s kubectl delete ns dask-operator
+```
+
+Delete the `postgres-operator` namespace:
+```bash
+k3s kubectl delete ns postgres-operator
+```
+
+Delete the `graphistry` namespace:
+```bash
 kubectl delete namespace graphistry
+```
+
+Delete the K8s cluster:
+```bash
 gcloud container clusters delete demo-cluster --zone us-central1-a
 ```
 

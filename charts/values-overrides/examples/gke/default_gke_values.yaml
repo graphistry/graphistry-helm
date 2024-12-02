@@ -1,7 +1,7 @@
 global:
   imagePullPolicy: Always
   imagePullSecrets: 
-    - name: dockerhub-secret
+    - name: docker-secret-prod
   provisioner: pd.csi.storage.gke.io #storage class provisioner.
   nodeSelector:
     nvidia.com/gpu.present: "true"

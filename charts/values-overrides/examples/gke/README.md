@@ -9,7 +9,7 @@ https://cloud.google.com/sdk/docs/install
 
 Verify the installation using:
 ```bash
-cloud --version
+gcloud --version
 ```
 The output should be similar to:
 ```bash
@@ -149,6 +149,7 @@ spec:
         - system-node-critical
         - system-cluster-critical
 EOF
+```
 
 Verify using:
 ```bash
@@ -363,6 +364,7 @@ helm show values ./charts/graphistry-helm-resources
 Install the `graphistry-resources` chart using this command:
 ```bash
 helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources --set global.provisioner="pd.csi.storage.gke.io" --namespace graphistry --create-namespace
+```
 
 Wait until the resources are online (i.e. `postgres-instance1-*` should be running after some seconds):
 ```bash

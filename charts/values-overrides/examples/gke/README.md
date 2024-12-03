@@ -125,7 +125,60 @@ Check the resources:
 kubectl get all
 ```
 
-## Setup the NVIDIA GPU Operator
+## Setup NVIDIA support for the Kubernetes cluster
+
+You can enable GPU support using either the NVIDIA GPU Operator or the NVIDIA Device Plugin.  The GPU Operator has some known issues (e.g. https://github.com/NVIDIA/gpu-operator/issues/901), so we recommend using the NVIDIA Device Plugin for a more stable setup.
+
+### Setup the NVIDIA device plugin for Kubernetes
+This is the recommended way to enable NVIDIA GPU support in Kubernetes due to known issues with the NVIDIA GPU Operator.  The Device Plugin provides a stable and reliable solution for leveraging GPUs in your K8s workloads.  Follow the steps below to set up the NVIDIA Device Plugin:
+
+```bash
+helm repo add nvdp https://nvidia.github.io/k8s-device-plugin \
+    && helm repo update
+```
+
+Get the latest version for the device plugin using:
+```bash
+helm search repo nvdp --devel
+```
+
+The output should be similar to:
+```bash
+NAME                     	  CHART VERSION  APP VERSION	DESCRIPTION
+nvdp/nvidia-device-plugin	  0.17.0	 0.17.0		A Helm chart for ...
+```
+
+Install the device plugin:
+```bash
+helm upgrade -i nvdp nvdp/nvidia-device-plugin \
+  --namespace nvidia-device-plugin \
+  --create-namespace \
+  --version 0.17.0
+```
+
+Print the resources for the `nvidia-device-plugin` namespace:
+```bash
+kubectl get all -n nvidia-device-plugin
+```
+
+Test we have applied corrrectly the device plugin using:
+```bash
+kubectl get nodes -ojson | jq .items[].status.capacity | grep nvidia.com/gpu
+```
+
+The output should be similar to:
+```bash
+# output example: "nvidia.com/gpu": "1",
+```
+
+See more details in the official documentation:
+https://github.com/NVIDIA/k8s-device-plugin?tab=readme-ov-file#deployment-via-helm
+
+### ~~Setup the NVIDIA GPU Operator~~
+This is not the recommended way to set up GPU support at the moment due to known issues with the operator.  Although the GPU Operator provides a comprehensive solution for managing NVIDIA GPUs in Kubernetes, it may encounter problems in certain environments.  We recommend using the [NVIDIA Device Plugin](#setup-the-nvidia-device-plugin-for-kubernetes) for a more stable setup.
+
+However, if you choose to proceed with the GPU Operator, follow the installation instructions below to get started:
+
 Create the namespace:
 ```bash
 kubectl create ns gpu-operator
@@ -156,7 +209,6 @@ Verify using:
 kubectl get -n gpu-operator resourcequota
 ```
 
-## Install the NVIDIA GPU Operator
 Remove the old `nvidia` repository from Helm:
 ```bash
 helm repo remove nvidia
@@ -173,15 +225,21 @@ Get the value of `nfd.enabled` using this command:
 kubectl get nodes -o json | jq '.items[].metadata.labels | keys | any(startswith("feature.node.kubernetes.io"))'
 ```
 
-If `nfd.enabled` is true then add `--set nfd.enabled=false` to the `helm install` command:
+If `nfd.enabled` is `true` then add `--set nfd.enabled=false` to the `helm install` command:
 ```bash
-helm install --wait --generate-name \
-    -n gpu-operator --create-namespace nvidia/gpu-operator \
-    --timeout 60m \
-    --set driver.version="550.90.07"
+helm install gpu-operator nvidia/gpu-operator --wait \
+    -n gpu-operator --create-namespace \
+    --set driver.version="550.90.07" \
+    --set operator.defaultRuntime="containerd" \
+    --set driver.nvidiaDriverCRD.enabled=true \
+    --set driver.nvidiaDriverCRD.deployDefaultCR=false \
+    --set driver.upgradePolicy.autoUpgrade=false \
+    --timeout 60m
 ```
 
-Note: The recomended driver version can be found in the official [NVIDIA GPU Operator Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix).
+Notes:
+1. Using the version `v24.3.0` helps avoid certain issues with the GPU Operator, as discussed in https://github.com/NVIDIA/gpu-operator/issues/901 (see `--set driver.upgradePolicy.autoUpgrade=false`).
+2. The recomended driver version (e.g. `--set driver.version="550.127.08"`) can be found in the official [NVIDIA GPU Operator Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix).
 
 Check the cluster labels again, it should have GPU accelerator support for the K8s node selector:
 ```bash
@@ -366,7 +424,7 @@ Install the `graphistry-resources` chart using this command:
 helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources --set global.provisioner="pd.csi.storage.gke.io" --namespace graphistry --create-namespace
 ```
 
-Wait until the resources are online (i.e. `postgres-instance1-*` should be running after some seconds):
+Wait until the resources are online (`postgres-instance1-*` and `postgres-backup-*` should be running after some seconds):
 ```bash
 kubectl get pods --watch
 ```
@@ -490,7 +548,7 @@ Delete the `graphistry` namespace:
 kubectl delete namespace graphistry
 ```
 
-Delete the K8s cluster:
+Also, it's possible to delete the K8s cluster:
 ```bash
 gcloud container clusters delete demo-cluster --zone us-central1-a
 ```

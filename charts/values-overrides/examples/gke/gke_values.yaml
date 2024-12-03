@@ -217,7 +217,7 @@ global:  ## global settings for all charts
   logs: #change log levels
       LogLevel: DEBUG #log level for the application
       GraphistryLogLevel: DEBUG #log level for graphistry
-  ENABLE_OPEN_TELEMETRY: false
+  ENABLE_OPEN_TELEMETRY: true
 
 # Graphistry Telemetry values and environment variables for observability tools
 # can be set like helm upgrade -i chart_name --name release_name \

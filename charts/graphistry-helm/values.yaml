@@ -422,6 +422,8 @@ ProxyBodySize: 20000m #sets the proxy body size for ingress controller and uploa
 graphistryKey: ## graphistry key for dev mode in pivot deployment
 
 global:  ## global settings for all charts
+  # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: nginx
+  ingressClassName: nginx
   #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   provisioner: kubernetes.io/aws-ebs   #storage class provisioner.
 # multinode selector switch to determine if going multi/single node

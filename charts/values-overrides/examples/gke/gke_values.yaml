@@ -351,8 +351,6 @@ env: #environment variables
    value: "true"
  - name: OTEL_EXPORTER_OTLP_ENDPOINT
    value: "http://otel-collector:4317"
- - name: ENABLE_OPEN_TELEMETRY
-   value: "false"
 
 ##streamlit environment variables
  ## can be set like helm upgrade -i  chart_name --name release_name \

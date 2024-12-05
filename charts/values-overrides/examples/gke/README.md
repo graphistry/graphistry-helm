@@ -81,7 +81,7 @@ gcloud beta container clusters create demo-cluster \
       --zone us-central1-a \
       --release-channel "regular" \
       --machine-type "n1-highmem-4" \
-      --accelerator "type=nvidia-tesla-t4,count=1" \
+      --accelerator "type=nvidia-tesla-t4,count=1,gpu-driver-version=default" \
       --image-type "UBUNTU_CONTAINERD" \
       --disk-type "pd-standard" \
       --disk-size "1000" \
@@ -92,7 +92,6 @@ gcloud beta container clusters create demo-cluster \
       --logging=SYSTEM,WORKLOAD \
       --monitoring=SYSTEM \
       --enable-ip-alias \
-      --no-enable-intra-node-visibility \
       --default-max-pods-per-node "110" \
       --no-enable-master-authorized-networks \
       --tags=nvidia-ingress-all
@@ -125,60 +124,7 @@ Check the resources:
 kubectl get all
 ```
 
-## Setup NVIDIA support for the Kubernetes cluster
-
-You can enable GPU support using either the NVIDIA GPU Operator or the NVIDIA Device Plugin.  The GPU Operator has some known issues (e.g. https://github.com/NVIDIA/gpu-operator/issues/901), so we recommend using the NVIDIA Device Plugin for a more stable setup.
-
-### Setup the NVIDIA device plugin for Kubernetes
-This is the recommended way to enable NVIDIA GPU support in Kubernetes due to known issues with the NVIDIA GPU Operator.  The Device Plugin provides a stable and reliable solution for leveraging GPUs in your K8s workloads.  Follow the steps below to set up the NVIDIA Device Plugin:
-
-```bash
-helm repo add nvdp https://nvidia.github.io/k8s-device-plugin \
-    && helm repo update
-```
-
-Get the latest version for the device plugin using:
-```bash
-helm search repo nvdp --devel
-```
-
-The output should be similar to:
-```bash
-NAME                     	  CHART VERSION  APP VERSION	DESCRIPTION
-nvdp/nvidia-device-plugin	  0.17.0	 0.17.0		A Helm chart for ...
-```
-
-Install the device plugin:
-```bash
-helm upgrade -i nvdp nvdp/nvidia-device-plugin \
-  --namespace nvidia-device-plugin \
-  --create-namespace \
-  --version 0.17.0
-```
-
-Print the resources for the `nvidia-device-plugin` namespace:
-```bash
-kubectl get all -n nvidia-device-plugin
-```
-
-Test we have applied corrrectly the device plugin using:
-```bash
-kubectl get nodes -ojson | jq .items[].status.capacity | grep nvidia.com/gpu
-```
-
-The output should be similar to:
-```bash
-# output example: "nvidia.com/gpu": "1",
-```
-
-See more details in the official documentation:
-https://github.com/NVIDIA/k8s-device-plugin?tab=readme-ov-file#deployment-via-helm
-
-### ~~Setup the NVIDIA GPU Operator~~
-This is not the recommended way to set up GPU support at the moment due to known issues with the operator.  Although the GPU Operator provides a comprehensive solution for managing NVIDIA GPUs in Kubernetes, it may encounter problems in certain environments.  We recommend using the [NVIDIA Device Plugin](#setup-the-nvidia-device-plugin-for-kubernetes) for a more stable setup.
-
-However, if you choose to proceed with the GPU Operator, follow the installation instructions below to get started:
-
+## Setup the NVIDIA GPU Operator
 Create the namespace:
 ```bash
 kubectl create ns gpu-operator
@@ -227,13 +173,15 @@ kubectl get nodes -o json | jq '.items[].metadata.labels | keys | any(startswith
 
 If `nfd.enabled` is `true` then add `--set nfd.enabled=false` to the `helm install` command:
 ```bash
-helm install gpu-operator nvidia/gpu-operator --wait \
-    -n gpu-operator --create-namespace \
-    --set driver.version="550.90.07" \
-    --set operator.defaultRuntime="containerd" \
-    --set driver.nvidiaDriverCRD.enabled=true \
-    --set driver.nvidiaDriverCRD.deployDefaultCR=false \
-    --set driver.upgradePolicy.autoUpgrade=false \
+helm install --wait --generate-name \
+    -n gpu-operator \
+    nvidia/gpu-operator \
+    --version=v24.9.0 \
+    --set hostPaths.driverInstallDir=/home/kubernetes/bin/nvidia \
+    --set toolkit.installDir=/home/kubernetes/bin/nvidia \
+    --set cdi.enabled=true \
+    --set cdi.default=true \
+    --set driver.enabled=false \
     --timeout 60m
 ```
 
@@ -289,22 +237,12 @@ Describe the replica set:
 kubectl describe rs gpu-operator -n gpu-operator
 ```
 
-## Create the graphistry namespace and set it as default
+## Create the graphistry namespace
 ```bash
 kubectl create namespace graphistry
 ```
 
-Print all namespaces:
-```bash
-kubectl get ns
-```
-
-Set the `graphistry` namespace as default:
-```bash
-kubectl config set-context --current --namespace=graphistry
-```
-
-## Create the Docker Hub secret
+## Create the secrets for Docker Hub and GAK
 Here you can use your Docker Hub user and password, your account must have access to the official Graphistry docker images.
 ```bash
 kubectl create secret docker-registry docker-secret-prod \
@@ -314,13 +252,7 @@ kubectl create secret docker-registry docker-secret-prod \
     --docker-password=thepassword
 ```
 
-Verify using:
-```bash
-kubectl get secret
-```
-
-## Create a Secret for Graph App Kit (OPTIONAL)
-For for information visit [graph-app-kit](https://github.com/graphistry/graph-app-kit).
+This step is optional, for more information visit [graph-app-kit](https://github.com/graphistry/graph-app-kit).
 ```bash
 kubectl apply -f - <<EOF
 apiVersion: v1
@@ -333,6 +265,11 @@ stringData:
   username: gke_graphistry_user1
   password: gke_graphistry_password1
 EOF
+```
+
+Verify the secrets using:
+```bash
+kubectl get secret -n graphistry
 ```
 
 ## Get Graphistry Helm charts
@@ -387,7 +324,7 @@ helm upgrade -i postgres-cluster ./charts/postgres-cluster --set global.provisio
 
 Wait until the pods are online (`postgres-repo-host-*` should be running):
 ```bash
-kubectl get pods --watch
+kubectl get pods --watch -n graphistry
 ```
 
 The output should be similar to:
@@ -421,12 +358,14 @@ helm show values ./charts/graphistry-helm-resources
 
 Install the `graphistry-resources` chart using this command:
 ```bash
-helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources --set global.provisioner="pd.csi.storage.gke.io" --namespace graphistry --create-namespace
+helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources  \
+    --set global.provisioner="pd.csi.storage.gke.io" \
+    --namespace graphistry --create-namespace
 ```
 
 Wait until the resources are online (`postgres-instance1-*` and `postgres-backup-*` should be running after some seconds):
 ```bash
-kubectl get pods --watch
+kubectl get pods --watch -n graphistry
 ```
 
 ## Install Graphistry
@@ -446,7 +385,7 @@ helm show values ./charts/graphistry-helm
 
 Check we have all the secrets:
 ```bash
-kubectl get secret | grep docker-secret-prod
+kubectl get secret -n graphistry | grep docker-secret-prod
 ```
 
 Install Graphistry using the next command:
@@ -459,7 +398,7 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
 
 Wait unilt all the pods are running and completed:
 ```bash
-kubectl get pods --watch
+kubectl get pods --watch -n graphistry
 ```
 
 It's possible to get the public cluster address using this command (this IP is the `EXTERNAL-IP` of the `ingress-controller`):
@@ -474,48 +413,48 @@ In case we want to change some values in `../gke_values.yaml` reusing the volume
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
     --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
-    --set volumeName.dataMount=$(kubectl get pv | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
-    --set volumeName.localMediaMount=$(kubectl get pv | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
-    --set volumeName.gakPublic=$(kubectl get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-    --set volumeName.gakPrivate=$(kubectl get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
+    --set volumeName.dataMount=$(kubectl get pv -n graphistry | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
+    --set volumeName.localMediaMount=$(kubectl get pv -n graphistry | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
+    --set volumeName.gakPublic=$(kubectl get pv -n graphistry | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
+    --set volumeName.gakPrivate=$(kubectl get pv -n graphistry | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
     -f ./charts/values-overrides/examples/gke/gke_values.yaml \
     --namespace graphistry --create-namespace
 ```
 
 Check the resources using this command:
 ```bash
-kubectl get pods --watch
+kubectl get pods --watch -n graphistry
 ```
 
 ## Delete k8s cluster
 Delete the Graphistry chart:
 ```bash
-helm uninstall g-chart
+helm uninstall g-chart -n graphistry
 ```
 
 Delete the `graphistry-resources` chart:
 ```bash
-helm uninstall graphistry-resources
+helm uninstall graphistry-resources -n graphistry
 ```
 
 Delete the `postgres-cluster` chart:
 ```bash
-helm uninstall postgres-cluster
+helm uninstall postgres-cluster -n graphistry
 ```
 
 Delete the `postgres-operator` chart:
 ```bash
-helm uninstall postgres-operator --namespace postgres-operator
+helm uninstall postgres-operator -n postgres-operator
 ```
 
 Delete the `dask-operator` chart:
 ```bash
-helm uninstall dask-operator --namespace dask-operator
+helm uninstall dask-operator -n dask-operator
 ```
 
 Delete the docker registry secrets:
 ```bash
-kubectl delete secret docker-secret-prod --namespace graphistry
+kubectl delete secret docker-secret-prod -n graphistry
 ```
 
 Print all namespaces:
@@ -525,22 +464,17 @@ kubectl get ns
 
 Verify that no pods are running for the `graphistry` namespace using this command:
 ```bash
-k3s kubectl get pods --watch --namespace graphistry
-```
-
-Restore the default namespace:
-```bash
-kubectl config set-context --current --namespace=default
+kubectl get pods --watch --namespace graphistry
 ```
 
 Delete the `dask-operator` namespace:
 ```bash
-k3s kubectl delete ns dask-operator
+kubectl delete ns dask-operator
 ```
 
 Delete the `postgres-operator` namespace:
 ```bash
-k3s kubectl delete ns postgres-operator
+kubectl delete ns postgres-operator
 ```
 
 Delete the `graphistry` namespace:
@@ -561,7 +495,7 @@ kubectl describe ingress caddy-ingress-graphistry -n graphistry
 kubectl describe $(kubectl get pods -o name | grep caddy)
 
 # print the logs
-kubectl logs $(kubectl get pods -o name | grep caddy) -f
+kubectl -n graphistry logs $(kubectl -n graphistry get pods -o name | grep caddy) -f
 ```
 
 ### nexus
@@ -594,8 +528,8 @@ kubectl exec -i -t $(kubectl get pods -o name | grep forge-etl-python) --contain
 
 ### dask-cuda
 ```bash
-kubectl describe $(kubectl get pods -o name | grep dask-cuda)
+kubectl describe $(kubectl get pods -o name -n graphistry | grep dask-cuda) -n graphistry
 
 # print the logs
-kubectl logs $(kubectl get pods -o name | grep dask-cuda) -f
+kubectl logs $(kubectl get pods -o name  -n graphistry | grep dask-cuda) -f
 ```

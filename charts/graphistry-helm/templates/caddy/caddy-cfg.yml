@@ -6,7 +6,6 @@ metadata:
     io.kompose.service: caddyfile-configmap
   name: caddy-config
 data:
-{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY false }}
   Caddyfile: |
     :80 {
           respond /caddy/health/ 200 {
@@ -17,32 +16,3 @@ data:
                   trusted_proxies private_ranges
           }
     }
-{{- else }}
-  Caddyfile: |
-    :80 {
-      log {
-        level DEBUG
-      }
-      @mismatchedHost {
-          not host {{ .Values.domain | quote }} localhost
-      }
-      handle @mismatchedHost {
-          respond 400
-      }
-      respond /caddy/health/ 200
-      handle /jaeger* {
-          reverse_proxy jaeger:16686
-      }
-      # Route to prometheus
-      handle /prometheus* {
-          reverse_proxy prometheus:9090
-      }
-      # Routes for Grafana
-      handle /grafana* {
-          reverse_proxy grafana:3000
-      }
-      reverse_proxy nginx:80 {
-              trusted_proxies private_ranges
-      }
-    }
-{{- end }}

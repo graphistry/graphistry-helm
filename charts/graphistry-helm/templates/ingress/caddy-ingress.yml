@@ -28,6 +28,7 @@ metadata:
   labels:
   name: caddy-ingress-{{ .Release.Namespace }}
 spec:
+  ingressClassName: {{ .Values.global.ingressClassName | quote }}
   rules:
   {{ if .Values.domain }}
     - host: {{.Values.domain}}

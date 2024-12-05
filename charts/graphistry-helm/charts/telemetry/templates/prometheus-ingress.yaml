@@ -27,6 +27,7 @@ metadata:
 {{- end }}
 
 spec:
+  ingressClassName:  {{ .Values.global.ingressClassName | quote }}
   rules:
     - http:
         paths:

@@ -1,4 +1,7 @@
 global:
+  # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: nginx
+  ingressClassName: nginx
+
   imagePullPolicy: Always
   imagePullSecrets: 
     - name: docker-secret-prod
@@ -36,7 +39,11 @@ networkPolicy:
 ingress:
   management:
     annotations:
+      kubernetes.io/ingress.class: nginx
+      #kubernetes.io/ingress.class: "gce"  # Specifies the GKE ingress controller
+      #cloud.google.com/load-balancer-type: "Internal"  # Internal load balancer
 
+ingressNamespace: ingress-nginx #the namespace of the ingress controller
 
 graphistryResources:
   storageClassParameters:

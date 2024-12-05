@@ -13,7 +13,7 @@ spec:
     namespace: argo-cd
   project: default
   source:
-    path: charts-aux-bundled/argo-cd
+    path: charts/argo-cd
     repoURL: https://github.com/graphistry/argo-helm.git
     targetRevision: HEAD #BRANCH OR HEAD WHEN IN MAIN
     helm:

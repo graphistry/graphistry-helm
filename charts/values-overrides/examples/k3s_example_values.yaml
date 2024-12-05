@@ -275,6 +275,9 @@ cuda:
   version: "11.8" #cuda version
 
 global:  ## global settings for all charts
+  # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: traefik
+  ingressClassName: traefik
+
   #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   #provisioner: microk8s.io/hostpath   #storage class provisioner.
   provisioner: rancher.io/local-path

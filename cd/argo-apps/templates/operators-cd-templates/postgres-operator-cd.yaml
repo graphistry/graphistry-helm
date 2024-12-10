@@ -14,7 +14,7 @@ spec:
   project: default
   source:
     path: helm/install
-    repoURL: https://github.com/graphistry/graphistry-helm.git
+    repoURL: https://github.com/CrunchyData/postgres-operator-examples.git
     targetRevision: HEAD #terraform #BRANCH OR HEAD WHEN IN MAIN
     helm:
       valueFiles:

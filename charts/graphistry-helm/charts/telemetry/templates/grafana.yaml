@@ -1,0 +1,128 @@
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: grafana
+  name: grafana
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: grafana
+  template:
+    metadata:
+      labels:
+        a: "dfd"
+        io.kompose.network/grph: "true"
+        io.kompose.service: grafana
+    spec:
+      initContainers:
+          # NOTE: We need this container to copy big json files into the Grafana pod (e.g. big dashboards, etc.)
+        - name: "{{ lower .Chart.Name }}-init-grafana"
+          image: busybox
+          command:
+            - /bin/sh
+            - -c
+            - |
+                cd /etc/grafana/provisioning/dashboards && \
+                mkdir -p /mnt/grafana/provisioning/dashboards && \
+                cp ..data/node-exporter-dashboard.json.zip /mnt/grafana/provisioning/dashboards/node-exporter-dashboard.json.zip.b64 && \
+                cd /mnt/grafana/provisioning/dashboards && \
+                base64 -d node-exporter-dashboard.json.zip.b64 > node-exporter-dashboard.json.zip && \
+                unzip node-exporter-dashboard.json.zip
+          imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+          volumeMounts:
+            - name: grafana-dashboards-mount
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: grafana-big-dashboards-mount
+              mountPath: /mnt/grafana/provisioning/dashboards
+              readOnly: false
+      containers:
+        - env:
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+            - name: GF_SECURITY_ADMIN_USER
+              value: "admin"
+            - name: GF_SECURITY_ADMIN_PASSWORD
+              value: "admin"
+            - name: GF_AUTH_ANONYMOUS_ENABLED
+              value: "true"
+            - name: GF_AUTH_ANONYMOUS_ORG_ROLE
+              value: "Admin"
+            - name: GF_USERS_ALLOW_SIGN_UP
+              value: "false"
+            - name: GF_SERVER_ROOT_URL
+              value: {{ .Values.telemetryEnv.grafana.GF_SERVER_ROOT_URL | quote }}
+            - name: GF_SERVER_SERVE_FROM_SUB_PATH
+              value: {{ .Values.telemetryEnv.grafana.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
+          image: {{ .Values.telemetryEnv.grafana.image | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          resources:
+            requests:
+              cpu: "250m"
+              memory: "500Mi"
+            limits:
+              cpu: "500m"
+              memory: "1Gi"
+          name: grafana
+          ports:
+            - containerPort: 3000
+          volumeMounts:
+            - name: grafana-datasources-mount
+              mountPath: /etc/grafana/provisioning/datasources
+              readOnly: true
+            - name: grafana-dashboards-mount
+              mountPath: /etc/grafana/provisioning/dashboards
+              readOnly: true
+            - name: grafana-big-dashboards-mount
+              mountPath: /mnt/grafana/provisioning/dashboards
+              readOnly: true
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      volumes:
+        - name: grafana-dashboards-mount
+          configMap:
+            name: grafana-configmap
+            items:
+            - key: dashboard.yml
+              path: dashboard.yml
+            - key: dcgm-exporter-dashboard.json
+              path: dcgm-exporter-dashboard.json
+            - key: node-exporter-dashboard.json.zip
+              path: node-exporter-dashboard.json.zip
+        - name: grafana-datasources-mount
+          configMap:
+            name: grafana-configmap
+            items:
+            - key: datasource.yml
+              path: datasource.yml
+        - name: grafana-big-dashboards-mount
+          emptyDir: {} 
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: grafana
+  name: grafana
+spec:
+  ports:
+    - name: "3000"
+      port: 3000
+      targetPort: 3000
+  selector:
+    io.kompose.service: grafana
+status:
+  loadBalancer: {}
+  {{- end }}
+{{- end }}

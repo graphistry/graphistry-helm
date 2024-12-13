@@ -1,0 +1,82 @@
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: jaeger
+  name: jaeger
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: jaeger
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: jaeger
+    spec:
+      containers:
+        - env:
+            - name: QUERY_BASE_PATH
+              value: "/jaeger"
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+          image: {{ .Values.telemetryEnv.jaeger.image | quote }}
+          args: 
+            - "--query.ui-config=/tmp/jaeger-ui.json"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          name: jaeger
+          ports:
+            - containerPort: 4317
+            - containerPort: 16686
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          volumeMounts:
+           - name: jaeger-ui-config-mount
+             mountPath: /tmp/jaeger-ui.json
+             subPath: jaeger-ui.json
+             readOnly: true
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      volumes:
+       - name: jaeger-ui-config-mount
+         configMap:
+           name: jaeger-ui-configmap
+           items:
+           - key: jaeger-ui.json
+             path: jaeger-ui.json
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: jaeger
+  name: jaeger
+spec:
+  ports:
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "16686"
+      port: 16686
+      targetPort: 16686
+  selector:
+    io.kompose.service: jaeger
+status:
+  loadBalancer: {}
+  {{ end }}
+{{ end }}

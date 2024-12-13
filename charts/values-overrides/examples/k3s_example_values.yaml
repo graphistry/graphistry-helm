@@ -1,24 +1,41 @@
+tls: false
 
-#ingress management - determines if ingress is going to be on internal load balancer 
+#volume pv names go here after initial deployment and provisioning
+volumeName:
+  dataMount: 
+  localMediaMount: 
+  gakPublic: 
+  gakPrivate: 
+
+## createServiceAccount: true only true on initial deployment
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
 ingress:
   management:
-    annotations: #ingress management - determines if ingress is going to be on internal load balance
+    annotations:
+      kubernetes.io/ingress.class: traefik
+
+# cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
+#   namespace: cert-manager
+#   installCRDs: true
+#   createCustomResource: true
+
+#ingress management - determines if ingress is going to be on internal load balancer 
+# NOTICE these annotations make possible ingress can expose the port 80 to the local host
+#  kubernetes.io/ingress.class: public
+#  nginx.ingress.kubernetes.io/rewrite-target: /
+# ingress:
+#   management:
+#     annotations: #ingress management - determines if ingress is going to be on internal load balance
+      # kubernetes.io/ingress.class: public
+      # nginx.ingress.kubernetes.io/rewrite-target: /
       #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
       #cloud.google.com/load-balancer-type: "Internal"
       #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
 
-
-graphistry: graphistry   #graphistry tag for the docker image
-
-#volume names
-volumeName: #volume names
-  dataMount: #data-mount pvc volume name
-  localMediaMount: #local-media-mount pvc volume name 
-  gakPublic:  #gak-public pvc volume name
-  gakPrivate: ##data-mount pvc volume name
-
-#the namespace of the ingress controller - this is the namespace that the ingress controller is going to be deployed to.
-ingressNamespace: ingress-nginx #the namespace of the ingress controller
 
 CaddyResources: {}  # Resources for the Caddy pod
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -57,7 +74,8 @@ DaskWorkerResources: {}  # Resources for the Dask worker pod
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
+  # limits:
+    # nvidia.com/gpu: 1
 
 
 ForgeETLResources: {}  # Resources for the Forge Etl pod
@@ -84,7 +102,8 @@ ForgeETLPythonResources: {}  # Resources for the Forge ETL python pod
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
-
+  # limits:
+    # nvidia.com/gpu: 0.5
 
 GAKResources: {}  # Resources for the graph app kit pods
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -176,7 +195,7 @@ RedisResources: {}  # Resources for the redis pod
   #   cpu: 100m
   #   memory: 128Mi
 
-StreamglGpuResources: {}  # Resources for the streamgl gpu pod
+StreamglGpuResources: {} # Resources for the streamgl gpu pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
   # resources, such as Minikube. If you do want to specify resources, uncomment the following
@@ -187,6 +206,8 @@ StreamglGpuResources: {}  # Resources for the streamgl gpu pod
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
+  # limits:
+    # nvidia.com/gpu: 0.5
 
 StreamglSessionsResources: {}  # Resources for the streamgl sessions pod
   # We usually recommend not to specify default resources and to leave this as a conscious
@@ -225,16 +246,6 @@ StreamglVizResources: {}  # Resources for the streamgl viz pod
   #   memory: 128Mi
 
 
-#max surge of pods in rolling updates
-maxSurge : "10%" #max surge of pods in rolling updates
-
-
-
-#forwards backend proxy's headers to ingress controller
-fwdHeaders: false #forwards backend proxy's headers to ingress controller 
-
-httpTesting: false #for testing purposes only - used to do http testing on ingress and nginx/caddy 
-
 #set to development in dev mode
 nodeEnv: production #sets the Node environment - set to development in dev mode
 
@@ -247,19 +258,9 @@ djangoSettingsModule: "config.settings.production" #Sets the django settings - s
 graphistryCPUMode: "0" #sets graphistry to cpu mode - to be used in dev mode set to 1
 
 #set to true in dev mode
-djangoDebug: "False" #sets django in debug mode set to true in dev mode
-
-nginxPorts:
-  #port for nginx service to listen on
-  portOne: 80   #port for nginx service to listen on
-  portTwo: 443   #port for nginx service to listen on
+djangoDebug: "True" #sets django in debug mode set to true in dev mode
 
 metrics: false #enables metrics for prometheus - must have kube-prometheus-stack installed
-
-#ports for nexus service to listen on
-nexusPort: 
-  portOne: 8000 #ports for nexus service to listen on
-  portTwo: 8080 #ports for nexus service to listen on
 
 # graph app kit public - determines if public dashboard is going to be deployed
 graphAppKitPublic: true # graph app kit public - determines if public dashboard is going to be deployed
@@ -267,170 +268,24 @@ graphAppKitPublic: true # graph app kit public - determines if public dashboard 
 # graph app kit private - determines if private dashboard is going to be deployed
 graphAppKitPrivate: true # graph app kit private - determines if private dashboard is going to be deployed
 
-networkPolicy: #network policy for for deployment, this limits traffic
-#  strict: true
-
-
-# rolling update deployment strategy switch (postgres and nexus are exempt)
-rollingUpdate: false # rolling update deployment strategy switch
-
-# django session cookie timeout (seconds)
-sessionCookieAge : "1209600" # django session cookie timeout (seconds)
-
-# django drf-jwt, jwt token timeout (seconds)
-jwtExpirationDelta : "3600" # django drf-jwt, jwt token timeout (seconds)
-
-# ENABLE django silk - performance analysis library
-enableDjangoSilk : "False" # ENABLE django silk - performance analysis library
-
-
-#domain - set to  the node external ip
-#example: 18.116.94.149.nip.io - graphistry.18.116.94.149.nip.io
-domain: #domain - set to a domain of your choosing
-
-#set tlsStaging to true to enable tls staging
-tlsStaging: false #set tlsStaging to true to enable use of LetsEncrypt staging environment
-
-#set tls to true to enable tls in production
-tls: false #set tls to true to enable use of LetsEncrypt TLS
-
-#email to send tls notifications to
-tlsEmail: "" #email to send tls notifications to
-
-#enables longhorn dashboard
-longhornDashboard: false #enables longhorn dashboard - needs longhorn installed
-
-
+forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
 #cuda version
 cuda:
-  version: "11.4" #cuda version
-
-
-#caddy repository name
-caddy:
-  repository: caddy #caddy repository name
-
-#graph app kit repository name and tag
-graphAppKit:
-  repository: graph-app-kit-st #graph app kit repository name
-
-
-#redis repository name and tag
-redis:
-  repository: redis #redis repository name
-  tag: 6.2.7 #redis repository tag
-
-
-
-
-#streamgl-viz repository name 
-streamglviz:
-  repository: streamgl-viz #streamgl-viz repository name 
-
-#streamgl-viz repository name 
-streamglvizDev:
-  repository: graphistry-viz-dev #streamgl-viz-Dev repository name 
-
-#nginx repository name 
-nginx:
-  repository: streamgl-nginx #nginx repository name 
-
-#nginx repository name 
-nginxDev:
-  repository: graphistry-nginx-dev #nginx repository name
-
-#streamgl-vgraph-etl repository name 
-streamglvgraph:
-  repository: streamgl-vgraph-etl #streamgl-vgraph-etl repository name 
-
-
-#streamgl-gpu repository name 
-streamglgpu:
-  repository: streamgl-gpu #streamgl-gpu repository name 
-
-elk: #enables elk and sets the version
-  version: 8.5.2 #elk version
-  enabled: false
-
-#streamgl-sessions repository name
-streamglsessions:
-  repository: streamgl-sessions #streamgl-sessions repository name
-
-
-#graphistry pivot repository name 
-pivot:
-  repository: graphistry-pivot #graphistry pivot repository name 
-
-#graphistry pivot dev repository
-pivotDev:
-  repository: graphistry-pivot-dev #graphistry pivot dev repository
-
-
-#jupyter notebook repository name 
-notebook:
-  repository: jupyter-notebook #jupyter notebook repository name 
-
-
-#graphistry nexus repository name 
-nexus:
-  repository: graphistry-nexus #graphistry nexus repository name
-
-ForgeMaxFileWait: "10000" #milliseconds to wait for file creation
-
-FepDevMode: false
-
-HypercornOpts: 
-
-#graphistry nexus repository name 
-nexusDev:
-  repository: graphistry-nexus-dev #graphistry nexus dev repository name 
-
-#forge-etl-python repository name 
-forgeetlpython:
-  repository: etl-server-python #forge-etl-python repository name
-
-#forge-etl-python dev repository name
-forgeetlpythonDev:
-  repository: graphistry-forge-python-dev #forge-etl-python dev repository name
-
-#forge-etl repository name 
-forgeetl:
-  repository: etl-server #forge-etl repository name 
-
-#sets the number of dask cuda workers
-dask:
-  workers: 1 #sets the number of dask cuda workers
-  operator: false #enables dask operator 
-
-#dask-scheduler repository name 
-daskscheduler:
-  repository: etl-server-python #dask-scheduler repository name 
-  location: dask-scheduler:8786 #dask-scheduler location
-
-vgpu: false #enables vgpu mode for bigger than memory workloads on VGPU
-
-#dask-cuda-worker repository name 
-daskcudaworker:
-  repository: etl-server-python #dask-cuda-worker repository name
-
-forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
-
-ProxyBodySize: 20000m #sets the proxy body size for ingress controller and uploads to 20 GB
-
-## graphistry key for dev mode in pivot deployment
-graphistryKey: ## graphistry key for dev mode in pivot deployment
+  version: "11.8" #cuda version
 
 global:  ## global settings for all charts
-  # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: nginx
-  ingressClassName: nginx
+  # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: traefik
+  ingressClassName: traefik
+
   #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
-  provisioner: kubernetes.io/aws-ebs   #storage class provisioner.
+  #provisioner: microk8s.io/hostpath   #storage class provisioner.
+  provisioner: rancher.io/local-path
+  postgresVolumeLabel:
+  nodeSelector: #node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}
+      nvidia.com/gpu.present: "true"
 # multinode selector switch to determine if going multi/single node
   multiNode: false # multinode selector switch to determine if going multi/single node
-  #container registry name
-  containerregistry:
-    name: docker.io/graphistry #container registry name
   #dev mode for debugging with nexus, postgres and nginx
   devMode: false   #dev mode for debugging with nexus, postgres and nginx
   #graphitry tag for the docker image
@@ -440,16 +295,42 @@ global:  ## global settings for all charts
     user: graphistry #db user
     port: 5432 #port for postgres service to listen on
     host: postgres #hostname for postgres
-  tag: latest #tag for the docker image
-  imagePullPolicy: IfNotPresent   #image pull policy could also be Always
+  tag: v2.41.10
+
+  imagePullPolicy: Always   #image pull policy could also be Always
   restartPolicy: Always #restart policy
-  imagePullSecrets: []   #image pull secrets name
-#    - name: docker-secret
-  nodeSelector: #node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}
+  imagePullSecrets:   #image pull secrets name
+    - name: docker-secret-prod
   logs:
-    LogLevel: INFO #log level for the application
-    GraphistryLogLevel: INFO #log level for graphistry
-  ENABLE_OPEN_TELEMETRY: false
+    LogLevel: TRACE #log level for the application
+    GraphistryLogLevel: TRACE #log level for graphistry
+  ENABLE_OPEN_TELEMETRY: true
+
+# Graphistry Telemetry values and environment variables for observability tools
+# can be set like helm upgrade -i chart_name --name release_name \
+#--set stENVPublic.LOG_LEVEL="FOO"
+# Telemetry documentation:
+# https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
+telemetryEnv:
+  OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+  openTelemetryCollector:
+    image: "otel/opentelemetry-collector-contrib:0.87.0"
+    OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+    OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
+    OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
+  grafana:
+    image: "grafana/grafana:11.0.0"
+    GF_SERVER_ROOT_URL: "/grafana"
+    GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+  dcgmExporter:
+    image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
+    DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
+  jaeger:
+    image: "jaegertracing/all-in-one:1.50.0"
+  nodeExporter:
+    image: "prom/node-exporter:v1.8.2"
+  prometheus:
+    image: "prom/prometheus:v2.47.2"
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \
@@ -570,47 +451,48 @@ env: #environment variables
  - name: OT_METRIC_EXPORT_TIMEOUT
    value: "30000"
 
-#streamlit environment variables
- # can be set like helm upgrade -i  chart_name --name release_name \
- #--set stENVPublic.LOG_LEVEL="FOO" 
-streamlitEnv: #graph-app-kit (streamlit) environment variables
- - name: LOG_LEVEL
-   value: DEBUG
- - name: BASE_PATH
-   value: dashboard/
- - name: BASE_URL
-   value: "http://localhost:8501/dashboard"
- - name: FAVICON_URL
-   value: "https://hub.graphistry.com/pivot/favicon/favicon.ico"
- - name: USE_DOCKER
-   value: "True"
- - name: ST_PUBLIC_PORT
-   value: 8501
- - name: GRAPH_VIEWS
-   value: "/apps/views"
- - name: COMPOSE_PROJECT_NAME
-   value: 
- - name: VERSION_BASE
-   value: "v2.32.4"
- - name: NEPTUNE_READER_PROTOCOL
-   value: 
- - name: NEPTUNE_READER_HOST
-   value: 
- - name: NEPTUNE_READER_PORT
-   value: 
- - name: NEPTUNE_KEY_PATH
-   value: 
- - name: NEPTUNE_TUNNEL_HOST
-   value: 
- - name: NEPTUNE_TUNNEL_USER
-   value:  
- - name: TIGERGRAPH_HOST
-   value: 
- - name: TIGERGRAPH_USERNAME
-   value: 
- - name: TIGERGRAPH_PASSWORD
-   value: 
- - name: TIGERGRAPH_GRAPHNAME
-   value: 
- - name: TIGERGRAPH_SECRET
-   value: 
+
+##streamlit environment variables
+ ## can be set like helm upgrade -i  chart_name --name release_name \
+ ##--set stENVPublic.LOG_LEVEL="FOO" 
+#streamlitEnv: #graph-app-kit (streamlit) environment variables
+ #- name: LOG_LEVEL
+   #value: TRACE
+ #- name: BASE_PATH
+   #value: dashboard/
+ #- name: BASE_URL
+   #value: "http://localhost:8501/dashboard"
+ #- name: FAVICON_URL
+   #value: "https://hub.graphistry.com/pivot/favicon/favicon.ico"
+ #- name: USE_DOCKER
+   #value: "True"
+ #- name: ST_PUBLIC_PORT
+   #value: 8501
+ #- name: GRAPH_VIEWS
+   #value: "/apps/views"
+ #- name: COMPOSE_PROJECT_NAME
+   #value: 
+ #- name: VERSION_BASE
+   #value: "v2.32.4"
+ #- name: NEPTUNE_READER_PROTOCOL
+   #value: 
+ #- name: NEPTUNE_READER_HOST
+   #value: 
+ #- name: NEPTUNE_READER_PORT
+   #value: 
+ #- name: NEPTUNE_KEY_PATH
+   #value: 
+ #- name: NEPTUNE_TUNNEL_HOST
+   #value: 
+ #- name: NEPTUNE_TUNNEL_USER
+   #value:  
+ #- name: TIGERGRAPH_HOST
+   #value: 
+ #- name: TIGERGRAPH_USERNAME
+   #value: 
+ #- name: TIGERGRAPH_PASSWORD
+   #value: 
+ #- name: TIGERGRAPH_GRAPHNAME
+   #value: 
+ #- name: TIGERGRAPH_SECRET
+   #value: 

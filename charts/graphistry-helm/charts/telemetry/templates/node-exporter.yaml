@@ -1,0 +1,64 @@
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: node-exporter
+  name: node-exporter
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: node-exporter
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: node-exporter
+    spec:
+      containers:
+        - env:
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+          image: {{ .Values.telemetryEnv.nodeExporter.image | quote }}
+          args: # Skip '--collector.systemd' since we're running in Docker.
+            - '--collector.processes'
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "100Mi"
+            limits:
+              cpu: "200m"
+              memory: "200Mi"
+          name: node-exporter
+          ports:
+            - containerPort: 9100
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: node-exporter
+  name: node-exporter
+spec:
+  ports:
+    - name: "9100"
+      port: 9100
+      targetPort: 9100
+  selector:
+    io.kompose.service: node-exporter
+status:
+  loadBalancer: {}
+  {{- end }}
+{{- end }}

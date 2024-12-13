@@ -1,7 +1,7 @@
 apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
-  name: graphistry-deploy-cd
+  name: graphistry-telemetry-cd
   namespace: argo-cd
   finalizers:
   - resources-finalizer.argocd.argoproj.io
@@ -13,14 +13,19 @@ spec:
     namespace: graphistry
   project: default
   source:
-    path: cd/argo-apps/templates/graphistry-cd-templates
+    path: charts/graphistry-helm/charts/telemetry
     repoURL: https://github.com/graphistry/graphistry-helm.git
     targetRevision: dev/opentelemetry #BRANCH OR HEAD WHEN IN MAIN
+    helm:
+      valueFiles:
+        # - ../values-overrides/internal/eks-dev-values.yaml # resolved against source.repoURL and source.path
+        - ../values-overrides/examples/k3s_example_values.yaml
   syncPolicy:
     automated:
       prune: true
       selfHeal: true
     syncOptions:
       - CreateNamespace=true
+
 
 ##helm template cd/argo-apps/ | kubectl apply -f -

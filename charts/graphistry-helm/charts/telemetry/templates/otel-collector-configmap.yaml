@@ -1,0 +1,70 @@
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: otel-collector-configmap
+data:
+  otel-collector-config.yml: |-
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        const_labels:
+          system: graphistry
+
+      logging:
+        loglevel: warn
+
+      otlp:
+        endpoint: ${env:OTEL_EXPORTER_JAEGER_ENDPOINT}
+        tls:
+          insecure: true
+
+    processors:
+      filter/ottl:
+        error_mode: ignore
+        traces:
+          span:
+            - IsMatch(attributes["http.route"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/health.*") or IsMatch(attributes["http.target"], "/health.*")
+            - name == "readHandler" and attributes["http.status_code"] == 200
+      batch:
+        send_batch_size: 2000
+        timeout: 5s
+        send_batch_max_size: 0
+      memory_limiter:
+        limit_mib: 450
+        check_interval: 5s
+        spike_limit_mib: 150
+
+    extensions:
+      health_check:
+      pprof:
+        endpoint: :1888
+      zpages:
+        endpoint: :55679
+
+    service:
+      extensions: [pprof, zpages, health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [memory_limiter, batch]
+          exporters: [logging, prometheus]
+
+        traces:
+          receivers: [otlp]
+          processors: [memory_limiter, filter/ottl, batch]
+          exporters: [logging, otlp]
+{{- end }}
+{{- end }}

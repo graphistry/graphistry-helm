@@ -38,6 +38,14 @@ prometheus:
 #  storageClassParameters:
 
 
+ingress:
+  management:
+    annotations: #ingress management - determines if ingress is going to be on internal load balance
+      kubernetes.io/ingress.class: public
+      nginx.ingress.kubernetes.io/rewrite-target: /
+
+
+
 ingress-nginx:
   controller:
     metrics:

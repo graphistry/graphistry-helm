@@ -1,0 +1,131 @@
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: otel-collector
+  name: otel-collector
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: otel-collector
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: otel-collector
+    spec:
+      {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+      initContainers:
+      - name: "{{ lower .Chart.Name }}-init-prometheus"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args:
+        - "service"
+        - "prometheus"
+      - name: "{{ lower .Chart.Name }}-init-jaeger"
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: "groundnuty/k8s-wait-for:latest" #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
+        {{- end }}
+        resources:
+            {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
+        args: 
+        - "service"
+        - "jaeger"
+      {{- end }}
+      containers:
+        - env:
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+            - name: OTEL_LOG_LEVEL
+              value: "warn"
+            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              value: "jaeger:4317"
+          {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE true }}
+            - name: OTEL_COLLECTOR_OTLP_USERNAME
+              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_USERNAME | quote }}
+            - name: OTEL_COLLECTOR_OTLP_PASSWORD
+              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_PASSWORD | quote }}
+            - name: OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT
+              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
+          {{- end }}
+          image: {{ .Values.telemetryEnv.openTelemetryCollector.image | quote }}
+          args:
+            - "--config=/etc/otelcol/otel-collector-config.yml"
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          # TODO It seems the healthcheck service has some issues:
+          # https://github.com/open-telemetry/opentelemetry-collector-contrib/issues/30798
+          # https://github.com/open-telemetry/opentelemetry-collector-contrib/tree/v0.105.0/extension/healthcheckextension#health-check
+          # livenessProbe:
+          #   httpGet:
+          #     path: /healthz
+          #     port: 13133
+          #   failureThreshold: 3
+          #   initialDelaySeconds: 180
+          #   periodSeconds: 120
+          #   timeoutSeconds: 30
+          name: otel-collector
+          ports:
+            - containerPort: 4317
+            - containerPort: 8889  # Prometheus exporter metrics
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          volumeMounts:
+            - name: otel-collector-config-mount
+              mountPath: /etc/otelcol
+              readOnly: true
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      serviceAccountName: job-robot
+      volumes:
+        - name: otel-collector-config-mount
+          {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+          configMap:
+            name: otel-collector-configmap
+          {{- else }}
+          configMap:
+            name: otel-collector-configmap-cloud
+          {{- end }}
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: otel-collector
+  name: otel-collector
+spec:
+  type: LoadBalancer
+  ports:
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "8889"
+      port: 8889
+      targetPort: 8889
+  selector:
+    io.kompose.service: otel-collector
+status:
+  loadBalancer: {}
+{{ end }}

@@ -1,0 +1,89 @@
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: prometheus
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: prometheus
+    spec:
+      containers:
+        - env:
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+          image: {{ .Values.telemetryEnv.prometheus.image | quote }}
+          args:
+            - '--config.file=/etc/prometheus/prometheus.yml'
+            - '--storage.tsdb.path=/prometheus'
+            - '--web.console.libraries=/usr/share/prometheus/console_libraries'
+            - '--web.console.templates=/usr/share/prometheus/consoles'
+            - '--web.external-url=/prometheus/'
+            - '--web.route-prefix=/prometheus/'
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          resources:
+            requests:
+              cpu: "500m"
+              memory: "1Gi"
+            limits:
+              cpu: "1"
+              memory: "2Gi"
+          name: prometheus
+          ports:
+            - containerPort: 4317
+            - containerPort: 9090
+            - containerPort: 8889  # Prometheus exporter metrics
+          volumeMounts:
+            - name: prometheus-config-mount
+              mountPath: /etc/prometheus/prometheus.yml
+              subPath: prometheus.yml
+              readOnly: true
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      volumes:
+        - name: prometheus-config-mount
+          configMap:
+            name: prometheus-configmap
+            items:
+            - key: prometheus.yml
+              path: prometheus.yml
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+{{- if eq .Values.global.multiNode false }}
+      nodeSelector:
+        {{- toYaml .Values.global.nodeSelector | nindent 8 }}
+{{- end }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: prometheus
+  name: prometheus
+spec:
+  ports:
+    - name: "4317"
+      port: 4317
+      targetPort: 4317
+    - name: "9090"
+      port: 9090
+      targetPort: 9090
+    - name: "8889"
+      port: 8889
+      targetPort: 8889
+  selector:
+    io.kompose.service: prometheus
+status:
+  loadBalancer: {}
+  {{- end }}
+{{- end }}

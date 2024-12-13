@@ -1,0 +1,64 @@
+{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  labels:
+    io.kompose.service: dcgm-exporter
+  name: dcgm-exporter
+spec:
+  selector:
+    matchLabels:
+      io.kompose.service: dcgm-exporter
+  template:
+    metadata:
+      labels:
+        io.kompose.network/grph: "true"
+        io.kompose.service: dcgm-exporter
+    spec:
+      containers:
+        - env:
+          {{- range .Values.env }}
+            - name: {{ .name }}
+              value: {{ .value | quote }}
+          {{- end }}
+            - name: DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE
+              value: {{ .Values.telemetryEnv.dcgmExporter.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
+          image: {{ .Values.telemetryEnv.dcgmExporter.image | quote }}
+          imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
+          resources:
+            requests:
+              cpu: "200m"
+              memory: "200Mi"
+            limits:
+              cpu: "500m"
+              memory: "500Mi"
+          name: dcgm-exporter
+          ports:
+            - containerPort: 9400
+          securityContext:
+            capabilities:
+              add:
+                - SYS_ADMIN  # Add the SYS_ADMIN capability
+      restartPolicy: {{ .Values.global.restartPolicy | quote }}
+      imagePullSecrets:
+        {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}
+---
+#service
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    io.kompose.service: dcgm-exporter
+  name: dcgm-exporter
+spec:
+  ports:
+    - name: "9400"
+      port: 9400
+      targetPort: 9400
+  selector:
+    io.kompose.service: dcgm-exporter
+status:
+  loadBalancer: {}
+  {{- end }}
+{{- end }}

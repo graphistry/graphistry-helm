@@ -90,5 +90,5 @@ and then set the nodeSelector value to the hostname of the selected node along w
 > **Note:** different labels can be used for the nodeSelector value, but some labels between the nodes may not be unique.
 
 
-[ReadTheDocs](docs/build/html/index.html)
+[ReadTheDocs](https://graphistry-helm.readthedocs.io/)
 

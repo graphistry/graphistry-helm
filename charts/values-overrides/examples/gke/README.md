@@ -45,7 +45,7 @@ The output should be similar to:
 # Kustomize Version: v5.0.1
 ```
 
-### heml
+### Helm
 Install Helm from:
 https://github.com/helm/helm/releases
 
@@ -166,12 +166,12 @@ helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
     && helm repo update
 ```
 
-Get the value of `nfd.enabled` using this command:
+To properly install the NVIDIA GPU Operator in Kubernetes, you must first check the value of the `nfd.enabled` label on your cluster nodes.  This label is used to determine whether Node Feature Discovery (NFD) is enabled, which is important because the GPU Operator depends on certain hardware features being correctly discovered.  Run the following command to retrieve the value of `nfd.enabled`:
 ```bash
 kubectl get nodes -o json | jq '.items[].metadata.labels | keys | any(startswith("feature.node.kubernetes.io"))'
 ```
 
-If `nfd.enabled` is `true` then add `--set nfd.enabled=false` to the `helm install` command:
+If the result includes `nfd.enabled=true`, it indicates that NFD is enabled on the nodes.  In this case, you need to explicitly disable NFD during the GPU Operator installation: so if `nfd.enabled` is `true` then add `--set nfd.enabled=false` to the next `helm install` command:
 ```bash
 helm install --wait --generate-name \
     -n gpu-operator \
@@ -186,20 +186,20 @@ helm install --wait --generate-name \
 ```
 
 Notes:
-1. Using the version `v24.3.0` helps avoid certain issues with the GPU Operator, as discussed in https://github.com/NVIDIA/gpu-operator/issues/901 (see `--set driver.upgradePolicy.autoUpgrade=false`).
+1. Using the version `v24.9.0` helps avoid certain issues with the GPU Operator, as discussed in https://github.com/NVIDIA/gpu-operator/issues/901 (see `--set driver.upgradePolicy.autoUpgrade=false`).
 2. The recomended driver version (e.g. `--set driver.version="550.127.08"`) can be found in the official [NVIDIA GPU Operator Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix).
 
 Check the cluster labels again, it should have GPU accelerator support for the K8s node selector:
 ```bash
-kubectl get nodes --show-labels | grep "nvidia.com/gpu.present"
+kubectl get nodes --show-labels | sed  's/\,/\n/g' | grep "nvidia.com/gpu.present"
 ```
 
 The output should be similar to:
 ```bash
-# should contain something like: ...,nvidia.com/gpu.present=true,...
+nvidia.com/gpu.present=true
 ```
 
-Wait until all pods are running or completed using th next command:
+Wait until all pods are running or completed using the next command:
 ```bash
 kubectl get pods -n gpu-operator --watch
 ```
@@ -375,7 +375,7 @@ cuda:
   version: "11.8" #cuda version
 
 global:  ## global settings for all charts
-  tag: v2.41.10
+  tag: v2.41.15
 ```
 
 Print more values:
@@ -401,7 +401,7 @@ Wait unilt all the pods are running and completed:
 kubectl get pods --watch -n graphistry
 ```
 
-It's possible to get the public cluster address using this command (this IP is the `EXTERNAL-IP` of the `ingress-controller`):
+It's possible to get the public cluster address using this command (this IP is the ADDRESS` of the `ingress-controller`):
 ```bash
 kubectl get ingress -n graphistry
 ```
@@ -425,6 +425,9 @@ Check the resources using this command:
 ```bash
 kubectl get pods --watch -n graphistry
 ```
+
+## Enabling Telemetry
+See [Graphistry Telemetry for Kubernetes](https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment).
 
 ## Delete k8s cluster
 Delete the Graphistry chart:
@@ -487,7 +490,7 @@ Also, it's possible to delete the K8s cluster:
 gcloud container clusters delete demo-cluster --zone us-central1-a
 ```
 
-## Utils
+## Utility and troubleshooting commands
 
 ### caddy-ingress
 ```bash
@@ -501,29 +504,29 @@ kubectl -n graphistry logs $(kubectl -n graphistry get pods -o name | grep caddy
 ### nexus
 ```bash
 # print the logs
-kubectl logs $(kubectl get pods -o name | grep nexus) -f
+kubectl logs $(kubectl get pods -o name -n graphistry | grep nexus) -n graphistry -f
 
 # get into the container
-kubectl exec -i -t $(kubectl get pods -o name | grep nexus) --container nexus -- /bin/bash
+kubectl exec -i -t $(kubectl get pods -o name -n graphistry | grep nexus) -n graphistry --container nexus -- /bin/bash
 ```
 
 ### streamgl-gpu
 ```bash
-kubectl describe $(kubectl get pods -o name | grep streamgl-gpu)
+kubectl describe $(kubectl get pods -o name -n graphistry | grep streamgl-gpu) -n graphistry
 
 # print the logs
-kubectl logs $(kubectl get pods -o name | grep streamgl-gpu) -f
+kubectl logs $(kubectl get pods -o name -n graphistry | grep streamgl-gpu) -n graphistry -f
 ```
 
 ### forge-etl-python
 ```bash
-kubectl describe $(kubectl get pods -o name | grep forge-etl-python)
+kubectl describe $(kubectl get pods -o name -n graphistry | grep forge-etl-python) -n graphistry
 
 # print the logs
-kubectl logs $(kubectl get pods -o name | grep forge-etl-python) -f
+kubectl logs $(kubectl get pods -o name -n graphistry | grep forge-etl-python) -n graphistry -f
 
 # get into the container
-kubectl exec -i -t $(kubectl get pods -o name | grep forge-etl-python) --container forge-etl-python -- /bin/bash
+kubectl exec -i -t $(kubectl get pods -o name -n graphistry | grep forge-etl-python) -n graphistry --container forge-etl-python -- /bin/bash
 ```
 
 ### dask-cuda
@@ -531,5 +534,15 @@ kubectl exec -i -t $(kubectl get pods -o name | grep forge-etl-python) --contain
 kubectl describe $(kubectl get pods -o name -n graphistry | grep dask-cuda) -n graphistry
 
 # print the logs
-kubectl logs $(kubectl get pods -o name  -n graphistry | grep dask-cuda) -f
+kubectl logs $(kubectl get pods -o name  -n graphistry | grep dask-cuda) -n graphistry -f
+```
+
+### pivot
+If this service work, feel free to kill the pod and start a new instance, that should solve the glitch.
+
+```bash
+kubectl describe $(kubectl get pods -o name -n graphistry | grep pivot) -n graphistry
+
+# print the logs
+kubectl logs $(kubectl get pods -o name  -n graphistry | grep pivot)  -n graphistry -f
 ```

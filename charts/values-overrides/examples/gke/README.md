@@ -427,7 +427,7 @@ kubectl get pods --watch -n graphistry
 ```
 
 ## Enabling Telemetry
-See [Graphistry Telemetry for Kubernetes](https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment).
+See [Graphistry Telemetry for Kubernetes](https://github.com/graphistry/graphistry-cli/blob/master/docs/telemetry/kubernetes.md).
 
 ## Delete k8s cluster
 Delete the Graphistry chart:

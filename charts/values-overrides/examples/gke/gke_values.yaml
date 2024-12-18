@@ -213,7 +213,7 @@ cuda:
   version: "11.8" #cuda version
 
 global:  ## global settings for all charts
-  tag: v2.41.10
+  tag: v2.41.15
   logs: #change log levels
       LogLevel: DEBUG #log level for the application
       GraphistryLogLevel: DEBUG #log level for graphistry

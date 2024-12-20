@@ -375,7 +375,7 @@ cuda:
   version: "11.8" #cuda version
 
 global:  ## global settings for all charts
-  tag: v2.41.15
+  tag: v2.41.10
 ```
 
 Print more values:

@@ -43,25 +43,28 @@ postgresCluster:
     dataVolumeClaimSpec:
       resources:
         requests:
-          storage: 4Gi
+          storage: 10Gi
 
   patroni:
     dynamicConfiguration:
       postgresql:
         pg_hba:
-          - "host all all 0.0.0.0/0 trust" # this line enabled logical replication with programmatic access
+          - "host all all 0.0.0.0/0 trust" # This line enable logical replication with programmatic access
           - "host all postgres 127.0.0.1/32 md5"
 
   backups:
-    pgbackrest: #check for more config options https://pgbackrest.org/configuration.html
+    pgbackrest: # Check for more config options https://pgbackrest.org/configuration.html
+      global:
+        repo1-retention-full: "3"  # Keeps 3 full backups
+        repo1-retention-archive: "10"  # Retain the last 10 archive logs
       repoHost:
         resources:
           requests:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 200m
+            memory: 256Mi
           limits:
-            cpu: 100m
-            memory: 128Mi
+            cpu: 200m
+            memory: 256Mi
       sidecars:
         pgbackrest:
           resources:
@@ -74,18 +77,18 @@ postgresCluster:
         pgbackrestConfig:
           resources:
             requests:
-              cpu: 100m
+              cpu: 200m
               memory: 128Mi
             limits:
-              cpu: 100m
+              cpu: 200m
               memory: 128Mi
       jobs:
         resources:
           requests:
-            cpu: 100m
+            cpu: 200m
             memory: 128Mi
           limits:
-            cpu: 100m
+            cpu: 200m
             memory: 128Mi
       restore:
         repoName: repo1
@@ -100,8 +103,12 @@ postgresCluster:
 
       repos:
         repo1:
+          schedule:
+            full: "0 1 * * 0"  # Weekly full backup every Sunday at 1 AM
+            differential: "0 3 * * *"  # Daily differential backup
+            incremental: "*/30 * * * *"  # Every 30 minutes for incremental backups
           volume:
             volumeClaimSpec:
               resources:
                 requests:
-                  storage: 4Gi
+                  storage: 20Gi

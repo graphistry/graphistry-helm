@@ -55,8 +55,11 @@ postgresCluster:
   backups:
     pgbackrest: # Check for more config options https://pgbackrest.org/configuration.html
       global:
-        repo1-retention-full: "3"  # Keeps 3 full backups
+        repo1-bundle-size: "1G"  # Set a 1GB maximum size for each 'backup bundle'
+        repo1-bundle-limit: "15"    # Limit to 15 'backup bundles'
+        repo1-retention-full: "5"  # Keeps 5 'full backups'
         repo1-retention-archive: "10"  # Retain the last 10 archive logs
+        repo1-retention-diff: "7"  # Retain 7 'differential backups'
       repoHost:
         resources:
           requests:
@@ -111,4 +114,4 @@ postgresCluster:
             volumeClaimSpec:
               resources:
                 requests:
-                  storage: 20Gi
+                  storage: 50Gi

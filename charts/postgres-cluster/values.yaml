@@ -38,3 +38,80 @@ global:
     #   cpu: 100m
     #   memory: 128Mi
 
+postgresCluster:
+  instance1:
+    dataVolumeClaimSpec:
+      resources:
+        requests:
+          storage: 10Gi
+
+  patroni:
+    dynamicConfiguration:
+      postgresql:
+        pg_hba:
+          - "host all all 0.0.0.0/0 trust" # This line enable logical replication with programmatic access
+          - "host all postgres 127.0.0.1/32 md5"
+
+  backups:
+    pgbackrest: # Check for more config options https://pgbackrest.org/configuration.html
+      global:
+        repo1-bundle-size: "1G"  # Set a 1GB maximum size for each 'backup bundle'
+        repo1-bundle-limit: "15"    # Limit to 15 'backup bundles'
+        repo1-retention-full: "5"  # Keeps 5 'full backups'
+        repo1-retention-archive: "10"  # Retain the last 10 archive logs
+        repo1-retention-diff: "7"  # Retain 7 'differential backups'
+      repoHost:
+        resources:
+          requests:
+            cpu: 200m
+            memory: 256Mi
+          limits:
+            cpu: 200m
+            memory: 256Mi
+      sidecars:
+        pgbackrest:
+          resources:
+            requests:
+              cpu: 100m
+              memory: 128Mi
+            limits:
+              cpu: 100m
+              memory: 128Mi
+        pgbackrestConfig:
+          resources:
+            requests:
+              cpu: 200m
+              memory: 128Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+      jobs:
+        resources:
+          requests:
+            cpu: 200m
+            memory: 128Mi
+          limits:
+            cpu: 200m
+            memory: 128Mi
+      restore:
+        repoName: repo1
+        enabled: false
+        resources:
+          requests:
+            cpu: 100m
+            memory: 128Mi
+          limits:
+            cpu: 100m
+            memory: 128Mi
+
+      repos:
+        repo1:
+          schedule:
+            full: "0 1 * * 0"  # Weekly full backup every Sunday at 1 AM
+            differential: "0 3 * * *"  # Daily differential backup
+            incremental: "*/30 * * * *"  # Every 30 minutes for incremental backups
+          volume:
+            volumeClaimSpec:
+              resources:
+                requests:
+                  storage: 50Gi

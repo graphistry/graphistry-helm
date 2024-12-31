@@ -1,4 +1,4 @@
-# Deploy a Graphistry k8s cluster using GKE
+# Deploy a Graphistry K8s cluster using GKE
 This guide provides step-by-step instructions for deploying Graphistry on Google Kubernetes Engine (GKE).  The steps are based on the official documentation of [Graphistry Helm Charts](https://github.com/graphistry/graphistry-helm) and the [NVIDIA GPU Operator with Google GKE](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/google-gke.html).
 
 ## Prerequisites
@@ -375,7 +375,7 @@ cuda:
   version: "11.8" #cuda version
 
 global:  ## global settings for all charts
-  tag: v2.41.15
+  tag: v2.41.10
 ```
 
 Print more values:

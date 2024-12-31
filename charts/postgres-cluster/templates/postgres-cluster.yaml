@@ -56,7 +56,7 @@ spec:
       {{- end }}
         resources:
           requests:
-            storage: 4Gi
+            storage: {{ toYaml .Values.postgresCluster.instance1.dataVolumeClaimSpec.resources.requests.storage | quote }}
 {{ if .Values.global.postgresVolumeLabel }}
         selector:
           matchLabels:
@@ -66,61 +66,19 @@ spec:
     dynamicConfiguration:
       postgresql:
         pg_hba:
-          - "host all all 0.0.0.0/0 trust" # this line enabled logical replication with programmatic access
-          - "host all postgres 127.0.0.1/32 md5"
-  
+{{ toYaml .Values.postgresCluster.patroni.dynamicConfiguration.postgresql.pg_hba | indent 10 }}
+
   backups:
     pgbackrest:
-      repoHost:
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
-      sidecars:
-        pgbackrest:
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 100m
-              memory: 128Mi
-        pgbackrestConfig:
-          resources:
-            requests:
-              cpu: 100m
-              memory: 128Mi
-            limits:
-              cpu: 100m
-              memory: 128Mi
-      jobs:
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
-      restore:
-        repoName: repo1
-        enabled: false
-        resources:
-          requests:
-            cpu: 100m
-            memory: 128Mi
-          limits:
-            cpu: 100m
-            memory: 128Mi
       {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
       image: registry.developers.crunchydata.com/crunchydata/crunchy-pgbackrest:ubi8-2.40-1 #crunchydata
       {{ else }}
       image: {{.Values.global.containerregistry.name}}/crunchy-pgbackrest:ubi8-2.40-1
-      {{- end }}    
+      {{- end }}
+{{ toYaml .Values.postgresCluster.backups.pgbackrest | indent 6 }}
       repos:
         - name: repo1
+{{ toYaml .Values.postgresCluster.backups.pgbackrest.repos.repo1 | indent 10 }}
           volume:
             volumeClaimSpec:
             {{- if eq .Values.global.multiNode true  }}
@@ -134,7 +92,7 @@ spec:
             {{- end }}
               resources:
                 requests:
-                  storage: 4Gi     
+                  storage: {{ toYaml .Values.postgresCluster.backups.pgbackrest.repos.repo1.volume.volumeClaimSpec.resources.requests.storage | quote }}
   imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
   {{- with .Values.global.imagePullSecrets }}
   imagePullSecrets:

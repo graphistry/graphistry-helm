@@ -80,6 +80,8 @@ Here is an example of a values.yaml for all of the individual services taken fro
             imagePullSecrets: 
               - name: docker-secret-prod
 
+If you're deploying Graphistry on Google Kubernetes Engine (GKE), you can override values for GKE-specific configurations.  For detailed examples and guidance, refer to the `Deploy a Graphistry K8s cluster using GKE <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke>`_.
+
 Mandatory Values
 ----------------
 

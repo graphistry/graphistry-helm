@@ -48,4 +48,4 @@ jobs:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           charts_dir: charts
-          config: .github/config/chart-releaser.yaml
+          release-notes-file: CHANGELOG.md

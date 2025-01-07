@@ -24,7 +24,7 @@ jobs:
 
       - name: install yq
         run: |
-          sudo snap install yq
+          sudo apt-get install yq
 
       - name: Get Chart version
         run: |

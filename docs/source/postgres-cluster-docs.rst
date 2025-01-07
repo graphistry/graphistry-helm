@@ -70,10 +70,61 @@ Parameter                                          Description                  
 ``global.postgresVolumeLabel``                     postgres volume label                                                                                ``null``                                          
 ================================================== ==================================================================================================== ==================================================
 
+The following table lists the configurable parameters of the Postgres cluster and their default values.  These settings control various aspects of the Postgres cluster, including storage, replication, backups, and resource allocation.
+
+For ``postgresCluster.instance1.*`` (e.g. ``postgresCluster.instance1.dataVolumeClaimSpec.resources.requests.storage``):
+
+==================================================== ========================================== ==========
+Parameter                                            Description                                Default
+==================================================== ========================================== ==========
+``.dataVolumeClaimSpec.resources.requests.storage``  Storage request for the Postgres instance. ``10Gi``                                       
+==================================================== ========================================== ==========
+
+For ``postgresCluster.patroni.*`` (e.g. ``postgresCluster.patroni.dynamicConfiguration.postgresql.pg_hba``):
+
+=========================================== ========================================================= ======================================
+Parameter                                   Description                                               Default
+=========================================== ========================================================= ======================================
+``.dynamicConfiguration.postgresql.pg_hba`` List of PostgreSQL `pg_hba` entries for auth/replication. ``host all all 0.0.0.0/0 trust``
+                                                                                                      ``host all postgres 127.0.0.1/32 md5``
+=========================================== ========================================================= ======================================
+
+For ``backups.pgbackrest.*`` (e.g. ``backups.pgbackrest.global.repo1-bundle-size``):
+
+================================================================== ================================================= ==================
+Parameter                                                          Description                                       Default
+================================================================== ================================================= ==================
+``.global.repo1-bundle-size``                                      Maximum size for each backup bundle.              ``1G``
+``.global.repo1-bundle-limit``                                     Limit on the number of backup bundles to keep.    ``15``
+``.global.repo1-retention-full``                                   Retention policy for full backups.                ``5``
+``.global.repo1-retention-archive``                                Retention policy for archive logs.                ``10``
+``.global.repo1-retention-diff``                                   Retention policy for differential backups.        ``7``
+``.repoHost.resources.requests.cpu``                               CPU request for the backup repository host.       ``200m``
+``.repoHost.resources.requests.memory``                            Memory request for the backup repository host.    ``256Mi``
+``.repoHost.resources.limits.cpu``                                 CPU limit for the backup repository host.         ``200m``
+``.repoHost.resources.limits.memory``                              Memory limit for the backup repository host.      ``256Mi``
+``.sidecars.pgbackrest.resources.requests.cpu``                    CPU request for the pgbackrest sidecar.           ``100m``
+``.sidecars.pgbackrest.resources.requests.memory``                 Memory request for the pgbackrest sidecar.        ``128Mi``
+``.sidecars.pgbackrest.resources.limits.cpu``                      CPU limit for the pgbackrest sidecar.             ``100m``
+``.sidecars.pgbackrest.resources.limits.memory``                   Memory limit for the pgbackrest sidecar.          ``128Mi``
+``.sidecars.pgbackrestConfig.resources.requests.cpu``              CPU request for the pgbackrest config sidecar.    ``200m``
+``.sidecars.pgbackrestConfig.resources.requests.memory``           Memory request for the pgbackrest config sidecar. ``128Mi``
+``.sidecars.pgbackrestConfig.resources.limits.cpu``                CPU limit for the pgbackrest config sidecar.      ``200m``
+``.sidecars.pgbackrestConfig.resources.limits.memory``             Memory limit for the pgbackrest config sidecar.   ``128Mi``
+``.jobs.resources.requests.cpu``                                   CPU request for the backup jobs.                  ``200m``
+``.jobs.resources.requests.memory``                                Memory request for the backup jobs.               ``128Mi``
+``.jobs.resources.limits.cpu``                                     CPU limit for the backup jobs.                    ``200m``
+``.jobs.resources.limits.memory``                                  Memory limit for the backup jobs.                 ``128Mi``
+``.restore.repoName``                                              The repository name to use for restores.          ``repo1``
+``.restore.enabled``                                               Enable or disable restore functionality.          ``false``
+``.restore.resources.requests.cpu``                                CPU request for the restore job.                  ``100m``
+``.restore.resources.requests.memory``                             Memory request for the restore job.               ``128Mi``
+``.restore.resources.limits.cpu``                                  CPU limit for the restore job.                    ``100m``
+``.restore.resources.limits.memory``                               Memory limit for the restore job.                 ``128Mi``
+``.repos.repo1.schedule.full``                                     Full backup schedule (Cron expression).           ``"0 1 * * 0"``
+``.repos.repo1.schedule.differential``                             Differential backup schedule (Cron expression).   ``"0 3 * * *"``
+``.repos.repo1.schedule.incremental``                              Incremental backup schedule (Cron expression).    ``"*/30 * * * *"``
+``.repos.repo1.volume.volumeClaimSpec.resources.requests.storage`` Storage request for backup volume.                ``50Gi``
+================================================================== ================================================= ==================
 
 For more information on the CrunchyData Postgres Cluster visit the PGO documentation: `CrunchyData PGO Documentation <https://access.crunchydata.com/documentation/postgres-operator/latest/>`_ 
-
-
-
-
-

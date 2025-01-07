@@ -10,7 +10,7 @@ jobs:
   release:
     permissions:
       contents: write
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -30,22 +30,22 @@ jobs:
         run: |
           echo "TAG_NAME=$(cat charts/graphistry-helm/Chart.yaml | yq .version)" >> $GITHUB_ENV
 
-      - name: get aux charts for release
-        env:
-          AUX_BUNDLE_DIR: Bundle-Charts-${{ env.TAG_NAME }}
-        run: bash chart-bundler/bundler.sh 
-
-      - name: Creates a release in GitHub and uploads attachments
-        env:
-          GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN  }}
-        shell: bash
-        run: |
-          gh release create Bundle-Charts-${{ env.TAG_NAME }} Bundle-Charts-${{ env.TAG_NAME }}.tgz
-
       - name: Run chart-releaser
         uses: helm/chart-releaser-action@v1.5.0
         env:
           CR_TOKEN: "${{ secrets.GITHUB_TOKEN }}"
         with:
           charts_dir: charts
-          release-notes-file: CHANGELOG.md
+          config: .github/config/chart-releaser.yaml
+
+      - name: get aux charts for release
+        env:
+          AUX_BUNDLE_DIR: Bundle-Charts-Release-${{ env.TAG_NAME }}
+        run: bash chart-bundler/bundler.sh && echo "BUNDLE_NAME = $AUX_BUNDLE_DIR" >> $GITHUB_ENV
+
+      - name: Creates a release in GitHub and uploads attachments
+        env:
+          GITHUB_TOKEN: ${{  secrets.GITHUB_TOKEN  }}
+        shell: bash
+        run: |
+          gh release create ${{ env.BUNDLE_NAME }} ${{ env.BUNDLE_NAME }}.tgz

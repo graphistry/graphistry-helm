@@ -11,6 +11,15 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Development]
 *   Working on fixing the Top level persistence for jupyter Notebooks, currently it is persistent inside the different directories but top level resets on redeployment.
 
+## [Version 0.3.7 - 2025-01-06]
+
+### Added
+
+*   Added CUDA 11.8 / RAPIDS 23.10 support.
+*   Added GKE support and guidelines.
+*   Added OpenTelemetry support (including Grafana, Prometheus, Jaeger on ArgoCD).
+*   Improved Postgres cluster configuration.
+
 ## [Version 0.3.6 - 2023-07-25]
 
 ### Breaking 🔥

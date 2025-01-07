@@ -23,7 +23,7 @@ copyright = '2022, Graphistry, Inc.'
 author = "Graphistry, Inc."
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.3.5'
+release = 'v0.3.7'
 
 
 # -- General configuration ---------------------------------------------------

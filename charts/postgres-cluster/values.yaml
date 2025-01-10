@@ -106,7 +106,7 @@ postgresCluster:
 
       repos:
         repo1:
-          schedule:
+          schedules:
             full: "0 1 * * 0"  # Weekly full backup every Sunday at 1 AM
             differential: "0 3 * * *"  # Daily differential backup
             incremental: "*/30 * * * *"  # Every 30 minutes for incremental backups

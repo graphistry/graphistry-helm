@@ -121,9 +121,9 @@ Parameter                                                          Description  
 ``.restore.resources.requests.memory``                             Memory request for the restore job.               ``128Mi``
 ``.restore.resources.limits.cpu``                                  CPU limit for the restore job.                    ``100m``
 ``.restore.resources.limits.memory``                               Memory limit for the restore job.                 ``128Mi``
-``.repos.repo1.schedule.full``                                     Full backup schedule (Cron expression).           ``"0 1 * * 0"``
-``.repos.repo1.schedule.differential``                             Differential backup schedule (Cron expression).   ``"0 3 * * *"``
-``.repos.repo1.schedule.incremental``                              Incremental backup schedule (Cron expression).    ``"*/30 * * * *"``
+``.repos.repo1.schedules.full``                                    Full backup schedule (Cron expression).           ``"0 1 * * 0"``
+``.repos.repo1.schedules.differential``                            Differential backup schedule (Cron expression).   ``"0 3 * * *"``
+``.repos.repo1.schedules.incremental``                             Incremental backup schedule (Cron expression).    ``"*/30 * * * *"``
 ``.repos.repo1.volume.volumeClaimSpec.resources.requests.storage`` Storage request for backup volume.                ``50Gi``
 ================================================================== ================================================= ==================
 

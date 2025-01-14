@@ -78,7 +78,8 @@ spec:
 {{ toYaml .Values.postgresCluster.backups.pgbackrest | indent 6 }}
       repos:
         - name: repo1
-{{ toYaml .Values.postgresCluster.backups.pgbackrest.repos.repo1 | indent 10 }}
+          schedules:
+{{ toYaml .Values.postgresCluster.backups.pgbackrest.repos.repo1.schedules | indent 12 }}
           volume:
             volumeClaimSpec:
             {{- if eq .Values.global.multiNode true  }}

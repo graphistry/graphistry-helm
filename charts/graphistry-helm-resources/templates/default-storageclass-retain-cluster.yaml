@@ -1,0 +1,15 @@
+{{- if eq .Values.global.ENABLE_CLUSTER_MODE true  }}
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  annotations:
+  name: retain-sc-cluster
+  meta.helm.sh/release-namespace: {{ .Release.Namespace }}
+provisioner: {{ .Values.global.provisioner }}
+reclaimPolicy: Retain
+allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
+parameters:
+  server: {{ .Values.defaultClusterStorage.nfsServer }}
+  path: {{ .Values.defaultClusterStorage.nfsPath }}   # Path on the NFS server
+{{- end }}

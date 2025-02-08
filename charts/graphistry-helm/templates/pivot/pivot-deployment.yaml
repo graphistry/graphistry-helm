@@ -27,6 +27,19 @@ spec:
     spec:
       initContainers:
       - name: "pivot-wait-for-postgres"
+      {{ if eq .Values.global.IS_FOLLOWER true }}
+        image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
+        command:
+          - "sh"
+          - "-c"
+          - |
+            echo "Waiting for PostgreSQL to be ready..."
+            until pg_isready -h {{ .Values.global.POSTGRES_HOST }} -p 5432; do
+              echo "PostgreSQL not ready, waiting 5 seconds...";
+              sleep 5;
+            done;
+            echo "PostgreSQL is up!";
+      {{ else }}
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
@@ -38,6 +51,7 @@ spec:
         args: 
         - "pod"
         - "-lapp=postgres"
+      {{- end }}
       - name: "pivot-wait-for-nexus"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
@@ -79,7 +93,11 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           - name: POSTGRES_HOST
+          {{ if eq .Values.global.IS_FOLLOWER true }}
+            value: {{ .Values.global.POSTGRES_HOST | quote }}
+          {{ else }}
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          {{- end }}
           - name: POSTGRES_PORT
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
           - name: POSTGRES_DB
@@ -127,9 +145,14 @@ spec:
             items:
               - key: config.json
                 path: config.json
+      {{- if eq .Values.global.ENABLE_CLUSTER_MODE true }}
+        - name: data-mount
+{{- toYaml .Values.global.clusterVolume | nindent 10 }}
+      {{ else }}
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
+      {{- end }}
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       {{- with .Values.global.imagePullSecrets }}

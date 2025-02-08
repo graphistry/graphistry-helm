@@ -34,7 +34,11 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           - name: POSTGRES_HOST
+          {{ if eq .Values.global.IS_FOLLOWER true }}
+            value: {{ .Values.global.POSTGRES_HOST | quote }}
+          {{ else }}
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          {{- end }}
           - name: POSTGRES_PORT
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
           - name: POSTGRES_DB
@@ -72,9 +76,14 @@ spec:
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
+      {{- if eq .Values.global.ENABLE_CLUSTER_MODE true }}
+        - name: data-mount
+{{- toYaml .Values.global.clusterVolume | nindent 10 }}
+      {{ else }}
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
+      {{- end }}
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

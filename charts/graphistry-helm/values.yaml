@@ -451,6 +451,10 @@ global:  ## global settings for all charts
     GraphistryLogLevel: INFO #log level for graphistry
   ENABLE_OPEN_TELEMETRY: false
 
+  # Cluster deployment settings
+  ENABLE_CLUSTER_MODE: false
+  IS_FOLLOWER: false
+
 #environment variables 
  # can be set like helm install chart_name --name release_name \
  #--set env.DBUser="FOO" --set env.DBPassword="BAR"

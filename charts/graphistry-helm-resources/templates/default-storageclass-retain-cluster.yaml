@@ -10,6 +10,6 @@ reclaimPolicy: Retain
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
 parameters:
-  server: {{ .Values.defaultClusterStorage.nfsServer }}
-  path: {{ .Values.defaultClusterStorage.nfsPath }}   # Path on the NFS server
+  server: {{ .Values.global.clusterVolume.server }} # IP address or DNS of the NFS server
+  path: {{ .Values.global.clusterVolume.path }} # Path on the NFS server
 {{- end }}

@@ -93,14 +93,9 @@ spec:
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
-      {{- if eq .Values.global.ENABLE_CLUSTER_MODE true }}
-        - name: gak-private
-{{- toYaml .Values.global.clusterVolume | nindent 10 }}
-      {{ else }}
         - name: gak-private
           persistentVolumeClaim:
             claimName: gak-private
-      {{- end }}
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

@@ -1,4 +1,6 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+{{ else }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -129,3 +131,4 @@ spec:
 status:
   loadBalancer: {}
 {{ end }}
+{{- end }}

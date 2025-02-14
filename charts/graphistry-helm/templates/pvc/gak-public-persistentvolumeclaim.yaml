@@ -27,6 +27,10 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: datamount-longhorn
+{{- else if eq .Values.global.ENABLE_CLUSTER_MODE true  }}
+  accessModes:
+    - "ReadWriteMany"
+  storageClassName: {{ .Values.global.storageClassNameOverride | default "retain-sc-cluster" }}
 {{- else }}
   accessModes:
     - ReadWriteOnce

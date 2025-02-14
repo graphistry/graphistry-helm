@@ -1,4 +1,8 @@
 global:
+  # Cluster deployment settings
+  ENABLE_CLUSTER_MODE: false
+  IS_FOLLOWER: false
+
    #- Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   provisioner: kubernetes.io/aws-ebs #storage class provisioner
   multiNode: false # multinode selector switch to determine if going multi/single node

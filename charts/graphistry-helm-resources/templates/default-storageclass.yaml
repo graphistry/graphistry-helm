@@ -1,4 +1,5 @@
 {{- if eq .Values.global.multiNode false  }}
+{{- if eq .Values.global.ENABLE_CLUSTER_MODE false  }}
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
@@ -16,4 +17,4 @@ reclaimPolicy: Delete
 allowVolumeExpansion: true
 volumeBindingMode: WaitForFirstConsumer
 {{- end }}
-
+{{- end }}

@@ -99,6 +99,20 @@ spec:
             value: {{ .Values.global.logs.LogLevel | quote }}
           - name: ENABLE_OPEN_TELEMETRY
             value: {{ .Values.global.ENABLE_OPEN_TELEMETRY | quote }}
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_ENDPOINT | quote }}
+          - name: OTEL_EXPORTER_OTLP_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_TIMEOUT | quote }}
+          - name: OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_TRACES_TIMEOUT | quote }}
+          - name: OTEL_EXPORTER_OTLP_METRICS_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_METRICS_TIMEOUT | quote }}
+          - name: OTEL_EXPORTER_OTLP_LOGS_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_LOGS_TIMEOUT | quote }}
+          - name: OT_METRIC_EXPORT_INTERVAL
+            value: {{ .Values.global.OT_METRIC_EXPORT_INTERVAL | quote }}
+          - name: OT_METRIC_EXPORT_TIMEOUT
+            value: {{ .Values.global.OT_METRIC_EXPORT_TIMEOUT | quote }}
           - name: OTEL_SERVICE_NAME
             value: "streamgl-viz"
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}

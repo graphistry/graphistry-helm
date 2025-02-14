@@ -449,7 +449,16 @@ global:  ## global settings for all charts
   logs:
     LogLevel: INFO #log level for the application
     GraphistryLogLevel: INFO #log level for graphistry
+
+  # Telemetry settings
   ENABLE_OPEN_TELEMETRY: false
+  OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
+  OTEL_EXPORTER_OTLP_TIMEOUT: "60000"
+  OTEL_EXPORTER_OTLP_TRACES_TIMEOUT: "60000"
+  OTEL_EXPORTER_OTLP_METRICS_TIMEOUT: "60000"
+  OTEL_EXPORTER_OTLP_LOGS_TIMEOUT: "60000"
+  OT_METRIC_EXPORT_INTERVAL: "60000"
+  OT_METRIC_EXPORT_TIMEOUT: "30000"
 
   # Cluster deployment settings
   ENABLE_CLUSTER_MODE: false
@@ -559,20 +568,6 @@ env: #environment variables
    value: "false"
  - name: ACME_AGREE
    value: "true"
- - name: OTEL_EXPORTER_OTLP_ENDPOINT
-   value: "http://otel-collector:4317"
- - name: OTEL_EXPORTER_OTLP_TIMEOUT
-   value: "60000"
- - name: OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
-   value: "60000"
- - name: OTEL_EXPORTER_OTLP_METRICS_TIMEOUT
-   value: "60000"
- - name: OTEL_EXPORTER_OTLP_LOGS_TIMEOUT
-   value: "60000"
- - name: OT_METRIC_EXPORT_INTERVAL
-   value: "60000"
- - name: OT_METRIC_EXPORT_TIMEOUT
-   value: "30000"
 
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \

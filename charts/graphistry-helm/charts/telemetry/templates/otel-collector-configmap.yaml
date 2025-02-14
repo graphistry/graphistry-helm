@@ -1,5 +1,7 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
   {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+{{ else }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -66,5 +68,6 @@ data:
           receivers: [otlp]
           processors: [memory_limiter, filter/ottl, batch]
           exporters: [logging, otlp]
+{{- end }}
 {{- end }}
 {{- end }}

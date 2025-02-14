@@ -436,21 +436,6 @@ env: #environment variables
    value: "false"
  - name: ACME_AGREE
    value: "true"
- - name: OTEL_EXPORTER_OTLP_ENDPOINT
-   value: "http://otel-collector:4317"
- - name: OTEL_EXPORTER_OTLP_TIMEOUT
-   value: "60000"
- - name: OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
-   value: "60000"
- - name: OTEL_EXPORTER_OTLP_METRICS_TIMEOUT
-   value: "60000"
- - name: OTEL_EXPORTER_OTLP_LOGS_TIMEOUT
-   value: "60000"
- - name: OT_METRIC_EXPORT_INTERVAL
-   value: "60000"
- - name: OT_METRIC_EXPORT_TIMEOUT
-   value: "30000"
-
 
 ##streamlit environment variables
  ## can be set like helm upgrade -i  chart_name --name release_name \

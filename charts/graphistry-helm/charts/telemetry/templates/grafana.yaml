@@ -1,5 +1,5 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+  {{ if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE false }}
 {{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
 {{ else }}
 apiVersion: apps/v1
@@ -58,10 +58,10 @@ spec:
             - name: GF_USERS_ALLOW_SIGN_UP
               value: "false"
             - name: GF_SERVER_ROOT_URL
-              value: {{ .Values.telemetryEnv.grafana.GF_SERVER_ROOT_URL | quote }}
+              value: {{ .Values.global.telemetryStack.grafana.GF_SERVER_ROOT_URL | quote }}
             - name: GF_SERVER_SERVE_FROM_SUB_PATH
-              value: {{ .Values.telemetryEnv.grafana.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
-          image: {{ .Values.telemetryEnv.grafana.image | quote }}
+              value: {{ .Values.global.telemetryStack.grafana.GF_SERVER_SERVE_FROM_SUB_PATH | quote }}
+          image: {{ .Values.global.telemetryStack.grafana.image | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:

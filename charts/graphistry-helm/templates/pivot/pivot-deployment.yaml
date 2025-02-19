@@ -78,6 +78,10 @@ spec:
         - "streamgl-vgraph-etl"
       containers:
         - env:
+          - name: ENABLE_CLUSTER_MODE
+            value: {{ .Values.global.ENABLE_CLUSTER_MODE | quote }}
+          - name: GRAPHISTRY_INSTANCE_NAME
+            value: {{ .Values.global.GRAPHISTRY_INSTANCE_NAME | quote }}
           - name : NODE_ENV
             value: {{ .Values.nodeEnv | quote }}
       #{{ if eq .Values.devMode true }}

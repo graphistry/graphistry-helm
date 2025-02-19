@@ -1,5 +1,5 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+  {{ if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE false }}
 {{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
 {{ else }}
 apiVersion: apps/v1
@@ -24,7 +24,7 @@ spec:
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-          image: {{ .Values.telemetryEnv.nodeExporter.image | quote }}
+          image: {{ .Values.global.telemetryStack.nodeExporter.image | quote }}
           args: # Skip '--collector.systemd' since we're running in Docker.
             - '--collector.processes'
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}

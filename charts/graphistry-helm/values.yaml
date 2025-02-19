@@ -450,7 +450,7 @@ global:  ## global settings for all charts
     LogLevel: INFO #log level for the application
     GraphistryLogLevel: INFO #log level for graphistry
 
-  # Telemetry settings
+  # Global Telemetry settings
   ENABLE_OPEN_TELEMETRY: false
   OTEL_EXPORTER_OTLP_ENDPOINT: "http://otel-collector:4317"
   OTEL_EXPORTER_OTLP_TIMEOUT: "60000"
@@ -463,6 +463,7 @@ global:  ## global settings for all charts
   # Cluster deployment settings
   ENABLE_CLUSTER_MODE: false
   IS_FOLLOWER: false
+  GRAPHISTRY_INSTANCE_NAME: "leader"
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \

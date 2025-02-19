@@ -51,6 +51,10 @@ spec:
           command:
             - /entrypoints/rapids-entrypoint.sh
           env:
+          - name: ENABLE_CLUSTER_MODE
+            value: {{ .Values.global.ENABLE_CLUSTER_MODE | quote }}
+          - name: GRAPHISTRY_INSTANCE_NAME
+            value: {{ .Values.global.GRAPHISTRY_INSTANCE_NAME | quote }}
           - name: GRAPHISTRY_CPU_MODE
             value: {{.Values.graphistryCPUMode | quote }}
           - name: SKIP_SERVER

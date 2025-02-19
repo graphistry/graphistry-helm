@@ -1,6 +1,4 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
-{{ else }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -17,7 +15,9 @@ spec:
         io.kompose.network/grph: "true"
         io.kompose.service: otel-collector
     spec:
-      {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+      {{ if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE false }}
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+{{ else }}
       initContainers:
       - name: "{{ lower .Chart.Name }}-init-prometheus"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
@@ -44,25 +44,28 @@ spec:
         - "service"
         - "jaeger"
       {{- end }}
+{{- end }}
       containers:
         - env:
+            - name: GRAPHISTRY_INSTANCE_NAME
+              value: {{ .Values.global.GRAPHISTRY_INSTANCE_NAME | quote }}
+            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
+              value: {{ .Values.global.telemetryStack.jaeger.OTEL_EXPORTER_JAEGER_ENDPOINT | quote }}
           {{- range .Values.env }}
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-            - name: OTEL_LOG_LEVEL
-              value: "warn"
-            - name: OTEL_EXPORTER_JAEGER_ENDPOINT
-              value: "jaeger:4317"
-          {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE true }}
+          {{- if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE true }}
             - name: OTEL_COLLECTOR_OTLP_USERNAME
-              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_USERNAME | quote }}
+              value: {{ .Values.global.telemetryStack.openTelemetryCollector.OTEL_COLLECTOR_OTLP_USERNAME | quote }}
             - name: OTEL_COLLECTOR_OTLP_PASSWORD
-              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_PASSWORD | quote }}
+              value: {{ .Values.global.telemetryStack.openTelemetryCollector.OTEL_COLLECTOR_OTLP_PASSWORD | quote }}
             - name: OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT
-              value: {{ .Values.telemetryEnv.openTelemetryCollector.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
+              value: {{ .Values.global.telemetryStack.openTelemetryCollector.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT | quote }}
+            - name: LEADER_OTEL_EXPORTER_OTLP_ENDPOINT
+              value: {{ .Values.global.telemetryStack.openTelemetryCollector.LEADER_OTEL_EXPORTER_OTLP_ENDPOINT | quote }}
           {{- end }}
-          image: {{ .Values.telemetryEnv.openTelemetryCollector.image | quote }}
+          image: {{ .Values.global.telemetryStack.openTelemetryCollector.image | quote }}
           args:
             - "--config=/etc/otelcol/otel-collector-config.yml"
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
@@ -96,7 +99,7 @@ spec:
       serviceAccountName: job-robot
       volumes:
         - name: otel-collector-config-mount
-          {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+          {{- if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE false }}
           configMap:
             name: otel-collector-configmap
           {{- else }}
@@ -118,7 +121,11 @@ metadata:
     io.kompose.service: otel-collector
   name: otel-collector
 spec:
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+  type: ClusterIP
+{{ else }}
   type: LoadBalancer
+{{- end }}
   ports:
     - name: "4317"
       port: 4317
@@ -131,4 +138,3 @@ spec:
 status:
   loadBalancer: {}
 {{ end }}
-{{- end }}

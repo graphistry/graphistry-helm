@@ -1,5 +1,5 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-  {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE true }}
+  {{- if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE true }}
 {{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
 {{ else }}
 apiVersion: v1
@@ -40,7 +40,13 @@ data:
           queue_size: 5000
 
     processors:
-      filter/ottl:
+      attributes/system-attribute:
+        actions:
+          - key: system
+            value: "graphistry"
+            action: insert
+
+      filter/traces:
         error_mode: ignore
         traces:
           span:
@@ -66,12 +72,12 @@ data:
       pipelines:
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, batch, attributes/system-attribute]
           exporters: [otlphttp]
 
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, filter/ottl, batch]
+          processors: [memory_limiter, filter/traces, batch, attributes/system-attribute]
           exporters: [otlphttp]
 {{- end }}
 {{- end }}

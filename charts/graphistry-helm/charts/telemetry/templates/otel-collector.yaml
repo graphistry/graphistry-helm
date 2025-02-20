@@ -104,7 +104,7 @@ spec:
             name: otel-collector-configmap
           {{- else }}
           configMap:
-            name: otel-collector-configmap-cloud
+            name: otel-collector-cloud-configmap
           {{- end }}
       imagePullSecrets:
         {{- toYaml .Values.global.imagePullSecrets | nindent 8 }}

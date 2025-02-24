@@ -1,0 +1,9 @@
+global:  ## global settings for all charts
+  IS_FOLLOWER: true
+  GRAPHISTRY_INSTANCE_NAME: "follower1"
+  POSTGRES_HOST: "postgres-ha.graphistry1.svc.cluster.local"
+
+  telemetryStack:
+    openTelemetryCollector:
+      # Settings for cluster mode (when graphistry-helm.global.ENABLE_CLUSTER_MODE: true)
+      LEADER_OTEL_EXPORTER_OTLP_ENDPOINT: "otel-collector.graphistry1.svc.cluster.local:4317" # All followers's collectors will export to this leader collector, and from there the telemetry data will be exported to Grafana, Prometheus, Jaeger, etc; e.g. "otel-collector.graphistry1.svc.cluster.local:4317"

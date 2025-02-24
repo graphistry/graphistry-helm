@@ -1,0 +1,3 @@
+global:
+  IS_FOLLOWER: false
+  GRAPHISTRY_INSTANCE_NAME: "leader"

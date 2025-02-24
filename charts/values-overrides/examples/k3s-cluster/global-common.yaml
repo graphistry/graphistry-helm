@@ -1,0 +1,10 @@
+global:  ## global settings for all charts
+  tag: v2.41.20
+  ENABLE_CLUSTER_MODE: true
+  ENABLE_OPEN_TELEMETRY: true
+
+  telemetryStack:
+    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+
+logs:
+    LogLevel: DEBUG #log level for the application

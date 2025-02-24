@@ -1,0 +1,8 @@
+global:
+  provisioner: "cluster.local/nfs-subdir-external-provisioner"
+  ENABLE_CLUSTER_MODE: true
+  # storageClassNameOverride: "retain-sc-example-staging-dev-cluster" # default "retain-sc-cluster"
+  clusterVolume:
+    nfs:
+      server: 192.168.0.10
+      path: /mnt/data/shared/

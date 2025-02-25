@@ -4,7 +4,7 @@ This guide provides step-by-step instructions for deploying Graphistry in a mult
 
 ## Prerequisites
 
-1. Network File System (NFS): Configure the [NFS shared directory](https://graphistry-admin-docs.readthedocs.io/en/latest/install/cluster.html#step-1-configure-the-nfs-shared-directory).
+1. Network File System (`NFS`): Configure the [NFS shared directory](https://graphistry-admin-docs.readthedocs.io/en/latest/install/cluster.html#step-1-configure-the-nfs-shared-directory).
 3. Helm.
 4. [Get Graphistry Helm charts](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#get-graphistry-helm-charts).
 
@@ -35,7 +35,7 @@ See [here](https://github.com/graphistry/graphistry-helm/tree/main/charts/values
 
 ## Setup NFS
 
-*Note: For GKE, it is necessary to set up an NFS server VM or use one of their native storage options (see [here](https://cloud.google.com/kubernetes-engine/docs/concepts/persistent-volumes#persistentvolumes) or [here](https://cloud.google.com/kubernetes-engine/docs/concepts/storage-overview)).*
+*Note: For GKE, it is necessary to set up an `NFS` server `VM` or use one of their native storage options (see [here](https://cloud.google.com/kubernetes-engine/docs/concepts/persistent-volumes#persistentvolumes) or [here](https://cloud.google.com/kubernetes-engine/docs/concepts/storage-overview)).*
 
 
 Follow the [NFS guidelines example](https://graphistry-admin-docs.readthedocs.io/en/latest/install/cluster.html#on-the-leader-node-main-machine) to ensure the shared directory has the correct permissions.
@@ -45,7 +45,7 @@ Add the Helm repository of the NFS storage class provider:
 helm repo add nfs-subdir-external-provisioner https://kubernetes-sigs.github.io/nfs-subdir-external-provisioner/
 ```
 
-Install the NFS storage class provider using the shared data directory path:
+Install the `NFS` storage class provider using the shared data directory path:
 ```bash
 helm install nfs-subdir-external-provisioner nfs-subdir-external-provisioner/nfs-subdir-external-provisioner \
     --set nfs.server=192.168.0.10 \
@@ -139,7 +139,7 @@ kubectl get pods --watch --namespace postgres-operator
 
 ### 1. Install the Graphistry Resources chart
 
-The Graphistry Resources chart includes the storage class used for dynamic provisioning of volume claims for the Postgres cluster, as well as the `gak-public` and `gak-private` pods.  The remaining Graphistry pods will utilize an NFS volume that connects directly to the shared NFS directory.
+The Graphistry Resources chart includes the storage class used for dynamic provisioning of volume claims for the Postgres cluster, as well as the `gak-public` and `gak-private` pods.  The remaining Graphistry pods will utilize an `NFS` volume that connects directly to the shared `NFS` directory.
 
 Show all the values and options for this chart:
 ```bash
@@ -210,7 +210,7 @@ Wait until the resources are online.  The Postgres instance and host should be r
 kubectl get pods --watch --namespace graphistry1
 ```
 
-For GKE, start the Graphistry services for the `leader` instance:
+For `GKE`, start the Graphistry services for the `leader` instance:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
   --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
@@ -221,7 +221,7 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   --namespace graphistry1 --create-namespace
 ```
 
-For K3s, start the Graphistry services for the `leader` instance:
+For `K3s`, start the Graphistry services for the `leader` instance:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
   --values ./charts/values-overrides/examples/k3s/k3s_example_values.yaml \
@@ -316,7 +316,7 @@ helm upgrade -i postgres-cluster ./charts/postgres-cluster \
   --namespace graphistry2 --create-namespace
 ```
 
-For GKE, start the Graphistry services for the `follower` instance:
+For `GKE`, start the Graphistry services for the `follower` instance:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
   --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
@@ -327,10 +327,10 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   --namespace graphistry2 --create-namespace
 ```
 
-For K3s, start the Graphistry services for the `follower` instance:
+For `K3s`, start the Graphistry services for the `follower` instance:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
-  --values ./charts/values-overrides/examples/k3s_example_values.yaml \
+  --values ./charts/values-overrides/examples/k3s/k3s_example_values.yaml \
   -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml \
   -f ./charts/values-overrides/examples/cluster/global-common.yaml \
   -f ./charts/values-overrides/examples/cluster/follower.yaml \
@@ -347,7 +347,7 @@ kubectl get services --namespace graphistry1 | grep caddy
 ## Redeploying Instances (Upgrading Helm Charts)
 
 The Persistent Volume Claims must be reused each time the instances are redeployed.
-Here is how the `leader` instance can be redeployed for GKE:
+Here is how the `leader` instance can be redeployed for `GKE`:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
   --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
@@ -360,10 +360,10 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   --namespace graphistry1 --create-namespace
 ```
 
-For K3s:
+For `K3s`:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
-  --values ./charts/values-overrides/examples/k3s_example_values.yaml \
+  --values ./charts/values-overrides/examples/k3s/k3s_example_values.yaml \
   -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml \
   -f ./charts/values-overrides/examples/cluster/global-common.yaml \
   -f ./charts/values-overrides/examples/cluster/leader.yaml \
@@ -372,7 +372,7 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   --namespace graphistry1 --create-namespace
 ```
 
-And here is how the `follower` instance can be redeployed for GKE:
+And here is how the `follower` instance can be redeployed for `GKE`:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
   --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
@@ -385,10 +385,10 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   --namespace graphistry2 --create-namespace
 ```
 
-For K3s:
+For `K3s`:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
-  --values ./charts/values-overrides/examples/k3s_example_values.yaml \
+  --values ./charts/values-overrides/examples/k3s/k3s_example_values.yaml \
   -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml \
   -f ./charts/values-overrides/examples/cluster/global-common.yaml \
   -f ./charts/values-overrides/examples/cluster/follower.yaml \

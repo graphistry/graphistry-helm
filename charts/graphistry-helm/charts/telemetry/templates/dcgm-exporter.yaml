@@ -1,5 +1,7 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+  {{ if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE false }}
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+{{ else }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -23,8 +25,8 @@ spec:
               value: {{ .value | quote }}
           {{- end }}
             - name: DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE
-              value: {{ .Values.telemetryEnv.dcgmExporter.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
-          image: {{ .Values.telemetryEnv.dcgmExporter.image | quote }}
+              value: {{ .Values.global.telemetryStack.dcgmExporter.DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE | quote }}
+          image: {{ .Values.global.telemetryStack.dcgmExporter.image | quote }}
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
           resources:
             requests:
@@ -61,4 +63,5 @@ spec:
 status:
   loadBalancer: {}
   {{- end }}
+{{- end }}
 {{- end }}

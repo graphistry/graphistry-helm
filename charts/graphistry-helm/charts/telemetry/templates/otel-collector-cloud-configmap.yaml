@@ -1,5 +1,5 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-  {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE true }}
+  {{- if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE true }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -38,7 +38,19 @@ data:
           queue_size: 5000
 
     processors:
-      filter/ottl:
+      attributes/system-attribute:
+        actions:
+          - key: system
+            value: "graphistry"
+            action: insert
+
+      attributes/instance-attribute:
+        actions:
+          - key: graphistry_instance
+            value: "{{ .Values.global.GRAPHISTRY_INSTANCE_NAME }}"
+            action: insert
+
+      filter/traces:
         error_mode: ignore
         traces:
           span:
@@ -64,12 +76,12 @@ data:
       pipelines:
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, batch]
+          processors: [memory_limiter, batch, attributes/system-attribute, attributes/instance-attribute]
           exporters: [otlphttp]
 
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, filter/ottl, batch]
+          processors: [memory_limiter, filter/traces, batch, attributes/system-attribute, attributes/instance-attribute]
           exporters: [otlphttp]
 {{- end }}
 {{- end }}

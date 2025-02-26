@@ -1,5 +1,7 @@
 {{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-  {{ if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+  {{ if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE false }}
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+{{ else }}
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
@@ -24,7 +26,7 @@ spec:
             - name: {{ .name }}
               value: {{ .value | quote }}
           {{- end }}
-          image: {{ .Values.telemetryEnv.jaeger.image | quote }}
+          image: {{ .Values.global.telemetryStack.jaeger.image | quote }}
           args: 
             - "--query.ui-config=/tmp/jaeger-ui.json"
           imagePullPolicy: {{ .Values.global.imagePullPolicy | quote }}
@@ -80,3 +82,4 @@ status:
   loadBalancer: {}
   {{ end }}
 {{ end }}
+{{- end }}

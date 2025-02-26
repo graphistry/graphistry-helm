@@ -33,31 +33,36 @@ tls: false #set tls to true to enable use of LetsEncrypt TLS
 global:  ## global settings for all charts
   ENABLE_OPEN_TELEMETRY: false
 
-# Graphistry Telemetry values and environment variables for observability tools
-# can be set like helm upgrade -i chart_name --name release_name \
-#--set stENVPublic.LOG_LEVEL="FOO"
-# Telemetry documentation:
-# https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
-telemetryEnv:
-  OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
-  openTelemetryCollector:
-    image: "otel/opentelemetry-collector-contrib:0.87.0"
-    OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
-    OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
-    OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
-  grafana:
-    image: "grafana/grafana:11.0.0"
-    GF_SERVER_ROOT_URL: "/grafana"
-    GF_SERVER_SERVE_FROM_SUB_PATH: "true"
-  dcgmExporter:
-    image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
-    DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
-  jaeger:
-    image: "jaegertracing/all-in-one:1.50.0"
-  nodeExporter:
-    image: "prom/node-exporter:v1.8.2"
-  prometheus:
-    image: "prom/prometheus:v2.47.2"
+  # Graphistry Telemetry values and environment variables for observability tools
+  # can be set like helm upgrade -i chart_name --name release_name \
+  #--set stENVPublic.LOG_LEVEL="FOO"
+  # Telemetry documentation:
+  # https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
+  telemetryStack:
+    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+    openTelemetryCollector:
+      image: "otel/opentelemetry-collector-contrib:0.87.0"
+      # Settings for cloud mode (when OTEL_CLOUD_MODE: true)
+      OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+      OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
+      OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
+      # Settings for cluster mode (when graphistry-helm.global.ENABLE_CLUSTER_MODE: true)
+      LEADER_OTEL_EXPORTER_OTLP_ENDPOINT: "" # All followers's collectors will export to this leader collector, and from there the telemetry data will be exported to Grafana, Prometheus, Jaeger, etc; e.g. "otel-collector.graphistry1.svc.cluster.local:4317"
+
+    grafana:
+      image: "grafana/grafana:11.0.0"
+      GF_SERVER_ROOT_URL: "/grafana"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    dcgmExporter:
+      image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
+      DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
+    jaeger:
+      image: "jaegertracing/all-in-one:1.50.0"
+      OTEL_EXPORTER_JAEGER_ENDPOINT: "jaeger:4317"
+    nodeExporter:
+      image: "prom/node-exporter:v1.8.2"
+    prometheus:
+      image: "prom/prometheus:v2.47.2"
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \

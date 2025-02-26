@@ -51,6 +51,10 @@ spec:
           command:
             - /entrypoints/rapids-entrypoint.sh
           env:
+          - name: ENABLE_CLUSTER_MODE
+            value: {{ .Values.global.ENABLE_CLUSTER_MODE | quote }}
+          - name: GRAPHISTRY_INSTANCE_NAME
+            value: {{ .Values.global.GRAPHISTRY_INSTANCE_NAME | quote }}
           - name: GRAPHISTRY_CPU_MODE
             value: {{.Values.graphistryCPUMode | quote }}
           - name: SKIP_SERVER
@@ -66,7 +70,11 @@ spec:
           - name: REMOTE_DASK
             value: {{.Values.daskscheduler.location | quote }}
           - name: POSTGRES_HOST
+          {{ if eq .Values.global.IS_FOLLOWER true }}
+            value: {{ .Values.global.POSTGRES_HOST | quote }}
+          {{ else }}
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          {{- end }}
           - name: POSTGRES_PORT
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
           - name: POSTGRES_DB
@@ -83,6 +91,20 @@ spec:
             value: {{ .Values.global.logs.LogLevel | quote }}
           - name: ENABLE_OPEN_TELEMETRY
             value: {{ .Values.global.ENABLE_OPEN_TELEMETRY | quote }}
+          - name: OTEL_EXPORTER_OTLP_ENDPOINT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_ENDPOINT | quote }}
+          - name: OTEL_EXPORTER_OTLP_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_TIMEOUT | quote }}
+          - name: OTEL_EXPORTER_OTLP_TRACES_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_TRACES_TIMEOUT | quote }}
+          - name: OTEL_EXPORTER_OTLP_METRICS_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_METRICS_TIMEOUT | quote }}
+          - name: OTEL_EXPORTER_OTLP_LOGS_TIMEOUT
+            value: {{ .Values.global.OTEL_EXPORTER_OTLP_LOGS_TIMEOUT | quote }}
+          - name: OT_METRIC_EXPORT_INTERVAL
+            value: {{ .Values.global.OT_METRIC_EXPORT_INTERVAL | quote }}
+          - name: OT_METRIC_EXPORT_TIMEOUT
+            value: {{ .Values.global.OT_METRIC_EXPORT_TIMEOUT | quote }}
           - name: OTEL_SERVICE_NAME
             value: "dask-cuda-worker-1"
           image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.daskcudaworker.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
@@ -113,9 +135,14 @@ spec:
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
+      {{- if eq .Values.global.ENABLE_CLUSTER_MODE true }}
+        - name: data-mount
+{{- toYaml .Values.global.clusterVolume | nindent 10 }}
+      {{ else }}
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
+      {{- end }}
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

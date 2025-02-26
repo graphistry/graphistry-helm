@@ -1,10 +1,15 @@
-{{ if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
-  {{- if eq .Values.telemetryEnv.OTEL_CLOUD_MODE false }}
+{{- if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  {{- if eq .Values.global.telemetryStack.OTEL_CLOUD_MODE false }}
+
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: otel-collector-configmap
 data:
+{{- if eq .Values.global.ENABLE_CLUSTER_MODE true }}
+
+  {{- if eq .Values.global.IS_FOLLOWER false }}
+  # Is the leader instance
   otel-collector-config.yml: |-
     receivers:
       otlp:
@@ -14,8 +19,7 @@ data:
     exporters:
       prometheus:
         endpoint: "0.0.0.0:8889"
-        const_labels:
-          system: graphistry
+        namespace: graphistry
 
       logging:
         loglevel: warn
@@ -26,7 +30,179 @@ data:
           insecure: true
 
     processors:
-      filter/ottl:
+      attributes/system-attribute:
+        actions:
+          - key: system
+            value: "graphistry"
+            action: insert
+
+      attributes/instance-attribute:
+        actions:
+          - key: graphistry_instance
+            value: "{{ .Values.global.GRAPHISTRY_INSTANCE_NAME }}"
+            action: insert
+
+      filter/traces:
+        error_mode: ignore
+        traces:
+          span:
+            - IsMatch(attributes["http.route"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/health.*") or IsMatch(attributes["http.target"], "/health.*")
+            - name == "readHandler" and attributes["http.status_code"] == 200
+
+      batch:
+        send_batch_size: 2000
+        timeout: 5s
+        send_batch_max_size: 0
+      memory_limiter:
+        limit_mib: 450
+        check_interval: 5s
+        spike_limit_mib: 150
+
+    extensions:
+      health_check:
+      pprof:
+        endpoint: :1888
+      zpages:
+        endpoint: :55679
+
+    service:
+      extensions: [pprof, zpages, health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [
+            memory_limiter,
+            batch,
+            attributes/system-attribute,
+            attributes/instance-attribute
+          ]
+          exporters: [logging, prometheus]
+
+        traces:
+          receivers: [otlp]
+          processors: [
+            memory_limiter,
+            filter/traces,
+            batch,
+            attributes/system-attribute,
+            attributes/instance-attribute
+          ]
+          exporters: [logging, otlp]
+  {{- else }}
+  # Is a follower instance
+  otel-collector-config.yml: |-
+    extensions:
+      pprof:
+        endpoint: :1888
+      zpages:
+        endpoint: :55679
+      health_check:
+
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+
+    exporters:
+      otlp:
+        endpoint: {{ .Values.global.telemetryStack.openTelemetryCollector.LEADER_OTEL_EXPORTER_OTLP_ENDPOINT | quote }}
+        tls:
+          insecure: true
+
+    processors:
+      attributes/system-attribute:
+        actions:
+          - key: system
+            value: "graphistry"
+            action: insert
+
+      attributes/instance-attribute:
+        actions:
+          - key: graphistry_instance
+            value: "{{ .Values.global.GRAPHISTRY_INSTANCE_NAME }}"
+            action: insert
+
+      filter/traces:
+        error_mode: ignore
+        traces:
+          span:
+            - IsMatch(attributes["http.route"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/list\\?skipContextTest=.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/check-workers.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.target"], "/read.*") and attributes["http.status_code"] == 200
+            - IsMatch(attributes["http.route"], "/health.*") or IsMatch(attributes["http.target"], "/health.*")
+            - name == "readHandler" and attributes["http.status_code"] == 200
+      batch:
+        send_batch_size: 2000
+        timeout: 5s
+        send_batch_max_size: 0
+      memory_limiter:
+        limit_mib: 450
+        check_interval: 5s
+        spike_limit_mib: 150
+
+    service:
+      extensions: [pprof, zpages, health_check]
+      pipelines:
+        metrics:
+          receivers: [otlp]
+          processors: [
+            memory_limiter,
+            batch,
+            attributes/system-attribute,
+            attributes/instance-attribute
+          ]
+          exporters: [otlp]
+
+        traces:
+          receivers: [otlp]
+          processors: [
+            memory_limiter,
+            filter/traces,
+            batch,
+            attributes/system-attribute,
+            attributes/instance-attribute
+          ]
+          exporters: [otlp]
+  {{- end }}
+
+{{- else }}
+  # Is non cluster mode
+  otel-collector-config.yml: |-
+    receivers:
+      otlp:
+        protocols:
+          grpc:
+
+    exporters:
+      prometheus:
+        endpoint: "0.0.0.0:8889"
+        namespace: graphistry
+
+      logging:
+        loglevel: warn
+
+      otlp:
+        endpoint: ${env:OTEL_EXPORTER_JAEGER_ENDPOINT}
+        tls:
+          insecure: true
+
+    processors:
+      attributes/system-attribute:
+        actions:
+          - key: system
+            value: "graphistry"
+            action: insert
+
+      filter/traces:
         error_mode: ignore
         traces:
           span:
@@ -59,12 +235,23 @@ data:
       pipelines:
         metrics:
           receivers: [otlp]
-          processors: [memory_limiter, batch]
+          processors: [
+            memory_limiter,
+            batch,
+            attributes/system-attribute
+          ]
           exporters: [logging, prometheus]
 
         traces:
           receivers: [otlp]
-          processors: [memory_limiter, filter/ottl, batch]
+          processors: [
+            memory_limiter,
+            filter/traces,
+            batch,
+            attributes/system-attribute
+          ]
           exporters: [logging, otlp]
 {{- end }}
+
+  {{- end }}
 {{- end }}

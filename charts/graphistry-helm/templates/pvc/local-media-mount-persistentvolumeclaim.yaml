@@ -1,3 +1,4 @@
+{{- if eq .Values.global.ENABLE_CLUSTER_MODE false }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -34,3 +35,4 @@ spec:
     requests:
       storage: 4Gi
 status: {}
+{{- end }}

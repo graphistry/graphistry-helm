@@ -27,6 +27,19 @@ spec:
     spec:
       initContainers:
       - name: "nexus-wait-for-postgres"
+      {{ if eq .Values.global.IS_FOLLOWER true }}
+        image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
+        command:
+          - "sh"
+          - "-c"
+          - |
+            echo "Waiting for PostgreSQL to be ready..."
+            until pg_isready -h {{ .Values.global.POSTGRES_HOST }} -p 5432; do
+              echo "PostgreSQL not ready, waiting 5 seconds...";
+              sleep 5;
+            done;
+            echo "PostgreSQL is up!";
+      {{ else }}
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
@@ -38,8 +51,13 @@ spec:
         args: 
         - "pod"
         - "-lapp=postgres"
+      {{- end }}
       containers:
         - env:
+          - name: ENABLE_CLUSTER_MODE
+            value: {{ .Values.global.ENABLE_CLUSTER_MODE | quote }}
+          - name: GRAPHISTRY_INSTANCE_NAME
+            value: {{ .Values.global.GRAPHISTRY_INSTANCE_NAME | quote }}
           - name: GRAPHISTRY_CPU_MODE
             value: {{.Values.graphistryCPUMode | quote }}
           - name : NODE_ENV
@@ -65,7 +83,11 @@ spec:
             value: {{ .value | quote }}
    {{- end }}
           - name: POSTGRES_HOST
+          {{ if eq .Values.global.IS_FOLLOWER true }}
+            value: {{ .Values.global.POSTGRES_HOST | quote }}
+          {{ else }}
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: host } }
+          {{- end }}
           - name: POSTGRES_PORT
             valueFrom: { secretKeyRef: { name: {{.Values.global.postgres.host }}-pguser-{{.Values.global.postgres.user }}, key: port } }
           - name: POSTGRES_DB
@@ -149,12 +171,19 @@ spec:
       restartPolicy: {{ .Values.global.restartPolicy }}
       serviceAccountName: job-robot
       volumes:
+      {{- if eq .Values.global.ENABLE_CLUSTER_MODE true }}
+        - name: local-media-mount
+{{- toYaml .Values.global.clusterVolume | nindent 10 }}
+        - name: data-mount
+{{- toYaml .Values.global.clusterVolume | nindent 10 }}
+      {{ else }}
         - name: local-media-mount
           persistentVolumeClaim:
             claimName: local-media-mount
         - name: data-mount
           persistentVolumeClaim:
             claimName: data-mount
+      {{- end }}
       {{- with .Values.global.imagePullSecrets }}
       imagePullSecrets:
         {{- toYaml . | nindent 8 }}

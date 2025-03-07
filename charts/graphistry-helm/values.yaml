@@ -467,6 +467,7 @@ global:  ## global settings for all charts
   # Values for followers
   POSTGRES_HOST: "postgres"
   REDIS_URL: "redis://redis:6379"
+  REDIS_URL_NEXUS_FEP: "redis://redis:6379" # e.g. use for entitlements GPU metrics
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \

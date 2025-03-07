@@ -1,6 +1,6 @@
 # Deploy a Graphistry cluster on Kubernetes
 
-This guide provides step-by-step instructions for deploying Graphistry in a multinode environment using the K3s Kubernetes distribution.
+This guide provides step-by-step instructions for deploying a Graphistry cluster in a multinode environment using the K3s Kubernetes distribution.
 
 ## Prerequisites
 
@@ -153,6 +153,8 @@ helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources -f ./cha
 
 ### 2. Deploy the leader instance
 
+The leader instance will run in the `graphistry1` namespace.  Within this namespace, the PostgreSQL cluster will serve Nexus dashboards and services for other `follower` instances.  Additionally, the `Redis` instance of the `leader` will be used by all `Nexus` and `forge-etl-python` services of the followers.  Each follower namespace will have its own Redis instance for `streamgl` visualizations.
+
 Each Graphistry instance is deployed within its own Kubernetes namespace. The `leader` instance will use the `graphistry1` namespace:
 ```bash
 kubectl create namespace graphistry1
@@ -269,6 +271,9 @@ kubectl get services --namespace graphistry1 | grep grafana
 ```
 
 ### 4. Deploy the follower instances
+
+The follower instances do not run their own PostgreSQL instance within their namespace, as they will use the centralized PostgreSQL instance from the leader (see the Helm value `global.POSTGRES_HOST` in `follower.yaml`). Additionally, the `Nexus` and `forge-etl-python` services will use the leader's `Redis` instance (refer to the `Helm` value `global.REDIS_URL_NEXUS_FEP` in `follower.yml`), while services like `streamgl-viz`, `streamgl-sessions`, and others will use the `Redis` instance deployed within the `follower` namespace.  Each follower can ingest data and create users, as they behave as replicas of the leader.  However, only the `leader` namespace will have the PostgreSQL instance running.
+
 For this example, a single follower instance will be deployed in the namespace `graphistry2`:
 ```bash
 kubectl create namespace graphistry2
@@ -444,4 +449,5 @@ global:  ## global settings for all charts
   IS_FOLLOWER: true
   GRAPHISTRY_INSTANCE_NAME: "follower1"
   POSTGRES_HOST: "postgres-ha.graphistry1.svc.cluster.local"
+  REDIS_URL_NEXUS_FEP: "redis://redis.graphistry1.svc.cluster.local:6379"
 ```

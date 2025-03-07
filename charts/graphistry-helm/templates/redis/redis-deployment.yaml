@@ -1,6 +1,4 @@
 {{ if eq .Values.global.devMode false }}
-{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
-{{ else }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -123,5 +121,4 @@ spec:
     io.kompose.service: redis
 status:
   loadBalancer: {}
-{{- end }}
 {{- end }}

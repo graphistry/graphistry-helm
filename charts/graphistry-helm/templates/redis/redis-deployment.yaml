@@ -1,5 +1,6 @@
 {{ if eq .Values.global.devMode false }}
-
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+{{ else }}
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -71,6 +72,7 @@ spec:
             periodSeconds: 30
             timeoutSeconds: 10
           name: redis
+          # command: ["redis-server", "--loglevel", "debug"]  # Set log level to debug
           ports:
             - containerPort: 6379
           resources:
@@ -107,6 +109,11 @@ metadata:
     io.kompose.service: redis
   name: redis
 spec:
+{{- if and (eq .Values.global.ENABLE_CLUSTER_MODE true) (eq .Values.global.IS_FOLLOWER true) }}
+  type: ClusterIP
+{{ else }}
+  type: LoadBalancer
+{{- end }}
   ports:
 
     - name: "6379"
@@ -116,5 +123,5 @@ spec:
     io.kompose.service: redis
 status:
   loadBalancer: {}
-
+{{- end }}
 {{- end }}

@@ -40,6 +40,8 @@ spec:
         - "nexus"
       containers:
         - env:
+          - name: REDIS_URL
+            value: {{ .Values.global.REDIS_URL | quote }}
           - name: ENABLE_CLUSTER_MODE
             value: {{ .Values.global.ENABLE_CLUSTER_MODE | quote }}
           - name: GRAPHISTRY_INSTANCE_NAME

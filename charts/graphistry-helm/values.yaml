@@ -280,6 +280,12 @@ sessionCookieAge : "1209600" # django session cookie timeout (seconds)
 # django drf-jwt, jwt token timeout (seconds)
 jwtExpirationDelta : "3600" # django drf-jwt, jwt token timeout (seconds)
 
+# Nexus unique key per deployment, can be generated with this command: dd if=/dev/urandom bs=32 count=1 2>/dev/null | base64
+graphistryNexusSigningKey : ""
+
+# Nexus unique signing salt per deployment, can be generated with this command: uuidgen -r | cut -c 1-8
+graphistryNexusSigningSalt : ""
+
 # ENABLE django silk - performance analysis library
 enableDjangoSilk : "False" # ENABLE django silk - performance analysis library
 

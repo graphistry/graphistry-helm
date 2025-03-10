@@ -295,7 +295,7 @@ global:  ## global settings for all charts
     user: graphistry #db user
     port: 5432 #port for postgres service to listen on
     host: postgres #hostname for postgres
-  tag: v2.41.10
+  tag: v2.42.4
 
   imagePullPolicy: Always   #image pull policy could also be Always
   restartPolicy: Always #restart policy

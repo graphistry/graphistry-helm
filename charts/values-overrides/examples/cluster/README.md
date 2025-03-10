@@ -426,7 +426,7 @@ Once `global.telemetryStack.OTEL_CLOUD_MODE` is set to `true`, you no longer nee
 
 ```yaml
 global:  ## global settings for all charts
-  tag: v2.41.20
+  tag: v2.42.4
   ENABLE_CLUSTER_MODE: true
   ENABLE_OPEN_TELEMETRY: true
 

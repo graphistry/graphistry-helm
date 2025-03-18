@@ -176,13 +176,48 @@ http://{{ .Values.domain }}
  to visit the deployed application:
 kubectl get ingress -n {{ .Release.Namespace }}
 {{ end }}
-  
 {{- end }}
 
+{{ if eq .Values.global.ENABLE_CLUSTER_MODE true }}
+You are installing the Graphistry Cluster Mode deployment!
 
+1. The leader instance runs in a separate namespace (e.g., graphistry1).
+2. The leader namespace  has the primary PostgreSQL instance, while followers connect to it from other namespaces.
+3. Redis is also centrally managed by the leader's namespace for all Nexus and forge-etl-python services.
+4. When enabled, the leader namespace has the Telemetry stack for the cluster.
+5. The follower instances run in separate namespaces (e.g., graphistry2, graphistry3, etc.).
+6. The follower instances connect to the leader's namespace services, and replicate data and user actions.
+7. All instances use the same Storage Class for sharing the datasets and files (see retain-sc-cluster).
 
+{{ if eq .Values.global.IS_FOLLOWER true }}
+This deployment is set up as a follower instance and will use the leader's namespace services.
+{{- else }}
+This deployment is set up as the leader instance, the services should be accessible by the followers for proper replication and data consistency.
+{{- end }}
 
+Next steps:
+1. Verify the deployment:
+   To check the status of your deployment:
+   $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
 
+2. Access the Graphistry instance:
+   Get the addresses of your instance:
+   $ kubectl get services --namespace {{ .Release.Namespace }} | grep caddy
+
+3. Monitor your resources:
+   Check the resources and status of pods:
+   $ kubectl get pods --namespace {{ .Release.Namespace }}
+
+4. Telemetry (Optional):
+   When telemetry is enabled, if telemetryStack.OTEL_CLOUD_MODE is set to true, the followers send telemetry data directly to the OTEL_EXPORTER_OTLP_ENDPOINT. Otherwise, they send it to the leader's OpenTelemetry Collector, which forwards the data to the observability tools.
+
+For more information, refer to the official Graphistry cluster deployment documentation:
+https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/cluster
+https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
+
+Enjoy managing and scaling your Graphistry cluster!
+
+{{- end }}
 
 {{ else }}
 

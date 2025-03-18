@@ -1,5 +1,5 @@
 name: Graphistry-Helm-Telemetry-Chart
-version: 0.3.7
+version: 0.3.8
 apiVersion: v1
 description: >
  Helm Charts to deploy Telemetry services for Graphistry.

@@ -11,6 +11,18 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Development]
 *   Working on fixing the Top level persistence for jupyter Notebooks, currently it is persistent inside the different directories but top level resets on redeployment.
 
+## [Version 0.3.8 - 2025-01-06]
+
+### Added
+
+- Cluster Deployment: Each Graphistry instance (leader and followers) will be deployed in its own dedicated namespace.
+- Shared Volume: All instances can share access to a common volume for a cluster deployment (using NFS as a reference).
+- Database Configuration: All instances will point to the leader Postgres DB instance when using cluster deployment.
+- OpenTelemetry and Observability Stack: Each instance starts its own OpenTelemetry Collector, but only the leader instance can start the full Observability Stack, including Grafana, Prometheus, Jaeger, Node Exporter, and NVIDIA DCGM Exporter.
+- Improve Telemetry Documentation: Updated documentation for cluster deployment, providing better clarity on configuration and usage.
+- Redis as a Centralized Service: Redis will now serve all FEP and Nexus instances, including those for followers.
+- Charts Version Upgrade: Upgraded Helm chart versions to the latest.
+
 ## [Version 0.3.7 - 2025-01-06]
 
 ### Added

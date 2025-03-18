@@ -1,6 +1,6 @@
 # Deploy a Graphistry cluster on Kubernetes
 
-This guide provides step-by-step instructions for deploying Graphistry in a multinode environment using the K3s Kubernetes distribution.
+This guide provides step-by-step instructions for deploying a Graphistry cluster in a multinode environment using the K3s Kubernetes distribution.
 
 ## Prerequisites
 
@@ -8,8 +8,8 @@ This guide provides step-by-step instructions for deploying Graphistry in a mult
 3. Helm.
 4. [Get Graphistry Helm charts](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#get-graphistry-helm-charts).
 
-### For GKE
-See [here](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#prerequisites) for the prerequisites, and [set up the GKE cluster](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#create-a-k8s-cluster).  Follow the steps to [get cluster credentials](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#get-cluster-credentials) and [test the cluster](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#test-the-k8s-cluster).
+ ### For GKE
+Refer to the [prerequisites](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#prerequisites) and [set up the GKE cluster](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#create-a-k8s-cluster).  Follow the steps to [obtain cluster credentials](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#get-cluster-credentials) and [test the cluster](https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke#test-the-k8s-cluster).  It is recommended to use a larger node, such as `n2-standard-16`, instead of `n1-highmem-4`.
 
 ### For K3s
 
@@ -153,6 +153,8 @@ helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources -f ./cha
 
 ### 2. Deploy the leader instance
 
+The leader instance will run in the `graphistry1` namespace.  Within this namespace, the PostgreSQL cluster will serve Nexus dashboards and services for other `follower` instances.  Additionally, the `Redis` instance of the `leader` will be used by all `Nexus` and `forge-etl-python` services of the followers.  Each follower namespace will have its own Redis instance for `streamgl` visualizations.
+
 Each Graphistry instance is deployed within its own Kubernetes namespace. The `leader` instance will use the `graphistry1` namespace:
 ```bash
 kubectl create namespace graphistry1
@@ -269,6 +271,9 @@ kubectl get services --namespace graphistry1 | grep grafana
 ```
 
 ### 4. Deploy the follower instances
+
+The follower instances do not run their own PostgreSQL instance within their namespace, as they will use the centralized PostgreSQL instance from the leader (see the Helm value `global.POSTGRES_HOST` in `follower.yaml`). Additionally, the `Nexus` and `forge-etl-python` services will use the leader's `Redis` instance (refer to the `Helm` value `global.REDIS_URL_NEXUS_FEP` in `follower.yml`), while services like `streamgl-viz`, `streamgl-sessions`, and others will use the `Redis` instance deployed within the `follower` namespace.  Each follower can ingest data and create users, as they behave as replicas of the leader.  However, only the `leader` namespace will have the PostgreSQL instance running.
+
 For this example, a single follower instance will be deployed in the namespace `graphistry2`:
 ```bash
 kubectl create namespace graphistry2
@@ -395,4 +400,54 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   --set volumeName.gakPublic=$(kubectl --namespace graphistry2 get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
   --set volumeName.gakPrivate=$(kubectl --namespace graphistry2 get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
   --namespace graphistry2 --create-namespace
+```
+
+## Configuring Telemetry for Graphistry Cluster on Kubernetes
+
+For more detailed information about the telemetry configuration for Kubernetes, refer to the [Graphistry Kubernetes Telemetry Documentation](https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html).
+
+### Using the Packaged Observability Tools
+
+By default, the above deployment example enables OpenTelemetry for telemetry collection.  You can confirm this in the file `./charts/values-overrides/examples/cluster/global-common.yaml`, where the Helm value `global.ENABLE_OPEN_TELEMETRY` is set to `true`.
+
+Additionally, the value `global.telemetryStack.OTEL_CLOUD_MODE` is set to `false` by default.  This means that the telemetry data from each follower's OpenTelemetry Collector will be sent to the leader's OpenTelemetry Collector, which will then forward the data to the bundled observability tools we deploy together with the Graphistry leader instance (i.e., in the same leader's namespace): Grafana, Prometheus, and Jaeger.
+
+Notice that the follower specifies the OpenTelemetry Collector address of the leader deployment.  This is done by setting the Helm value `global.telemetryStack.openTelemetryCollector.LEADER_OTEL_EXPORTER_OTLP_ENDPOINT` in the file `./charts/values-overrides/examples/cluster/follower.yaml`.
+
+### Using External Services (Cloud Mode)
+
+If you want to use an external observability backend compatible with the OTLP protocol (e.g., Grafana Cloud), you can enable the `global.telemetryStack.OTEL_CLOUD_MODE` by setting the value to `true` in the file `./charts/values-overrides/examples/cluster/global-common.yaml`.
+
+Additionally, you will need to declare the common external endpoint for all OpenTelemetry Collectors to export telemetry data to.  This can be done by setting the Helm value `global.telemetryStack.openTelemetryCollector.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT` (e.g., `"https://otlp-gateway-prod-us-east-0.grafana.net/otlp"` for Grafana Cloud).
+
+Once `global.telemetryStack.OTEL_CLOUD_MODE` is set to `true`, you no longer need to define the `global.telemetryStack.openTelemetryCollector.LEADER_OTEL_EXPORTER_OTLP_ENDPOINT` for the follower instances, as all telemetry data will be exported directly to the specified external endpoint (i.e. using `global.telemetryStack.openTelemetryCollector.OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT`).
+
+**Example Configuration for `./charts/values-overrides/examples/cluster/global-common.yaml`**
+
+```yaml
+global:  ## global settings for all charts
+  tag: v2.42.4
+  ENABLE_CLUSTER_MODE: true
+  ENABLE_OPEN_TELEMETRY: true
+
+  telemetryStack:
+    OTEL_CLOUD_MODE: true   # Set to true to use an external observability backend like Grafana Cloud
+    openTelemetryCollector:
+      # Settings for cloud mode (when OTEL_CLOUD_MODE is true)
+      OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: "https://otlp-gateway-prod-us-east-0.grafana.net/otlp"   # Grafana Cloud OTLP HTTP endpoint
+      OTEL_COLLECTOR_OTLP_USERNAME: "123"   # Grafana Cloud Instance ID for OTLP
+      OTEL_COLLECTOR_OTLP_PASSWORD: "ABC"   # Grafana Cloud API Token for OTLP
+
+logs:
+    LogLevel: DEBUG  # Log level for the application
+```
+
+**Example Configuration for `./charts/values-overrides/examples/cluster/follower.yaml`**
+
+```yaml
+global:  ## global settings for all charts
+  IS_FOLLOWER: true
+  GRAPHISTRY_INSTANCE_NAME: "follower1"
+  POSTGRES_HOST: "postgres-ha.graphistry1.svc.cluster.local"
+  REDIS_URL_NEXUS_FEP: "redis://redis.graphistry1.svc.cluster.local:6379"
 ```

@@ -53,6 +53,23 @@ spec:
         - "-lapp=postgres"
       {{- end }}
       - name: "streamgl-viz-wait-for-redis"
+      {{ if eq .Values.global.IS_FOLLOWER true }}
+        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
+        image: {{.Values.redis.repository}}:{{.Values.redis.tag}} #DockerHub
+        {{ else }}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
+        {{- end }}
+        command:
+          - "sh"
+          - "-c"
+          - |
+            # Wait for Redis to be ready using the provided connection string
+            until redis-cli -u {{ .Values.global.REDIS_URL }} ping | grep -q PONG; do
+              echo "Waiting for Redis to be online..."
+              sleep 5
+            done
+            echo "Redis is online! ({{ .Values.global.REDIS_URL }})"
+      {{ else }}
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
         {{ else }}
@@ -64,8 +81,11 @@ spec:
         args: 
         - "service"
         - "redis"
+      {{- end }}
       containers:
         - env:
+          - name: REDIS_URL
+            value: {{ .Values.global.REDIS_URL | quote }}
           - name: ENABLE_CLUSTER_MODE
             value: {{ .Values.global.ENABLE_CLUSTER_MODE | quote }}
           - name: GRAPHISTRY_INSTANCE_NAME

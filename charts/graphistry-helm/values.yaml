@@ -464,6 +464,10 @@ global:  ## global settings for all charts
   ENABLE_CLUSTER_MODE: false
   IS_FOLLOWER: false
   GRAPHISTRY_INSTANCE_NAME: "leader"
+  # Values for followers
+  POSTGRES_HOST: "postgres"
+  REDIS_URL: "redis://redis:6379"
+  REDIS_URL_NEXUS_FEP: "redis://redis:6379" # e.g. use for entitlements GPU metrics
 
 #environment variables 
  # can be set like helm install chart_name --name release_name \
@@ -501,8 +505,6 @@ env: #environment variables
    value: "false"
  - name: NODE_OPTIONS
    value: --max-old-space-size=64000 --stack-trace-limit=20
- - name: NODE_REDIS_URL
-   value: redis://redis:6379
  - name: NODE_TLS_REJECT_UNAUTHORIZED
    value: "0"
  - name: CELERY_FLOWER_PASSWORD
@@ -525,8 +527,6 @@ env: #environment variables
    value: "false"
  - name: JWT_AUTH_COOKIE
    value: graphistry_jwt
- - name: REDIS_URL
-   value: redis://redis:6379/0
  - name: USE_DOCKER
    value: "yes"
  - name: PIVOT_CONFIG_FILES

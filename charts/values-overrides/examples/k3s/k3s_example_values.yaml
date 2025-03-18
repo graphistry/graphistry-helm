@@ -295,7 +295,7 @@ global:  ## global settings for all charts
     user: graphistry #db user
     port: 5432 #port for postgres service to listen on
     host: postgres #hostname for postgres
-  tag: v2.41.10
+  tag: v2.42.4
 
   imagePullPolicy: Always   #image pull policy could also be Always
   restartPolicy: Always #restart policy
@@ -345,8 +345,6 @@ env: #environment variables
    value: "false"
  - name: NODE_OPTIONS
    value: --max-old-space-size=64000 --stack-trace-limit=20
- - name: NODE_REDIS_URL
-   value: redis://redis:6379
  - name: NODE_TLS_REJECT_UNAUTHORIZED
    value: "0"
  - name: CELERY_FLOWER_PASSWORD
@@ -369,8 +367,6 @@ env: #environment variables
    value: "false"
  - name: JWT_AUTH_COOKIE
    value: graphistry_jwt
- - name: REDIS_URL
-   value: redis://redis:6379/0
  - name: USE_DOCKER
    value: "yes"
  - name: PIVOT_CONFIG_FILES

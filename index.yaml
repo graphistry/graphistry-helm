@@ -2,6 +2,20 @@ apiVersion: v1
 entries:
   Graphistry-Helm-Chart:
   - apiVersion: v1
+    created: "2025-03-18T13:20:38.748373787Z"
+    description: 'Helm Charts to deploy Graphistry to kubernetes for 100x visualizations '
+    digest: 05216497203c4437e31a4f941cddf08cde24035dc36ceee9fabece73fe1ce75e
+    keywords:
+    - Graphistry
+    - Helm Charts
+    - 100x
+    - visualizations
+    - kubernetes
+    name: Graphistry-Helm-Chart
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/Graphistry-Helm-Chart-0.3.8/Graphistry-Helm-Chart-0.3.8.tgz
+    version: 0.3.8
+  - apiVersion: v1
     created: "2025-01-07T22:12:26.106415807Z"
     description: 'Helm Charts to deploy Graphistry to kubernetes for 100x visualizations '
     digest: ce06ede957da5a88bad9a821c4a73b683651d81c676aa980fc919b2ec997d357
@@ -512,6 +526,14 @@ entries:
     version: 0.0.1
   graphistry-resources:
   - apiVersion: v1
+    created: "2025-03-18T13:20:38.847575958Z"
+    description: 'A chart to deploy graphistry resources  '
+    digest: 13cd999c03e752228c72dd5d9fdd42a460eee7d9d5a90346d34f860e84904e95
+    name: graphistry-resources
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/graphistry-resources-0.3.8/graphistry-resources-0.3.8.tgz
+    version: 0.3.8
+  - apiVersion: v1
     created: "2025-01-07T22:12:26.219010299Z"
     description: 'A chart to deploy graphistry resources  '
     digest: a372a3329f2684a5509b9191019055a8ebe4ab0477e9cdb6e16d8533a3cadd83
@@ -547,6 +569,16 @@ entries:
     - https://github.com/graphistry/graphistry-helm/releases/download/kubernetes-dashboard-2.6.1/kubernetes-dashboard-2.6.1.tgz
     version: 2.6.1
   postgrescluster:
+  - apiVersion: v2
+    appVersion: 5.2.0
+    created: "2025-03-18T13:20:38.997980961Z"
+    description: A postgres cluster Helm chart for Graphistry on Kubernetes
+    digest: 4a3cf60d7672026d5f4ce9ebb2ac8a28a79ed2b3ce406102a09ea10808009308
+    name: postgrescluster
+    type: application
+    urls:
+    - https://github.com/graphistry/graphistry-helm/releases/download/postgrescluster-0.7.3/postgrescluster-0.7.3.tgz
+    version: 0.7.3
   - apiVersion: v2
     appVersion: 5.2.0
     created: "2025-01-14T20:23:26.659843694Z"
@@ -587,4 +619,4 @@ entries:
     urls:
     - https://github.com/graphistry/graphistry-helm/releases/download/postgrescluster-0.6.0/postgrescluster-0.6.0.tgz
     version: 0.6.0
-generated: "2025-01-14T20:23:26.660165102Z"
+generated: "2025-03-18T13:20:38.998454563Z"

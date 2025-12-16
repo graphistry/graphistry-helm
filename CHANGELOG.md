@@ -11,6 +11,21 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Development]
 *   Working on fixing the Top level persistence for jupyter Notebooks, currently it is persistent inside the different directories but top level resets on redeployment.
 
+## [Version 0.4.0 - 2025-12-16]
+
+### Breaking
+
+- Remove legacy VGraph/protobuf services: `streamgl-vgraph-etl` and `forge-etl` (TypeScript) deployments removed in favor of `forge-etl-python` (Arrow-based).
+- Remove init container dependencies: nginx, notebook, and pivot deployments no longer wait for removed services.
+- Remove legacy service configurations from values.yaml: `ForgeETLResources`, `StreamglVgraphResources`, `streamglvgraph`, `forgeetl` sections removed.
+- Aligns with Graphistry server v2.45.7+ which removes API v1/v2 support. Users must use PyGraphistry `register(api=3)` with JWT authentication.
+
+### Changed
+
+- Charts version upgrade: graphistry-helm, graphistry-helm-resources, telemetry (0.3.8 -> 0.4.0).
+- Postgres cluster chart version upgrade (0.7.3 -> 0.7.4).
+- Remove legacy image references from ACR bootstrap and dev-compose scripts.
+
 ## [Version 0.3.8 - 2025-01-06]
 
 ### Added

@@ -20,7 +20,7 @@ graphistryResources:
 
 
 global:
-  tag: v2.39.28-admin
+  tag: v2.45.11
   provisioner: disk.csi.azure.com
   containerregistry:
     name: 

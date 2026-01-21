@@ -60,19 +60,6 @@ DaskWorkerResources: {}  # Resources for the Dask worker pod
 
 
 
-ForgeETLResources: {}  # Resources for the Forge Etl pod
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 1000m
-  #   memory: 1Gi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-
 ForgeETLPythonResources: {}  # Resources for the Forge ETL python pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -196,18 +183,6 @@ StreamglSessionsResources: {}  # Resources for the streamgl sessions pod
   # limits:
   #   cpu: 500m
   #   memory: 400Mi
-  # requests:
-  #   cpu: 100m
-  #   memory: 128Mi
-
-StreamglVgraphResources: {}  # Resources for the streamgl vgraph etl pod
-  # We usually recommend not to specify default resources and to leave this as a conscious
-  # choice for the user. This also increases chances charts run on environments with little
-  # resources, such as Minikube. If you do want to specify resources, uncomment the following
-  # lines, adjust them as necessary, and remove the curly braces after 'resources:'.
-  # limits:
-  #   cpu: 1000m
-  #   memory: 500Mi
   # requests:
   #   cpu: 100m
   #   memory: 128Mi
@@ -340,11 +315,6 @@ nginx:
 nginxDev:
   repository: graphistry-nginx-dev #nginx repository name
 
-#streamgl-vgraph-etl repository name 
-streamglvgraph:
-  repository: streamgl-vgraph-etl #streamgl-vgraph-etl repository name 
-
-
 #streamgl-gpu repository name 
 streamglgpu:
   repository: streamgl-gpu #streamgl-gpu repository name 
@@ -393,10 +363,6 @@ forgeetlpython:
 #forge-etl-python dev repository name
 forgeetlpythonDev:
   repository: graphistry-forge-python-dev #forge-etl-python dev repository name
-
-#forge-etl repository name 
-forgeetl:
-  repository: etl-server #forge-etl repository name 
 
 #sets the number of dask cuda workers
 dask:

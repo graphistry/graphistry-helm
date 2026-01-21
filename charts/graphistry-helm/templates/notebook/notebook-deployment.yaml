@@ -27,18 +27,6 @@ spec:
         io.kompose.service: notebook
     spec:
       initContainers:
-      - name: "notebook-wait-for-streamgl-vgraph-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "service"
-        - "streamgl-vgraph-etl"
       - name: volume-mount-hack
         resources:
           {{- toYaml .Values.InitContainerResources | nindent 10 }}

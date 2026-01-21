@@ -29,19 +29,7 @@ spec:
         io.kompose.service: nginx
     spec:
       initContainers:
-      {{ if eq .Values.global.devMode false }} 
-      - name: "nginx-wait-for-forge-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "service"
-        - "forge-etl"
+      {{ if eq .Values.global.devMode false }}
       - name: "nginx-wait-for-forge-etl-python"
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub
@@ -78,18 +66,6 @@ spec:
         args: 
         - "service"
         - "streamgl-sessions"
-      - name: "nginx-wait-for-streamgl-vgraph-etl"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "service"
-        - "streamgl-vgraph-etl"       
       - name: nginx-init-streamgl-viz
         resources:
           {{- toYaml .Values.InitContainerResources | nindent 10 }}

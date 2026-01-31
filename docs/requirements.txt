@@ -3,3 +3,4 @@ sphinx-click
 sphinx
 sphinx-tabs
 sphinx-rtd-theme
+zipp>=3.19.1 # not directly required, pinned by Snyk to avoid a vulnerability

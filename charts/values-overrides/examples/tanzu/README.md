@@ -211,40 +211,24 @@ kubectl get secret -n graphistry
 
 ## Air-Gapped / Offline Deployment
 
-For environments with limited or no internet access, Graphistry supports air-gapped deployments.
-
-### Mirror Images to Private Registry
-
-First, mirror all required Graphistry images to your private registry. Contact Graphistry support for the complete image list for your version.
-
-### Configure Private Registry
-
-Create a secret for your private registry (using the same secret name referenced in values):
-```bash
-kubectl create secret docker-registry docker-secret-prod \
-    --namespace graphistry \
-    --docker-server=<YOUR_PRIVATE_REGISTRY_URL> \
-    --docker-username=<YOUR_USERNAME> \
-    --docker-password=<YOUR_PASSWORD>
-```
-
-### Update Values for Air-Gapped
-
-Add or modify these settings in your values file:
+For environments with limited or no internet access, update your values file:
 
 ```yaml
 global:
-  # Point to your private registry instead of Docker Hub
+  # Redirect image pulls to your private registry
+  # Images are pulled as: <containerregistry.name>/<image>:<tag>
+  # Default: docker.io/graphistry (e.g., docker.io/graphistry/nexus:v2.45.11)
+  # Air-gapped: my-registry.local/graphistry (e.g., my-registry.local/graphistry/nexus:v2.45.11)
   containerregistry:
-    name: my-private-registry.local/graphistry  # Default: docker.io/graphistry
+    name: my-private-registry.local/graphistry
 
 env:
-  # Disable external connectivity checks
+  # Disables update checks and external API calls
   - name: AIR_GAPPED
-    value: "1"  # Default: "0"
+    value: "1"
 ```
 
-The `AIR_GAPPED` setting disables features that require external internet access.
+You must mirror all Graphistry images to your private registry before deployment. Contact Graphistry support for the complete image list for your version.
 
 ## Get Graphistry Helm Charts
 
@@ -286,8 +270,10 @@ Then access Graphistry via `http://<node-ip>:<node-port>`.
 ## Install Kubernetes Operators
 
 ### Install Postgres Operator
+
+Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator) from the official OCI registry:
 ```bash
-helm upgrade -i postgres-operator ./charts-aux-bundled/postgres-operator \
+helm install pgo oci://registry.developers.crunchydata.com/crunchydata/pgo \
     --namespace postgres-operator --create-namespace
 ```
 

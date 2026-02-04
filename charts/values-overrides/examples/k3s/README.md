@@ -126,9 +126,16 @@ bash chart-bundler/bundler.sh
 ## Install Kubernetes Operators
 
 ### Install Postgres Operator
+
+Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator) from the official OCI registry:
 ```bash
-helm upgrade -i postgres-operator ./charts-aux-bundled/postgres-operator \
+helm install pgo oci://registry.developers.crunchydata.com/crunchydata/pgo \
     --namespace postgres-operator --create-namespace
+```
+
+Wait for the operator:
+```bash
+kubectl get pods --watch --namespace postgres-operator
 ```
 
 ### Install Dask Operator

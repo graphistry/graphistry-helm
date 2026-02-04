@@ -295,18 +295,6 @@ Verify the `EXTERNAL-IP` (this will be used to access to the cluster from the br
 kubectl get service --namespace ingress-nginx ingress-nginx-controller --output wide --watch
 ```
 
-## Create the storage class
-```bash
-kubectl apply -f - <<EOF
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: retain-sc-graphistry
-provisioner: pd.csi.storage.gke.io
-volumeBindingMode: WaitForFirstConsumer
-EOF
-```
-
 ## Install Postgres Operator
 
 Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator) from the official OCI registry:
@@ -342,7 +330,7 @@ postgres-instance1-5lkd-0   0/4     Pending   0          4m43s
 postgres-repo-host-0        2/2     Running   0          4m43s
 ```
 
-The `postgres-instance` will run later (once we start the `graphistry-resources` chart).
+**Note**: The `postgres-instance` pod will stay in `Pending` state. It requires the `retain-sc` storage class, which is created by `graphistry-resources` in a later step.
 
 ## Install Dask Operator and CRDs
 ```bash
@@ -360,11 +348,37 @@ kubectl get pods --watch --namespace dask-operator
 ```
 
 ## Install Graphistry Resources
+
+View available values:
 ```bash
 helm show values ./charts/graphistry-helm-resources
 ```
 
-Install the `graphistry-resources` chart using this command:
+This chart creates the required storage classes using your provisioner (`pd.csi.storage.gke.io`).
+
+### Storage Classes Created
+
+| Storage Class | reclaimPolicy | Description |
+|---------------|---------------|-------------|
+| `retain-sc` | Retain | Data preserved when PVC deleted (manual cleanup required) |
+| `uploadfiles-sc` | Delete | Data deleted when PVC deleted |
+
+### PVCs and Services (graphistry-helm chart)
+
+| PVC | Storage Class | Used By Services |
+|-----|---------------|------------------|
+| `data-mount` | retain-sc | nexus, nginx, forge-etl-python, streamgl-gpu, streamgl-viz, streamgl-sessions, dask-scheduler, dask-cuda-worker, redis, pivot, caddy, notebook |
+| `local-media-mount` | retain-sc | nexus, nginx |
+| `gak-public` | retain-sc | graph-app-kit-public, notebook |
+| `gak-private` | retain-sc | graph-app-kit-private, notebook |
+| `uploads-files` | uploadfiles-sc | nginx, forge-etl-python |
+
+### Postgres Storage (postgres-cluster chart)
+
+The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using `retain-sc` for:
+- Instance data volume (e.g., `postgres-instance1-xxxx-0`)
+- Backup repository volume
+
 ```bash
 helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources  \
     --set global.provisioner="pd.csi.storage.gke.io" \

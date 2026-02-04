@@ -159,12 +159,49 @@ Wait for postgres pods:
 kubectl get pods --watch -n graphistry
 ```
 
+**Note**: The `postgres-instance` pod will stay in `Pending` state. It requires the `retain-sc` storage class, which is created by `graphistry-resources` in the next step.
+
 ## Install Graphistry Resources
+
+View available values:
+```bash
+helm show values ./charts/graphistry-helm-resources
+```
+
+This chart creates the required storage classes using your provisioner (`rancher.io/local-path`).
+
+### Storage Classes Created
+
+| Storage Class | reclaimPolicy | Description |
+|---------------|---------------|-------------|
+| `retain-sc` | Retain | Data preserved when PVC deleted (manual cleanup required) |
+| `uploadfiles-sc` | Delete | Data deleted when PVC deleted |
+
+### PVCs and Services (graphistry-helm chart)
+
+| PVC | Storage Class | Used By Services |
+|-----|---------------|------------------|
+| `data-mount` | retain-sc | nexus, nginx, forge-etl-python, streamgl-gpu, streamgl-viz, streamgl-sessions, dask-scheduler, dask-cuda-worker, redis, pivot, caddy, notebook |
+| `local-media-mount` | retain-sc | nexus, nginx |
+| `gak-public` | retain-sc | graph-app-kit-public, notebook |
+| `gak-private` | retain-sc | graph-app-kit-private, notebook |
+| `uploads-files` | uploadfiles-sc | nginx, forge-etl-python |
+
+### Postgres Storage (postgres-cluster chart)
+
+The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using `retain-sc` for:
+- Instance data volume (e.g., `postgres-instance1-xxxx-0`)
+- Backup repository volume
 
 ```bash
 helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources \
     --set global.provisioner="rancher.io/local-path" \
     --namespace graphistry --create-namespace
+```
+
+Wait for resources (the `postgres-instance` pod should now start running):
+```bash
+kubectl get pods --watch -n graphistry
 ```
 
 ## Install Graphistry

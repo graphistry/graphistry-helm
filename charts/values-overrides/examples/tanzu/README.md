@@ -117,21 +117,6 @@ kubectl get storageclass
 
 You should see a storage class with `csi.vsphere.vmware.com` provisioner. Common names include `default`, `gc-storage-profile`, or a custom name defined by your vSphere admin.
 
-### Create Graphistry Storage Class (Optional)
-If you need a dedicated storage class with Retain policy:
-```bash
-kubectl apply -f - <<EOF
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
-metadata:
-  name: retain-sc-graphistry
-provisioner: csi.vsphere.vmware.com
-reclaimPolicy: Retain
-allowVolumeExpansion: true
-volumeBindingMode: WaitForFirstConsumer
-EOF
-```
-
 ## Install NVIDIA GPU Support
 
 ### Option 1: NVIDIA GPU Operator (Recommended)
@@ -308,7 +293,39 @@ Wait for postgres pods:
 kubectl get pods --watch -n graphistry
 ```
 
+**Note**: The `postgres-instance` pod will stay in `Pending` state. It requires the `retain-sc` storage class, which is created by `graphistry-resources` in the next step.
+
 ## Install Graphistry Resources
+
+View available values:
+```bash
+helm show values ./charts/graphistry-helm-resources
+```
+
+This chart creates the required storage classes using your provisioner (`csi.vsphere.vmware.com`).
+
+### Storage Classes Created
+
+| Storage Class | reclaimPolicy | Description |
+|---------------|---------------|-------------|
+| `retain-sc` | Retain | Data preserved when PVC deleted (manual cleanup required) |
+| `uploadfiles-sc` | Delete | Data deleted when PVC deleted |
+
+### PVCs and Services (graphistry-helm chart)
+
+| PVC | Storage Class | Used By Services |
+|-----|---------------|------------------|
+| `data-mount` | retain-sc | nexus, nginx, forge-etl-python, streamgl-gpu, streamgl-viz, streamgl-sessions, dask-scheduler, dask-cuda-worker, redis, pivot, caddy, notebook |
+| `local-media-mount` | retain-sc | nexus, nginx |
+| `gak-public` | retain-sc | graph-app-kit-public, notebook |
+| `gak-private` | retain-sc | graph-app-kit-private, notebook |
+| `uploads-files` | uploadfiles-sc | nginx, forge-etl-python |
+
+### Postgres Storage (postgres-cluster chart)
+
+The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using `retain-sc` for:
+- Instance data volume (e.g., `postgres-instance1-xxxx-0`)
+- Backup repository volume
 
 ```bash
 helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources \
@@ -316,7 +333,7 @@ helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources \
     --namespace graphistry --create-namespace
 ```
 
-Wait for resources:
+Wait for resources (the `postgres-instance` pod should now start running):
 ```bash
 kubectl get pods --watch -n graphistry
 ```

@@ -302,6 +302,13 @@ View available values:
 helm show values ./charts/graphistry-helm-resources
 ```
 
+Install the graphistry-resources chart using this command:
+```bash
+helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources \
+    --set global.provisioner="csi.vsphere.vmware.com" \
+    --namespace graphistry --create-namespace
+```
+
 This chart creates the required storage classes using your provisioner (`csi.vsphere.vmware.com`).
 
 ### Storage Classes Created
@@ -326,12 +333,6 @@ This chart creates the required storage classes using your provisioner (`csi.vsp
 The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using `retain-sc` for:
 - Instance data volume (e.g., `postgres-instance1-xxxx-0`)
 - Backup repository volume
-
-```bash
-helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources \
-    --set global.provisioner="csi.vsphere.vmware.com" \
-    --namespace graphistry --create-namespace
-```
 
 Wait for resources (the `postgres-instance` pod should now start running):
 ```bash

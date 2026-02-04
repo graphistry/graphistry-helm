@@ -270,9 +270,9 @@ graphAppKitPrivate: true # graph app kit private - determines if private dashboa
 
 forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
-#cuda version
+# CUDA version - 12.8 supports modern GPUs including Blackwell
 cuda:
-  version: "11.8" #cuda version
+  version: "12.8"
 
 global:  ## global settings for all charts
   # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: traefik
@@ -301,9 +301,11 @@ global:  ## global settings for all charts
   restartPolicy: Always #restart policy
   imagePullSecrets:   #image pull secrets name
     - name: docker-secret-prod
+  # Log levels: INFO (default), DEBUG, TRACE (for troubleshooting)
   logs:
-    LogLevel: TRACE #log level for the application
-    GraphistryLogLevel: TRACE #log level for graphistry
+    LogLevel: INFO
+    GraphistryLogLevel: INFO
+  # Telemetry: https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
   ENABLE_OPEN_TELEMETRY: true
 
   telemetryStack:

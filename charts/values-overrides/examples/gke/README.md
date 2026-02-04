@@ -369,10 +369,11 @@ kubectl get pods --watch -n graphistry
 ```
 
 ## Install Graphistry
-You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/gke/gke_values.yaml`:
+You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/gke/gke_example_values.yaml`:
 ```yaml
+# CUDA version - 12.8 supports modern GPUs including Blackwell
 cuda:
-  version: "11.8" #cuda version
+  version: "12.8"
 
 global:  ## global settings for all charts
   tag: v2.42.4
@@ -391,8 +392,7 @@ kubectl get secret -n graphistry | grep docker-secret-prod
 Install Graphistry using the next command:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
-    --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
-    -f ./charts/values-overrides/examples/gke/gke_values.yaml \
+    --values ./charts/values-overrides/examples/gke/gke_example_values.yaml \
     --namespace graphistry --create-namespace
 ```
 
@@ -409,15 +409,15 @@ kubectl get ingress -n graphistry
 Once you open Graphistry in the browser, create an account for the admin user with the email and password.
 
 ## Update Graphistry deployment
-In case we want to change some values in `../gke_values.yaml` reusing the volume names:
+In case we want to change some values in `../gke_example_values.yaml` reusing the volume names:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
-    --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
+    --values ./charts/values-overrides/examples/gke/gke_example_values.yaml \
     --set volumeName.dataMount=$(kubectl get pv -n graphistry | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
     --set volumeName.localMediaMount=$(kubectl get pv -n graphistry | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
     --set volumeName.gakPublic=$(kubectl get pv -n graphistry | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
     --set volumeName.gakPrivate=$(kubectl get pv -n graphistry | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
-    -f ./charts/values-overrides/examples/gke/gke_values.yaml \
+    -f ./charts/values-overrides/examples/gke/gke_example_values.yaml \
     --namespace graphistry --create-namespace
 ```
 

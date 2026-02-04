@@ -1,3 +1,29 @@
+# GKE Example Values for Graphistry
+# Single file containing all configuration
+
+tls: false
+fwdHeaders: true
+
+networkPolicy:
+  strict: false
+
+ingress:
+  management:
+    annotations:
+      kubernetes.io/ingress.class: nginx
+
+ingressNamespace: ingress-nginx
+
+graphistryResources:
+  storageClassParameters:
+    pd.csi.storage.gke.io/fstype: ext4
+
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
+# Resource configurations - adjust based on your node capacity
 CaddyResources: {}  # Resources for the Caddy pod
   # We usually recommend not to specify default resources and to leave this as a conscious
   # choice for the user. This also increases chances charts run on environments with little
@@ -209,14 +235,47 @@ StreamglVizResources: {}  # Resources for the streamgl viz pod
   #   cpu: 100m
   #   memory: 128Mi
 
+# CUDA version - 12.8 supports modern GPUs including Blackwell
 cuda:
-  version: "11.8" #cuda version
+  version: "12.8"
 
 global:  ## global settings for all charts
+  # Ingress class for newer K8s versions
+  ingressClassName: nginx
+
+  # GKE storage provisioner
+  provisioner: pd.csi.storage.gke.io
+
+  # Node selector for GPU nodes
+  nodeSelector:
+    nvidia.com/gpu.present: "true"
+
+  # Single-node deployment
+  multiNode: false
+  devMode: false
+
+  # Postgres configuration
+  postgres:
+    repository: graphistry-postgres
+    name: graphistry
+    user: graphistry
+    port: 5432
+    host: postgres
+  postgresVolumeLabel: graphistry-postgres
+
+  # Graphistry version
   tag: v2.45.11
-  logs: #change log levels
-      LogLevel: DEBUG #log level for the application
-      GraphistryLogLevel: DEBUG #log level for graphistry
+
+  # Image settings
+  imagePullPolicy: Always
+  imagePullSecrets:
+    - name: docker-secret-prod
+
+  # Log levels: INFO (default), DEBUG, TRACE (for troubleshooting)
+  logs:
+      LogLevel: INFO
+      GraphistryLogLevel: INFO
+  # Telemetry: https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
   ENABLE_OPEN_TELEMETRY: true
 
   # Graphistry Telemetry values and environment variables for observability tools
@@ -236,7 +295,7 @@ global:  ## global settings for all charts
       GF_SERVER_ROOT_URL: "/grafana"
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     dcgmExporter:
-      image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
+      image: "nvcr.io/nvidia/k8s/dcgm-exporter:4.2.3-4.1.1-ubuntu22.04"
       DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
     jaeger:
       image: "jaegertracing/all-in-one:1.50.0"

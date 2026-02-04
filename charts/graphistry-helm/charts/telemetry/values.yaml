@@ -54,7 +54,7 @@ global:  ## global settings for all charts
       GF_SERVER_ROOT_URL: "/grafana"
       GF_SERVER_SERVE_FROM_SUB_PATH: "true"
     dcgmExporter:
-      image: "nvcr.io/nvidia/k8s/dcgm-exporter:3.3.5-3.4.1-ubuntu22.04"
+      image: "nvcr.io/nvidia/k8s/dcgm-exporter:4.2.3-4.1.1-ubuntu22.04"
       DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
     jaeger:
       image: "jaegertracing/all-in-one:1.50.0"

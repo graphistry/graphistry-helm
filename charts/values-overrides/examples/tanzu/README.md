@@ -209,6 +209,43 @@ EOF
 kubectl get secret -n graphistry
 ```
 
+## Air-Gapped / Offline Deployment
+
+For environments with limited or no internet access, Graphistry supports air-gapped deployments.
+
+### Mirror Images to Private Registry
+
+First, mirror all required Graphistry images to your private registry. Contact Graphistry support for the complete image list for your version.
+
+### Configure Private Registry
+
+Create a secret for your private registry (using the same secret name referenced in values):
+```bash
+kubectl create secret docker-registry docker-secret-prod \
+    --namespace graphistry \
+    --docker-server=<YOUR_PRIVATE_REGISTRY_URL> \
+    --docker-username=<YOUR_USERNAME> \
+    --docker-password=<YOUR_PASSWORD>
+```
+
+### Update Values for Air-Gapped
+
+Add or modify these settings in your values file:
+
+```yaml
+global:
+  # Point to your private registry instead of Docker Hub
+  containerregistry:
+    name: my-private-registry.local/graphistry  # Default: docker.io/graphistry
+
+env:
+  # Disable external connectivity checks
+  - name: AIR_GAPPED
+    value: "1"  # Default: "0"
+```
+
+The `AIR_GAPPED` setting disables features that require external internet access.
+
 ## Get Graphistry Helm Charts
 
 ```bash

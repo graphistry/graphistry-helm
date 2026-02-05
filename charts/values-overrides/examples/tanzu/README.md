@@ -106,6 +106,27 @@ Ensure your cluster has GPU-enabled nodes:
 kubectl get nodes --show-labels | grep -i gpu
 ```
 
+## Pod Security Admission (PSA)
+
+TKG clusters running Kubernetes v1.26+ [enforce the `restricted` Pod Security Standard](https://techdocs.broadcom.com/us/en/vmware-tanzu/standalone-components/tanzu-kubernetes-grid/2-5/tkg/workload-security-psa.html) on non-system namespaces by default. The `restricted` profile requires containers to set `runAsNonRoot: true`, `seccompProfile`, and drop all Linux capabilities. Pods that don't meet these requirements are **rejected** by the admission controller.
+
+**Graphistry requires the `privileged` label on its namespaces.** Most Graphistry containers (dask-cuda-worker, forge-etl-python, streamgl-gpu, nexus, nginx, caddy, redis, pivot, notebook, etc.) run as root by default and do not set a `securityContext`. This means they are blocked by the `restricted` profile regardless of whether telemetry is enabled. When telemetry is on, the DCGM exporter additionally requires the `SYS_ADMIN` Linux capability for GPU metrics collection.
+
+The only Graphistry-managed pods that are already `restricted`-compatible are the PostgreSQL pods — PGO (Crunchy Postgres Operator) sets `runAsNonRoot: true`, `drop: ALL`, `readOnlyRootFilesystem`, and `seccompProfile: RuntimeDefault` on all its containers.
+
+Label each namespace **before** deploying workloads into it:
+```bash
+# Required for GPU Operator (driver installer, device plugin)
+kubectl label --overwrite ns gpu-operator pod-security.kubernetes.io/enforce=privileged
+
+# Required for Graphistry services (run as root, no securityContext set)
+kubectl label --overwrite ns graphistry pod-security.kubernetes.io/enforce=privileged
+```
+
+If you skip this step, pod creation will fail with a `Forbidden` error from the admission controller.
+
+For more details, see the [Tanzu PSA documentation](https://techdocs.broadcom.com/us/en/vmware-tanzu/standalone-components/tanzu-kubernetes-grid/2-5/tkg/workload-security-psa.html) and the [NVIDIA GPU Operator on Tanzu guide](https://techdocs.broadcom.com/us/en/vmware-cis/vcf/vvs/1-0/private-ai-ready-infrastructure-for-vmware-cloud-foundation/implementation-of-ai-ready-infrastructure/deploy-and-configure-a-tanzu-kubernetes-cluster-for-vsphere-with-tanzu-for-ai-ready-infrastructure/deploy-and-configure-nvidia-kubernetes-operators-for-ai-ready-infrastructure.html).
+
 ## Storage Configuration
 
 Tanzu uses the vSphere CSI driver with provisioner `csi.vsphere.vmware.com`. This is pre-installed on TKG clusters.
@@ -124,14 +145,24 @@ You should see a storage class with `csi.vsphere.vmware.com` provisioner. Common
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
 
 kubectl create ns gpu-operator
+kubectl label --overwrite ns gpu-operator pod-security.kubernetes.io/enforce=privileged
 
 helm install --wait --generate-name \
     -n gpu-operator \
     nvidia/gpu-operator \
     --set driver.enabled=true \
     --set driver.version="550.127.08" \
+    --set cdi.enabled=true \
+    --set cdi.default=true \
+    --set 'toolkit.env[0].name=NVIDIA_RUNTIME_SET_AS_DEFAULT' \
+    --set-string 'toolkit.env[0].value=true' \
     --timeout 60m
 ```
+
+Notes:
+1. `driver.enabled=true`: The GPU Operator installs the NVIDIA driver on Tanzu nodes (unlike GKE which uses a separate DaemonSet).
+2. `driver.version="550.127.08"`: Adjust to a driver version compatible with your CUDA version. Check the [NVIDIA GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported versions.
+3. `NVIDIA_RUNTIME_SET_AS_DEFAULT=true`: Makes nvidia the default container runtime, so all pods get GPU access without explicit `nvidia.com/gpu` resource requests.
 
 Wait for the operator pods to be ready:
 ```bash
@@ -161,6 +192,7 @@ Expected output:
 ### Create Namespace
 ```bash
 kubectl create namespace graphistry
+kubectl label --overwrite ns graphistry pod-security.kubernetes.io/enforce=privileged
 ```
 
 ### Create Docker Hub Secret
@@ -232,8 +264,7 @@ bash chart-bundler/bundler.sh
 Tanzu does not include an ingress controller by default. NGINX Ingress Controller is recommended for Graphistry because it supports session affinity (required for WebSocket connections).
 
 ```bash
-helm upgrade --install ingress-nginx ingress-nginx \
-    --repo https://kubernetes.github.io/ingress-nginx \
+helm upgrade --install ingress-nginx ./charts-aux-bundled/ingress-nginx \
     --namespace ingress-nginx --create-namespace \
     --set controller.service.type=LoadBalancer
 ```
@@ -245,8 +276,7 @@ kubectl get service --namespace ingress-nginx ingress-nginx-controller --output 
 
 **Note**: If your Tanzu cluster doesn't support LoadBalancer services (no NSX-T or MetalLB), use NodePort instead:
 ```bash
-helm upgrade --install ingress-nginx ingress-nginx \
-    --repo https://kubernetes.github.io/ingress-nginx \
+helm upgrade --install ingress-nginx ./charts-aux-bundled/ingress-nginx \
     --namespace ingress-nginx --create-namespace \
     --set controller.service.type=NodePort
 ```
@@ -256,9 +286,9 @@ Then access Graphistry via `http://<node-ip>:<node-port>`.
 
 ### Install Postgres Operator
 
-Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator) from the official OCI registry:
+Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator):
 ```bash
-helm install pgo oci://registry.developers.crunchydata.com/crunchydata/pgo \
+helm install pgo ./charts-aux-bundled/pgo \
     --namespace postgres-operator --create-namespace
 ```
 
@@ -288,12 +318,12 @@ helm upgrade -i postgres-cluster ./charts/postgres-cluster \
     --namespace graphistry --create-namespace
 ```
 
-Wait for postgres pods:
+Verify the pods are created (both will be `Pending` until `graphistry-resources` creates the required storage classes in a later step):
 ```bash
-kubectl get pods --watch -n graphistry
+kubectl get pods -n graphistry
 ```
 
-**Note**: The `postgres-instance` pod will stay in `Pending` state. It requires the `retain-sc` storage class, which is created by `graphistry-resources` in the next step.
+**Note**: Both postgres pods will stay in `Pending` state. They require storage classes (`retain-sc` and `retain-sc-<namespace>`) which are created by `graphistry-resources` in the next step.
 
 ## Install Graphistry Resources
 
@@ -316,6 +346,7 @@ This chart creates the required storage classes using your provisioner (`csi.vsp
 | Storage Class | reclaimPolicy | Description |
 |---------------|---------------|-------------|
 | `retain-sc` | Retain | Data preserved when PVC deleted (manual cleanup required) |
+| `retain-sc-<namespace>` | Retain | Namespace-scoped retain class for postgres backup repo isolation |
 | `uploadfiles-sc` | Delete | Data deleted when PVC deleted |
 
 ### PVCs and Services (graphistry-helm chart)
@@ -330,9 +361,9 @@ This chart creates the required storage classes using your provisioner (`csi.vsp
 
 ### Postgres Storage (postgres-cluster chart)
 
-The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using `retain-sc` for:
-- Instance data volume (e.g., `postgres-instance1-xxxx-0`)
-- Backup repository volume
+The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using:
+- Instance data volume on `retain-sc` (e.g., `postgres-instance1-xxxx-0`)
+- Backup repository volume on `retain-sc-<namespace>` for multi-tenant isolation
 
 Wait for resources (the `postgres-instance` pod should now start running):
 ```bash
@@ -360,7 +391,16 @@ Get the ingress address:
 kubectl get ingress -n graphistry
 ```
 
-Open the ADDRESS in your browser and create an admin account.
+All services share the same ingress IP (`ADDRESS` from the command above). When `ENABLE_OPEN_TELEMETRY: true` and `telemetryStack.OTEL_CLOUD_MODE: false` are set in your values file, the telemetry stack (Grafana, Prometheus, Jaeger) is deployed as part of the cluster:
+
+| Service | Path |
+|---|---|
+| Graphistry | `http://<ADDRESS>/` |
+| Grafana | `http://<ADDRESS>/grafana` |
+| Jaeger | `http://<ADDRESS>/jaeger` |
+| Prometheus | `http://<ADDRESS>/prometheus` |
+
+Open Graphistry in the browser and create an admin account.
 
 ## Update Graphistry Deployment
 
@@ -377,7 +417,14 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
 
 ## Enabling Telemetry
 
-Telemetry is enabled by default (`ENABLE_OPEN_TELEMETRY: true`). For configuration options, see the [Graphistry Kubernetes Telemetry Documentation](https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html).
+Telemetry is enabled by default (`ENABLE_OPEN_TELEMETRY: true`). When `telemetryStack.OTEL_CLOUD_MODE: false` (the default in the example values), the following services are deployed as part of the cluster:
+- **Grafana** — dashboards and metrics visualization (`/grafana`)
+- **Prometheus** — metrics collection and alerting (`/prometheus`)
+- **Jaeger** — distributed tracing (`/jaeger`)
+
+To send telemetry to an external provider (e.g., Grafana Cloud) instead, set `OTEL_CLOUD_MODE: true` and fill in the `openTelemetryCollector` credentials in your values file.
+
+For more configuration options, see the [Graphistry Kubernetes Telemetry Documentation](https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html).
 
 ## Troubleshooting
 

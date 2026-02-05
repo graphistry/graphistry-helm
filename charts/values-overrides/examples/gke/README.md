@@ -80,8 +80,8 @@ In this example the cluster will have a single node with only 1 GPU (`nvidia-tes
 gcloud beta container clusters create demo-cluster \
       --zone us-central1-a \
       --release-channel "regular" \
-      --machine-type "n1-highmem-4" \
-      --accelerator "type=nvidia-tesla-t4,count=1,gpu-driver-version=default" \
+      --machine-type "n1-highmem-8" \
+      --accelerator "type=nvidia-tesla-t4,count=1,gpu-driver-version=disabled" \
       --image-type "UBUNTU_CONTAINERD" \
       --disk-type "pd-standard" \
       --disk-size "1000" \
@@ -96,6 +96,11 @@ gcloud beta container clusters create demo-cluster \
       --no-enable-master-authorized-networks \
       --tags=nvidia-ingress-all
 ```
+
+- `--accelerator type=nvidia-tesla-t4,count=1`: Attaches 1 Tesla T4 GPU to each node.
+- `gpu-driver-version=disabled`: Disables GKE's automatic GPU driver installation so we can install the R570 driver manually via DaemonSet (see next step). GKE's `default` installs R535 (CUDA 12.2 max) and `latest` installs R580 (CUDA 13.x only, not backward compatible with CUDA 12.x).
+- `--image-type "UBUNTU_CONTAINERD"`: Ubuntu is required because Google provides a pre-built [R570 driver DaemonSet](https://github.com/GoogleCloudPlatform/container-engine-accelerators/blob/master/nvidia-driver-installer/ubuntu/daemonset-preloaded-R570.yaml) for Ubuntu but not for COS.
+- `--machine-type "n1-highmem-8"`: 8 vCPUs / 52 GB RAM. T4 GPUs [only attach to N1 machines](https://docs.cloud.google.com/compute/docs/gpus) (max 24 vCPUs with 1 T4). The `n1-highmem-4` (4 vCPUs) is too small — the PostgreSQL Operator (PGO) reserves ~1 CPU with Guaranteed QoS, and backup CronJobs need additional CPU to schedule. With 4 vCPUs the node runs at ~96% CPU, causing backup pods to stay Pending and block all downstream services.
 
 ## Get cluster credentials
 The next command should fill the credentials in `~/.kube/config`:
@@ -123,6 +128,46 @@ Check the resources:
 ```bash
 kubectl get all
 ```
+
+## Install NVIDIA R570 GPU Driver (For CUDA 12.8)
+
+With `gpu-driver-version=disabled`, the GPU driver must be installed manually. Google provides a pre-built [R570 DaemonSet](https://github.com/GoogleCloudPlatform/container-engine-accelerators/blob/master/nvidia-driver-installer/ubuntu/daemonset-preloaded-R570.yaml) for Ubuntu, but it hardcodes driver version `570.124.06` which may not have a pre-built package for your node's kernel version.
+
+First, check which R570 driver version is available for your kernel:
+```bash
+KERNEL_VERSION=$(kubectl get nodes -o jsonpath='{.items[0].status.nodeInfo.kernelVersion}')
+```
+
+Then print the kernel version:
+```bash
+echo "Kernel: $KERNEL_VERSION"
+```
+
+Then check if the driver packages will match the kernel:
+```bash
+curl -s "https://www.googleapis.com/storage/v1/b/ubuntu_nvidia_packages/o?prefix=nvidia-driver-gke_noble-${KERNEL_VERSION}-570" \
+    | python3 -c "import sys,json; [print(i['name']) for i in json.load(sys.stdin).get('items',[])]" \
+    | grep amd64
+```
+
+Then apply the DaemonSet, replacing the driver version if needed (e.g. `570.133.20` for newer kernels):
+```bash
+curl -s https://raw.githubusercontent.com/GoogleCloudPlatform/container-engine-accelerators/master/nvidia-driver-installer/ubuntu/daemonset-preloaded-R570.yaml \
+    | sed 's/570.124.06/570.133.20/g' \
+    | kubectl apply -f -
+```
+
+Wait for the driver installer to complete:
+```bash
+kubectl get pods -n kube-system -l k8s-app=nvidia-driver-installer --watch
+```
+
+Verify the driver is installed:
+```bash
+kubectl logs -n kube-system -l k8s-app=nvidia-driver-installer -c nvidia-driver-installer --tail=20
+```
+
+**Why R570?** CUDA 12.x requires driver >=525 and <580 ([NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/)). GKE's available driver options (`default`=R535, `latest`=R580) either cap at CUDA 12.2 or only support CUDA 13.x. R570 is the correct choice for CUDA 12.8.
 
 ## Setup the NVIDIA GPU Operator
 Create the namespace:
@@ -166,28 +211,35 @@ helm repo add nvidia https://helm.ngc.nvidia.com/nvidia \
     && helm repo update
 ```
 
-To properly install the NVIDIA GPU Operator in Kubernetes, you must first check the value of the `nfd.enabled` label on your cluster nodes.  This label is used to determine whether Node Feature Discovery (NFD) is enabled, which is important because the GPU Operator depends on certain hardware features being correctly discovered.  Run the following command to retrieve the value of `nfd.enabled`:
+Check if Node Feature Discovery (NFD) is already enabled on the cluster. The GPU Operator includes NFD by default, but if the cluster already has it, you must disable the operator's copy to avoid conflicts:
 ```bash
 kubectl get nodes -o json | jq '.items[].metadata.labels | keys | any(startswith("feature.node.kubernetes.io"))'
 ```
 
-If the result includes `nfd.enabled=true`, it indicates that NFD is enabled on the nodes.  In this case, you need to explicitly disable NFD during the GPU Operator installation: so if `nfd.enabled` is `true` then add `--set nfd.enabled=false` to the next `helm install` command:
+If the output is `true`, add `--set nfd.enabled=false` to the next `helm install` command. If `false` (typical for GKE), no change is needed.
+
+Install the GPU Operator (the R570 DaemonSet manages the driver, so `driver.enabled=false`):
 ```bash
 helm install --wait --generate-name \
     -n gpu-operator \
     nvidia/gpu-operator \
-    --version=v24.9.0 \
+    --version=v25.10.1 \
+    --set driver.enabled=false \
     --set hostPaths.driverInstallDir=/home/kubernetes/bin/nvidia \
     --set toolkit.installDir=/home/kubernetes/bin/nvidia \
     --set cdi.enabled=true \
     --set cdi.default=true \
-    --set driver.enabled=false \
+    --set 'toolkit.env[0].name=RUNTIME_CONFIG_SOURCE' \
+    --set 'toolkit.env[0].value=file' \
+    --set 'toolkit.env[1].name=NVIDIA_RUNTIME_SET_AS_DEFAULT' \
+    --set-string 'toolkit.env[1].value=true' \
     --timeout 60m
 ```
 
 Notes:
-1. Using the version `v24.9.0` helps avoid certain issues with the GPU Operator, as discussed in https://github.com/NVIDIA/gpu-operator/issues/901 (see `--set driver.upgradePolicy.autoUpgrade=false`).
-2. The recomended driver version (e.g. `--set driver.version="550.127.08"`) can be found in the official [NVIDIA GPU Operator Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix).
+1. `driver.enabled=false`: The R570 DaemonSet manages the GPU driver (570.124.06 for CUDA 12.8). The [NVIDIA GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) lists supported driver versions.
+2. `RUNTIME_CONFIG_SOURCE=file` is required for GKE's containerd 2.0+ (config v3 format).
+3. `NVIDIA_RUNTIME_SET_AS_DEFAULT=true` makes nvidia the default container runtime, so all pods get GPU access without explicit `nvidia.com/gpu` resource requests (equivalent to k3s `--default-runtime nvidia`).
 
 Check the cluster labels again, it should have GPU accelerator support for the K8s node selector:
 ```bash
@@ -284,8 +336,7 @@ cd graphistry-helm && bash chart-bundler/bundler.sh
 
 ## Install NGINX Ingress Controller
 ```bash
-helm upgrade --install ingress-nginx ingress-nginx \
-    --repo https://kubernetes.github.io/ingress-nginx \
+helm upgrade --install ingress-nginx ./charts-aux-bundled/ingress-nginx \
     --namespace ingress-nginx --create-namespace \
     --set controller.service.type=LoadBalancer
 ```
@@ -295,11 +346,26 @@ Verify the `EXTERNAL-IP` (this will be used to access to the cluster from the br
 kubectl get service --namespace ingress-nginx ingress-nginx-controller --output wide --watch
 ```
 
+## Install Dask Operator and CRDs
+```bash
+cd charts-aux-bundled/dask-kubernetes-operator/ && helm dep build && cd ../..
+```
+
+Install the Dask operator chart using this command:
+```bash
+helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator --namespace dask-operator --create-namespace
+```
+
+Wait until the operator is ready and running:
+```bash
+kubectl get pods --watch --namespace dask-operator
+```
+
 ## Install Postgres Operator
 
-Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator) from the official OCI registry:
+Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator):
 ```bash
-helm install pgo oci://registry.developers.crunchydata.com/crunchydata/pgo \
+helm install pgo ./charts-aux-bundled/pgo \
     --namespace postgres-operator --create-namespace
 ```
 
@@ -318,34 +384,12 @@ Install the cluster chart using this command:
 helm upgrade -i postgres-cluster ./charts/postgres-cluster --set global.provisioner="pd.csi.storage.gke.io" --namespace graphistry --create-namespace
 ```
 
-Wait until the pods are online (`postgres-repo-host-*` should be running):
+Verify the pods are created (both will be `Pending` until `graphistry-resources` creates the required storage classes in a later step):
 ```bash
-kubectl get pods --watch -n graphistry
+kubectl get pods -n graphistry
 ```
 
-The output should be similar to:
-```bash
-NAME                        READY   STATUS    RESTARTS   AGE
-postgres-instance1-5lkd-0   0/4     Pending   0          4m43s
-postgres-repo-host-0        2/2     Running   0          4m43s
-```
-
-**Note**: The `postgres-instance` pod will stay in `Pending` state. It requires the `retain-sc` storage class, which is created by `graphistry-resources` in a later step.
-
-## Install Dask Operator and CRDs
-```bash
-cd charts-aux-bundled/dask-kubernetes-operator/ && helm dep build && cd ../..
-```
-
-Install the Dask operator chart using this command:
-```bash
-helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator --namespace dask-operator --create-namespace
-```
-
-Wait until the operator is ready and running:
-```bash
-kubectl get pods --watch --namespace dask-operator
-```
+**Note**: Both postgres pods will stay in `Pending` state. They require storage classes (`retain-sc` and `retain-sc-<namespace>`) which are created by `graphistry-resources` in a later step.
 
 ## Install Graphistry Resources
 
@@ -368,6 +412,7 @@ This chart creates the required storage classes using your provisioner (`pd.csi.
 | Storage Class | reclaimPolicy | Description |
 |---------------|---------------|-------------|
 | `retain-sc` | Retain | Data preserved when PVC deleted (manual cleanup required) |
+| `retain-sc-<namespace>` | Retain | Namespace-scoped retain class for postgres backup repo isolation |
 | `uploadfiles-sc` | Delete | Data deleted when PVC deleted |
 
 ### PVCs and Services (graphistry-helm chart)
@@ -382,11 +427,11 @@ This chart creates the required storage classes using your provisioner (`pd.csi.
 
 ### Postgres Storage (postgres-cluster chart)
 
-The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using `retain-sc` for:
-- Instance data volume (e.g., `postgres-instance1-xxxx-0`)
-- Backup repository volume
+The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using:
+- Instance data volume on `retain-sc` (e.g., `postgres-instance1-xxxx-0`)
+- Backup repository volume on `retain-sc-<namespace>` for multi-tenant isolation
 
-Wait until the resources are online (`postgres-instance1-*` and `postgres-backup-*` should be running after some seconds):
+Wait until the resources are online (`postgres-instance1-*` and `postgres-repo-host-*` should be `Running`, `postgres-backup-*` should be `Completed`):
 ```bash
 kubectl get pods --watch -n graphistry
 ```
@@ -399,7 +444,7 @@ cuda:
   version: "12.8"
 
 global:  ## global settings for all charts
-  tag: v2.42.4
+  tag: v2.45.11
 ```
 
 Print more values:
@@ -428,6 +473,15 @@ It's possible to get the public cluster address using this command (this IP is t
 ```bash
 kubectl get ingress -n graphistry
 ```
+
+All services share the same ingress IP (`ADDRESS` from the command above). When `ENABLE_OPEN_TELEMETRY: true` and `telemetryStack.OTEL_CLOUD_MODE: false` are set in your values file, the telemetry stack (Grafana, Prometheus, Jaeger) is deployed as part of the cluster:
+
+| Service | Path |
+|---|---|
+| Graphistry | `http://<ADDRESS>/` |
+| Grafana | `http://<ADDRESS>/grafana` |
+| Jaeger | `http://<ADDRESS>/jaeger` |
+| Prometheus | `http://<ADDRESS>/prometheus` |
 
 Once you open Graphistry in the browser, create an account for the admin user with the email and password.
 

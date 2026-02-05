@@ -12,7 +12,7 @@ echo "$PWD"
 mkdir -p ${AUX_BUNDLE_DIR}
 cd ${AUX_BUNDLE_DIR}
 
-# This script is used to generate a chart bundle from the forks of charts we use to suport the graphistry helm chart deployment.    
+# This script is used to generate a chart bundle from the forks of charts we use to suport the graphistry helm chart deployment.
 
 echo "gathering kube prometheus stack charts"
 
@@ -41,78 +41,73 @@ git clone https://github.com/graphistry/NVIDIA-morpheus-mlflow-plugin
 echo "gathering dask operator charts"
 
 helm fetch \
-  --version 2023.7.2 \
+  --version 2025.7.0 \
   --repo https://helm.dask.org \
   --untar \
   --untardir . \
   dask-kubernetes-operator
 
-rm -rf dask-kubernetes-operator-2023.7.2.tgz
+rm -rf dask-kubernetes-operator-2025.7.0.tgz
 
 
 echo "gathering cert-manager charts"
 
 helm fetch \
-  --version v1.10.1 \
+  --version v1.19.3 \
   --repo https://charts.jetstack.io \
   --untar \
   --untardir . \
   cert-manager
-rm -rf cert-manager-v1.10.1.tgz
+rm -rf cert-manager-v1.19.3.tgz
 
 
 echo "gathering elastic stack operator charts"
 
 helm fetch \
-  --version 2.5.0 \
+  --version 3.3.0 \
   --repo https://helm.elastic.co \
   --untar \
   --untardir . \
   eck-operator
-rm -rf eck-operator-2.5.0.tgz
+rm -rf eck-operator-3.3.0.tgz
 
 echo "gathering NVIDIA DCGM exporter charts"
 
-
 helm fetch \
-  --version 3.0.0 \
+  --version 4.7.1 \
   --repo https://nvidia.github.io/dcgm-exporter/helm-charts \
   --untar \
   --untardir . \
   dcgm-exporter
-rm -rf dcgm-exporter-3.0.0.tgz
+rm -rf dcgm-exporter-4.7.1.tgz
 
 
 echo "gathering jupyterhub charts"
 
 helm fetch \
-  --version 2.0.0 \
+  --version 4.3.2 \
   --repo https://jupyterhub.github.io/helm-chart/ \
   --untar \
   --untardir . \
   jupyterhub
-rm -rf jupyterhub-2.0.0.tgz
+rm -rf jupyterhub-4.3.2.tgz
 
 echo "gathering nginx ingress controller charts"
 
 helm fetch \
-  --version 4.4.0 \
+  --version 4.14.3 \
   --repo https://kubernetes.github.io/ingress-nginx \
   --untar \
   --untardir . \
   ingress-nginx
-rm -rf ingress-nginx-4.4.0.tgz
+rm -rf ingress-nginx-4.14.3.tgz
 
 echo "gathering postgres operator charts"
 
-git clone https://github.com/CrunchyData/postgres-operator-examples
-
-mkdir postgres-operator
-
-cp -r postgres-operator-examples/helm/install/* postgres-operator
-
-rm -rf postgres-operator-examples
-
+helm pull oci://registry.developers.crunchydata.com/crunchydata/pgo \
+  --version 6.0.0 \
+  --untar \
+  --untardir .
 
 
 echo "gathering argo charts"

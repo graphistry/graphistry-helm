@@ -381,7 +381,7 @@ helm show values ./charts/postgres-cluster
 
 Install the cluster chart using this command:
 ```bash
-helm upgrade -i postgres-cluster ./charts/postgres-cluster --set global.provisioner="pd.csi.storage.gke.io" --namespace graphistry --create-namespace
+helm upgrade -i postgres-cluster ./charts/postgres-cluster --namespace graphistry --create-namespace
 ```
 
 Verify the pods are created (both will be `Pending` until `graphistry-resources` creates the required storage classes in a later step):

@@ -127,9 +127,9 @@ bash chart-bundler/bundler.sh
 
 ### Install Postgres Operator
 
-Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator) from the official OCI registry:
+Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator):
 ```bash
-helm install pgo oci://registry.developers.crunchydata.com/crunchydata/pgo \
+helm install pgo ./charts-aux-bundled/pgo \
     --namespace postgres-operator --create-namespace
 ```
 
@@ -150,16 +150,15 @@ helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator \
 
 ```bash
 helm upgrade -i postgres-cluster ./charts/postgres-cluster \
-    --set global.provisioner="rancher.io/local-path" \
     --namespace graphistry --create-namespace
 ```
 
-Wait for postgres pods:
+Verify the pods are created (both will be `Pending` until `graphistry-resources` creates the required storage classes in a later step):
 ```bash
-kubectl get pods --watch -n graphistry
+kubectl get pods -n graphistry
 ```
 
-**Note**: The `postgres-instance` pod will stay in `Pending` state. It requires the `retain-sc` storage class, which is created by `graphistry-resources` in the next step.
+**Note**: Both postgres pods will stay in `Pending` state. They require storage classes (`retain-sc` and `retain-sc-<namespace>`) which are created by `graphistry-resources` in the next step.
 
 ## Install Graphistry Resources
 
@@ -182,6 +181,7 @@ This chart creates the required storage classes using your provisioner (`rancher
 | Storage Class | reclaimPolicy | Description |
 |---------------|---------------|-------------|
 | `retain-sc` | Retain | Data preserved when PVC deleted (manual cleanup required) |
+| `retain-sc-<namespace>` | Retain | Namespace-scoped retain class for postgres backup repo isolation |
 | `uploadfiles-sc` | Delete | Data deleted when PVC deleted |
 
 ### PVCs and Services (graphistry-helm chart)
@@ -196,9 +196,9 @@ This chart creates the required storage classes using your provisioner (`rancher
 
 ### Postgres Storage (postgres-cluster chart)
 
-The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using `retain-sc` for:
-- Instance data volume (e.g., `postgres-instance1-xxxx-0`)
-- Backup repository volume
+The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using:
+- Instance data volume on `retain-sc` (e.g., `postgres-instance1-xxxx-0`)
+- Backup repository volume on `retain-sc-<namespace>` for multi-tenant isolation
 
 Wait for resources (the `postgres-instance` pod should now start running):
 ```bash

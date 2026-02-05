@@ -151,7 +151,7 @@ helm install --wait --generate-name \
     -n gpu-operator \
     nvidia/gpu-operator \
     --set driver.enabled=true \
-    --set driver.version="550.127.08" \
+    --set driver.version="<DRIVER_VERSION>" \
     --set cdi.enabled=true \
     --set cdi.default=true \
     --set 'toolkit.env[0].name=NVIDIA_RUNTIME_SET_AS_DEFAULT' \
@@ -159,10 +159,18 @@ helm install --wait --generate-name \
     --timeout 60m
 ```
 
+**Choose `<DRIVER_VERSION>` based on your CUDA version:**
+
+| CUDA Version | Minimum Driver | Recommended `driver.version` | Notes |
+|---|---|---|---|
+| 12.8 | >=570.26 | `550.144.03` or `570.124.06` | R535 does **not** work (max CUDA 12.2) |
+| 11.8 | >=450.80.02 | `535.183.06` | R535 is compatible |
+
+Set the matching CUDA version in your values file (`cuda.version: "12.8"` or `"11.8"`). See the [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix and the [GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported driver versions per operator release.
+
 Notes:
 1. `driver.enabled=true`: The GPU Operator installs the NVIDIA driver on Tanzu nodes (unlike GKE which uses a separate DaemonSet).
-2. `driver.version="550.127.08"`: Adjust to a driver version compatible with your CUDA version. Check the [NVIDIA GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported versions.
-3. `NVIDIA_RUNTIME_SET_AS_DEFAULT=true`: Makes nvidia the default container runtime, so all pods get GPU access without explicit `nvidia.com/gpu` resource requests.
+2. `NVIDIA_RUNTIME_SET_AS_DEFAULT=true`: Makes nvidia the default container runtime, so all pods get GPU access without explicit `nvidia.com/gpu` resource requests.
 
 Wait for the operator pods to be ready:
 ```bash
@@ -245,7 +253,7 @@ env:
     value: "1"
 ```
 
-You must mirror all Graphistry images to your private registry before deployment. Contact Graphistry support for the complete image list for your version.
+You must mirror all Graphistry images to your private registry before deployment, including the `groundnuty/k8s-wait-for:latest` image used by init containers across most Graphistry pods (nexus, nginx, pivot, forge-etl-python, streamgl-gpu, dask-scheduler, dask-cuda-worker, etc.). Without this image, pods will fail to start. Contact Graphistry support for the complete image list for your version.
 
 ## Get Graphistry Helm Charts
 
@@ -274,7 +282,7 @@ Wait for the external IP:
 kubectl get service --namespace ingress-nginx ingress-nginx-controller --output wide --watch
 ```
 
-**Note**: If your Tanzu cluster doesn't support LoadBalancer services (no NSX-T or MetalLB), use NodePort instead:
+**Note**: If your Tanzu cluster doesn't support LoadBalancer services (no [NSX Advanced Load Balancer (Avi)](https://techdocs.broadcom.com/us/en/vmware-tanzu/standalone-components/tanzu-kubernetes-grid/2-5/tkg/mgmt-reqs-network-nsx-alb-overview.html) or MetalLB), use NodePort instead:
 ```bash
 helm upgrade --install ingress-nginx ./charts-aux-bundled/ingress-nginx \
     --namespace ingress-nginx --create-namespace \
@@ -314,7 +322,6 @@ kubectl get pods --watch --namespace dask-operator
 
 ```bash
 helm upgrade -i postgres-cluster ./charts/postgres-cluster \
-    --set global.provisioner="csi.vsphere.vmware.com" \
     --namespace graphistry --create-namespace
 ```
 
@@ -323,7 +330,7 @@ Verify the pods are created (both will be `Pending` until `graphistry-resources`
 kubectl get pods -n graphistry
 ```
 
-**Note**: Both postgres pods will stay in `Pending` state. They require storage classes (`retain-sc` and `retain-sc-<namespace>`) which are created by `graphistry-resources` in the next step.
+**Note**: Both postgres pods will stay in `Pending` state. They require storage classes (`retain-sc` and `retain-sc-<namespace>`) which are created by `graphistry-resources` in the next step. The postgres-cluster chart does not use `global.provisioner` directly — it references storage class names (`retain-sc`, `retain-sc-<namespace>`) that are created by `graphistry-resources`.
 
 ## Install Graphistry Resources
 
@@ -454,7 +461,7 @@ kubectl get pvc -n graphistry
 ### Check Storage Class
 ```bash
 kubectl get sc
-kubectl describe sc csi.vsphere.vmware.com
+kubectl describe sc retain-sc
 ```
 
 ### GPU Issues
@@ -496,7 +503,7 @@ kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nginx
 
 #### Common Networking Problems
 
-1. **No external IP on LoadBalancer**: Tanzu may require MetalLB or NSX-T for LoadBalancer services
+1. **No external IP on LoadBalancer**: Tanzu requires [NSX Advanced Load Balancer (Avi)](https://techdocs.broadcom.com/us/en/vmware-tanzu/standalone-components/tanzu-kubernetes-grid/2-5/tkg/mgmt-reqs-network-nsx-alb-overview.html) or MetalLB for LoadBalancer services
    ```bash
    # Check if service is pending
    kubectl get svc -n ingress-nginx
@@ -504,7 +511,7 @@ kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nginx
    # --set controller.service.type=NodePort
    ```
 
-2. **NSX-T blocking traffic**: Check with your vSphere admin for network policies
+2. **NSX-T / network policies blocking traffic**: Check with your vSphere admin for firewall rules and network policies
 
 3. **Session affinity issues**: WebSocket connections may fail if affinity is not working
    ```bash
@@ -529,13 +536,21 @@ helm uninstall graphistry-resources -n graphistry
 helm uninstall postgres-cluster -n graphistry
 
 # Uninstall operators
-helm uninstall postgres-operator -n postgres-operator
+helm uninstall pgo -n postgres-operator
 helm uninstall dask-operator -n dask-operator
+
+# Uninstall GPU Operator (--generate-name creates a dynamic release name)
+helm list -n gpu-operator -q | xargs -I {} helm uninstall {} -n gpu-operator
+
+# Uninstall ingress controller
+helm uninstall ingress-nginx -n ingress-nginx
 
 # Delete namespaces
 kubectl delete namespace graphistry
 kubectl delete namespace postgres-operator
 kubectl delete namespace dask-operator
+kubectl delete namespace gpu-operator
+kubectl delete namespace ingress-nginx
 ```
 
 ## References

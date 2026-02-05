@@ -20,6 +20,9 @@ k8sDashboard:
   createServiceAccount: false
 
 global:
+  # Ingress class - change to "traefik" if using Traefik ingress controller
+  ingressClassName: nginx
+
   # vSphere CSI storage provisioner for Tanzu
   provisioner: csi.vsphere.vmware.com
 

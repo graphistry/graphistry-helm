@@ -161,12 +161,14 @@ helm install --wait --generate-name \
 
 **Choose `<DRIVER_VERSION>` based on your CUDA version:**
 
+Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8` vs `graphistry/nexus:v2.45.11-11.8`). The GPU driver installed on the node must be compatible with the chosen CUDA version:
+
 | CUDA Version | Minimum Driver | Recommended `driver.version` | Notes |
 |---|---|---|---|
-| 12.8 | >=570.26 | `550.144.03` or `570.124.06` | R535 does **not** work (max CUDA 12.2) |
-| 11.8 | >=450.80.02 | `535.183.06` | R535 is compatible |
+| 12.8 | >=570.26 | `570.195.03` | R570 branch or newer |
+| 11.8 | >=520.61.05 | `535.288.01` | R535 branch or newer |
 
-Set the matching CUDA version in your values file (`cuda.version: "12.8"` or `"11.8"`). See the [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix and the [GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported driver versions per operator release.
+The chart default is `cuda.version: "12.8"`. If using CUDA 11.8, add `--set cuda.version="11.8"` to your Graphistry helm install command (the [Install Graphistry](#install-graphistry) step, not the GPU Operator). See the [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix and the [GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported driver versions per operator release.
 
 Notes:
 1. `driver.enabled=true`: The GPU Operator installs the NVIDIA driver on Tanzu nodes (unlike GKE which uses a separate DaemonSet).

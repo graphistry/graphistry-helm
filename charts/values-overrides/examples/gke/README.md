@@ -437,11 +437,10 @@ kubectl get pods --watch -n graphistry
 ```
 
 ## Install Graphistry
-You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/gke/gke_example_values.yaml`:
+Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8`). You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/gke/gke_example_values.yaml`:
 ```yaml
-# CUDA version - 12.8 supports modern GPUs including Blackwell
 cuda:
-  version: "12.8"
+  version: "12.8"   # or "11.8" - must match the GPU driver installed above
 
 global:  ## global settings for all charts
   tag: v2.45.11
@@ -524,7 +523,7 @@ helm uninstall postgres-cluster -n graphistry
 
 Delete the `postgres-operator` chart:
 ```bash
-helm uninstall postgres-operator -n postgres-operator
+helm uninstall pgo -n postgres-operator
 ```
 
 Delete the `dask-operator` chart:
@@ -532,34 +531,27 @@ Delete the `dask-operator` chart:
 helm uninstall dask-operator -n dask-operator
 ```
 
+Delete the GPU Operator (`--generate-name` creates a dynamic release name):
+```bash
+helm list -n gpu-operator -q | xargs -I {} helm uninstall {} -n gpu-operator
+```
+
 Delete the docker registry secrets:
 ```bash
 kubectl delete secret docker-secret-prod -n graphistry
 ```
 
-Print all namespaces:
+Verify that no pods are running for the `graphistry` namespace:
 ```bash
-kubectl get ns
+kubectl get pods --namespace graphistry
 ```
 
-Verify that no pods are running for the `graphistry` namespace using this command:
-```bash
-kubectl get pods --watch --namespace graphistry
-```
-
-Delete the `dask-operator` namespace:
-```bash
-kubectl delete ns dask-operator
-```
-
-Delete the `postgres-operator` namespace:
-```bash
-kubectl delete ns postgres-operator
-```
-
-Delete the `graphistry` namespace:
+Delete namespaces:
 ```bash
 kubectl delete namespace graphistry
+kubectl delete namespace postgres-operator
+kubectl delete namespace dask-operator
+kubectl delete namespace gpu-operator
 ```
 
 Also, it's possible to delete the K8s cluster:

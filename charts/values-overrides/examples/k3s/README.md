@@ -58,9 +58,18 @@ kubectl create ns gpu-operator
 
 helm install --wait --generate-name \
     -n gpu-operator nvidia/gpu-operator \
-    --set driver.version="550.144.03" \
+    --set driver.version="<DRIVER_VERSION>" \
     --timeout 60m
 ```
+
+Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8`). The GPU driver must be compatible with the chosen CUDA version:
+
+| CUDA Version | Minimum Driver | Recommended `driver.version` | Notes |
+|---|---|---|---|
+| 12.8 | >=570.26 | `570.195.03` | R570 branch or newer |
+| 11.8 | >=520.61.05 | `535.288.01` | R535 branch or newer |
+
+The chart default is `cuda.version: "12.8"`. If using CUDA 11.8, add `--set cuda.version="11.8"` to your Graphistry helm install command (the [Install Graphistry](#install-graphistry) step, not the GPU Operator). See the [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix.
 
 Wait for the operator pods to be ready:
 ```bash
@@ -293,13 +302,17 @@ helm uninstall graphistry-resources -n graphistry
 helm uninstall postgres-cluster -n graphistry
 
 # Uninstall operators
-helm uninstall postgres-operator -n postgres-operator
+helm uninstall pgo -n postgres-operator
 helm uninstall dask-operator -n dask-operator
+
+# Uninstall GPU Operator (--generate-name creates a dynamic release name)
+helm list -n gpu-operator -q | xargs -I {} helm uninstall {} -n gpu-operator
 
 # Delete namespaces
 kubectl delete namespace graphistry
 kubectl delete namespace postgres-operator
 kubectl delete namespace dask-operator
+kubectl delete namespace gpu-operator
 ```
 
 ## References

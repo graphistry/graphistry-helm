@@ -484,6 +484,39 @@ All services share the same ingress IP (`ADDRESS` from the command above). When 
 
 Once you open Graphistry in the browser, create an account for the admin user with the email and password.
 
+### Fix DCGM GPU Metrics on GKE (when telemetry is enabled)
+
+When `ENABLE_OPEN_TELEMETRY: true` and `telemetryStack.OTEL_CLOUD_MODE: false`, Graphistry deploys its own DCGM exporter. On GKE, this exporter fails to collect GPU metrics because the DCGM profiling module is incompatible with GKE's Container-Optimized OS nodes:
+
+```
+ERROR msg="DCGM collector for entity type 'GPU' cannot be initialized;
+  err: error watching fields: The third-party Profiling module returned an unrecoverable error"
+```
+
+The GPU Operator already deploys a working DCGM exporter in the `gpu-operator` namespace. To fix the Grafana GPU dashboards, point Graphistry's Prometheus to scrape it instead and remove the redundant Graphistry DCGM exporter:
+
+```bash
+# Point Prometheus to the GPU Operator's DCGM exporter (cross-namespace)
+kubectl get configmap prometheus-configmap -n graphistry -o yaml \
+  | sed 's|dcgm-exporter:9400|nvidia-dcgm-exporter.gpu-operator.svc.cluster.local:9400|' \
+  | kubectl apply -f -
+
+# Restart Prometheus to pick up the new config
+kubectl rollout restart daemonset/prometheus -n graphistry
+
+# Remove the redundant Graphistry DCGM exporter
+kubectl delete daemonset dcgm-exporter -n graphistry
+kubectl delete service dcgm-exporter -n graphistry
+```
+
+Verify GPU metrics are flowing:
+```bash
+kubectl exec -n graphistry $(kubectl get pods -n graphistry -l io.kompose.service=prometheus -o name | head -1) \
+  -- sh -c 'wget -qO- "http://localhost:9090/prometheus/api/v1/query?query=DCGM_FI_DEV_GPU_TEMP" 2>/dev/null'
+```
+
+> **Note**: This patch is applied at runtime. After a `helm upgrade`, you may need to re-apply it if the configmap is overwritten.
+
 ## Update Graphistry deployment
 In case we want to change some values in `../gke_example_values.yaml` reusing the volume names:
 ```bash

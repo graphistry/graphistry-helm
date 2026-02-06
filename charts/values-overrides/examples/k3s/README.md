@@ -14,7 +14,7 @@ This guide provides step-by-step instructions for deploying Graphistry on k3s, a
 curl -sfL https://get.k3s.io | sh -
 ```
 
-If you don't have `kubectl` set up, alias it:
+If you don't have `kubectl` you can set up an alias:
 ```bash
 alias kubectl='k3s kubectl'
 ```
@@ -54,11 +54,19 @@ systemctl restart k3s
 ```bash
 helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
 
-kubectl create ns gpu-operator
-
+# Operator installs the NVIDIA driver on the node
 helm install --wait --generate-name \
-    -n gpu-operator nvidia/gpu-operator \
+    -n gpu-operator --create-namespace nvidia/gpu-operator \
     --set driver.version="<DRIVER_VERSION>" \
+    --timeout 60m
+```
+
+If the NVIDIA driver is already installed on the host (e.g., via `apt` or `.run` installer):
+```bash
+# Use the host driver - operator manages device plugin and toolkit only
+helm install --wait --generate-name \
+    -n gpu-operator --create-namespace nvidia/gpu-operator \
+    --set driver.enabled=false \
     --timeout 60m
 ```
 
@@ -83,8 +91,63 @@ kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/mas
 ```
 
 ### Verify GPU Access
+
+Verify the GPU is detected by the operator:
+```bash
+kubectl get nodes --show-labels | grep "nvidia.com/gpu.present"
+
+kubectl get nodes -ojson | jq '.items[].status.capacity' | grep nvidia.com/gpu
+```
+
+Or print the full GPU specs:
 ```bash
 kubectl get nodes -ojson | jq '.items[].status.capacity | select(.["nvidia.com/gpu"] != null)'
+```
+
+Example output (in case of 2 GPUs):
+```json
+{
+  "cpu": "32",
+  "ephemeral-storage": "959786032Ki",
+  "hugepages-1Gi": "0",
+  "hugepages-2Mi": "0",
+  "memory": "131658668Ki",
+  "nvidia.com/gpu": "2",
+  "pods": "110"
+}
+```
+
+## Install Kubernetes Operators
+
+### Install Postgres Operator
+
+Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator):
+```bash
+helm install pgo ./charts-aux-bundled/pgo \
+    --namespace postgres-operator --create-namespace
+```
+
+Wait for the operator:
+```bash
+kubectl get pods --watch --namespace postgres-operator
+```
+
+### Install Dask Operator
+
+Prepare the operator:
+```bash
+cd charts-aux-bundled/dask-kubernetes-operator/ && helm dep build && cd ../..
+```
+
+Install the operator:
+```bash
+helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator \
+    --namespace dask-operator --create-namespace
+```
+
+Wait until the operator is ready and running:
+```bash
+kubectl get pods --watch --namespace dask-operator
 ```
 
 ## Create Graphistry Namespace and Secrets
@@ -130,29 +193,6 @@ cd graphistry-helm
 Run the chart bundler:
 ```bash
 bash chart-bundler/bundler.sh
-```
-
-## Install Kubernetes Operators
-
-### Install Postgres Operator
-
-Install [PGO](https://access.crunchydata.com/documentation/postgres-operator/latest/installation/helm) (Crunchy Postgres Operator):
-```bash
-helm install pgo ./charts-aux-bundled/pgo \
-    --namespace postgres-operator --create-namespace
-```
-
-Wait for the operator:
-```bash
-kubectl get pods --watch --namespace postgres-operator
-```
-
-### Install Dask Operator
-```bash
-cd charts-aux-bundled/dask-kubernetes-operator/ && helm dep build && cd ../..
-
-helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator \
-    --namespace dask-operator --create-namespace
 ```
 
 ## Install Postgres Cluster
@@ -209,7 +249,7 @@ The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dy
 - Instance data volume on `retain-sc` (e.g., `postgres-instance1-xxxx-0`)
 - Backup repository volume on `retain-sc-<namespace>` for multi-tenant isolation
 
-Wait for resources (the `postgres-instance` pod should now start running):
+Wait until the resources are online (`postgres-instance1-*` and `postgres-repo-host-*` should be `Running`, `postgres-backup-*` should be `Completed`):
 ```bash
 kubectl get pods --watch -n graphistry
 ```
@@ -239,6 +279,17 @@ For k3s with Traefik ingress:
 ```bash
 kubectl get ingress -n graphistry
 ```
+
+All services share the same ingress IP (`ADDRESS` from the command above). When `ENABLE_OPEN_TELEMETRY: true` and `telemetryStack.OTEL_CLOUD_MODE: false` are set in your values file, the telemetry stack (Grafana, Prometheus, Jaeger) is deployed as part of the cluster:
+
+| Service | Path |
+|---|---|
+| Graphistry | `http://<ADDRESS>/` |
+| Grafana | `http://<ADDRESS>/grafana` |
+| Jaeger | `http://<ADDRESS>/jaeger` |
+| Prometheus | `http://<ADDRESS>/prometheus` |
+
+Once you open Graphistry in the browser, create an account for the admin user with the email and password.
 
 ## Update Graphistry Deployment
 
@@ -313,6 +364,17 @@ kubectl delete namespace graphistry
 kubectl delete namespace postgres-operator
 kubectl delete namespace dask-operator
 kubectl delete namespace gpu-operator
+
+# Inspect storage before cleanup
+kubectl get pvc -n graphistry
+kubectl get pv | grep graphistry
+kubectl get sc | grep -E "retain-sc|uploadfiles-sc"
+
+# Delete orphaned PVs (remain in Released state due to Retain policy)
+kubectl get pv | grep graphistry | awk '{print $1}' | xargs kubectl delete pv
+
+# Delete storage classes created by graphistry-resources (some may already be removed by helm uninstall)
+kubectl delete sc retain-sc retain-sc-graphistry uploadfiles-sc --ignore-not-found
 ```
 
 ## References

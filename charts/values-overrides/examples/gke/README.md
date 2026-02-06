@@ -482,6 +482,10 @@ All services share the same ingress IP (`ADDRESS` from the command above). When 
 | Jaeger | `http://<ADDRESS>/jaeger` |
 | Prometheus | `http://<ADDRESS>/prometheus` |
 
+Grafana includes pre-provisioned dashboards:
+- **NVIDIA DCGM Exporter Dashboard** (`/grafana/d/Oxed_c6Wz/nvidia-dcgm-exporter-dashboard`) - GPU temperature, power usage, utilization, memory, SM clock
+- **Node Exporter Full Dashboard** (`/grafana/d/rYdddlPWk/node-exporter-full`) - CPU, memory, disk, network metrics
+
 Once you open Graphistry in the browser, create an account for the admin user with the email and password.
 
 ### Fix DCGM GPU Metrics on GKE (when telemetry is enabled)

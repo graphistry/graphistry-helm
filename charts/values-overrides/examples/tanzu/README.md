@@ -88,6 +88,35 @@ Important settings in the Helm chart:
 - **Proxy body size**: Set to 20GB for large graph uploads (configurable via `ProxyBodySize`)
 - **TLS**: Optional, can use cert-manager with Let's Encrypt
 
+### GPU Access on vSphere
+
+vSphere provides two ways to expose GPUs to Tanzu Kubernetes nodes:
+
+| Mode | Description | Use Case |
+|---|---|---|
+| **GPU Passthrough** (DirectPath I/O) | Full GPU dedicated to a single VM. The VM sees the bare-metal GPU directly. | Best performance. Required for Graphistry's GPU-accelerated visualization. |
+| **vGPU** (time-sliced) | GPU shared across multiple VMs via NVIDIA GRID/vGPU manager. Each VM gets a virtual GPU profile. | Multi-tenant environments where GPU sharing is needed. |
+
+```
+Physical Server (ESXi Host)
+    |
+    +-- NVIDIA GPU (e.g., T4, A100, A40)
+        |
+        +-- GPU Passthrough: Full GPU -> 1 VM -> Tanzu node
+        |
+        +-- vGPU: GPU sliced -> multiple VMs -> multiple Tanzu nodes
+```
+
+Tanzu nodes run **Photon OS** or **Ubuntu** (standard Linux), unlike GKE which uses Container-Optimized OS. This means the NVIDIA GPU Operator can install drivers directly on the node (`driver.enabled=true`).
+
+Common GPU models for Tanzu/vSphere:
+- **T4** - inference-optimized, widely deployed
+- **A100/A30** - MIG support, high-performance training and inference
+- **A40/L40S** - visualization and compute workloads
+- **H100** - latest generation, MIG support
+
+> **Note on GPU monitoring**: In vGPU mode, the DCGM profiling module may not have full access to the GPU hardware, which can affect GPU metrics collection. See [Fix DCGM GPU Metrics](#fix-dcgm-gpu-metrics-vgpu-environments) in the Telemetry section if your Grafana GPU dashboard shows no data.
+
 ## Prerequisites
 
 ### Tanzu Kubernetes Cluster
@@ -427,9 +456,48 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
 ## Enabling Telemetry
 
 Telemetry is enabled by default (`ENABLE_OPEN_TELEMETRY: true`). When `telemetryStack.OTEL_CLOUD_MODE: false` (the default in the example values), the following services are deployed as part of the cluster:
-- **Grafana** — dashboards and metrics visualization (`/grafana`)
-- **Prometheus** — metrics collection and alerting (`/prometheus`)
-- **Jaeger** — distributed tracing (`/jaeger`)
+- **Grafana** - dashboards and metrics visualization (`/grafana`)
+- **Prometheus** - metrics collection and alerting (`/prometheus`)
+- **Jaeger** - distributed tracing (`/jaeger`)
+
+Grafana includes pre-provisioned dashboards:
+- **NVIDIA DCGM Exporter Dashboard** (`/grafana/d/Oxed_c6Wz/nvidia-dcgm-exporter-dashboard`) - GPU temperature, power usage, utilization, memory, SM clock
+- **Node Exporter Full Dashboard** (`/grafana/d/rYdddlPWk/node-exporter-full`) - CPU, memory, disk, network metrics
+
+### Fix DCGM GPU Metrics (vGPU environments)
+
+Graphistry deploys its own DCGM exporter to collect GPU metrics. On Tanzu nodes using **vGPU** (time-sliced GPU sharing), the DCGM profiling module may fail:
+
+```
+ERROR msg="DCGM collector for entity type 'GPU' cannot be initialized;
+  err: error watching fields: The third-party Profiling module returned an unrecoverable error"
+```
+
+This does not affect nodes using **GPU passthrough** (DirectPath I/O), where the VM has direct hardware access.
+
+If you see this error, the GPU Operator already deploys a working DCGM exporter in the `gpu-operator` namespace. Point Graphistry's Prometheus to use it instead:
+
+```bash
+# Point Prometheus to the GPU Operator's DCGM exporter (cross-namespace)
+kubectl get configmap prometheus-configmap -n graphistry -o yaml \
+  | sed 's|dcgm-exporter:9400|nvidia-dcgm-exporter.gpu-operator.svc.cluster.local:9400|' \
+  | kubectl apply -f -
+
+# Restart Prometheus to pick up the new config
+kubectl rollout restart daemonset/prometheus -n graphistry
+
+# Remove the redundant Graphistry DCGM exporter
+kubectl delete daemonset dcgm-exporter -n graphistry
+kubectl delete service dcgm-exporter -n graphistry
+```
+
+Verify GPU metrics are flowing:
+```bash
+kubectl exec -n graphistry $(kubectl get pods -n graphistry -l io.kompose.service=prometheus -o name | head -1) \
+  -- sh -c 'wget -qO- "http://localhost:9090/prometheus/api/v1/query?query=DCGM_FI_DEV_GPU_TEMP" 2>/dev/null'
+```
+
+> **Note**: This patch is applied at runtime. After a `helm upgrade`, you may need to re-apply it.
 
 To send telemetry to an external provider (e.g., Grafana Cloud) instead, set `OTEL_CLOUD_MODE: true` and fill in the `openTelemetryCollector` credentials in your values file.
 

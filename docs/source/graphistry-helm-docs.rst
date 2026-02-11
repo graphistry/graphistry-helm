@@ -116,18 +116,21 @@ Once the deployment is complete, the Graphistry UI can be accessed from the cadd
 
 Volume Binding
 --------------
-After initial deployment , the PVCs (**gak-private,gak-public,data-mount,local-media-mount**) for graphistry will have PVs
-dynamically provisioned for them by the StorageClass configured via global.storageClassNameOverride (default: retain-sc), and the pods will bind to them
-automatically. If the cluster is redeployed, the PVs will be released and the pods will not be able to bind to them. To fix this, 
-the PVCs must include the volumename from the PV that was provisioned for it. 
-Find the volume name by running the following command:
+After initial deployment, the PVCs (**gak-private, gak-public, data-mount, local-media-mount**) for Graphistry will have PVs
+dynamically provisioned for them by the StorageClass configured via ``global.storageClassNameOverride`` (default: ``retain-sc``), and the pods will bind to them
+automatically. If the Helm release is uninstalled and reinstalled, the PVs (with Retain policy) will be in Released state and will not automatically rebind.
+
+To preserve volume bindings across redeployments, generate the ``volumeName`` block for your values file:
 
     .. code-block:: shell-session
 
-        kubectl get pv -n graphistry
+        echo "volumeName:
+          dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+          localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+          gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
+          gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 
-This will return a list of PVs that were provisioned for the PVCs. The volumename can be found in the output of the command 
-corresponding to the PVC. Add the name to your values.yaml file under the volumeName section. An example values.yaml can be:
+Copy the output into your values file under the ``volumeName`` section, for example:
 
     .. code-block:: yaml
 
@@ -137,11 +140,11 @@ corresponding to the PVC. Add the name to your values.yaml file under the volume
             gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
             gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
 
-Once you have updated your values.yaml file the deployment can be redeployed/upgraded and the Pods will bind to the PVs automatically.
+Then run the normal upgrade command and the pods will bind to the existing PVs automatically:
 
     .. code-block:: shell-session
 
-        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./<your-values.yaml>  
+        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./<your-values.yaml>
 
 
 Configuration

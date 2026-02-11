@@ -558,21 +558,23 @@ kubectl exec -n graphistry $(kubectl get pods -n graphistry -l io.kompose.servic
 > **Note**: This patch is applied at runtime. After a `helm upgrade`, you may need to re-apply it if the configmap is overwritten.
 
 ## Update Graphistry deployment
-In case we want to change some values in `../gke_example_values.yaml` reusing the volume names:
+
+When updating, preserve existing volume bindings so that data persists across redeployments. First, generate the `volumeName` block for your values file:
+
+```bash
+echo "volumeName:
+  dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+  localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+  gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
+  gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
+```
+
+Copy the output into your values file (e.g. `gke_example_values.yaml`), then run the normal upgrade command:
+
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
     --values ./charts/values-overrides/examples/gke/gke_example_values.yaml \
-    --set volumeName.dataMount=$(kubectl get pv -n graphistry | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
-    --set volumeName.localMediaMount=$(kubectl get pv -n graphistry | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
-    --set volumeName.gakPublic=$(kubectl get pv -n graphistry | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-    --set volumeName.gakPrivate=$(kubectl get pv -n graphistry | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
-    -f ./charts/values-overrides/examples/gke/gke_example_values.yaml \
     --namespace graphistry --create-namespace
-```
-
-Check the resources using this command:
-```bash
-kubectl get pods --watch -n graphistry
 ```
 
 ## Enabling Telemetry

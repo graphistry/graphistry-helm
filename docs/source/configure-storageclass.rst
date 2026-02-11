@@ -121,13 +121,17 @@ Volume Binding on Redeployment
 
 After initial deployment, PVCs are dynamically provisioned and pods bind to them automatically. If the Helm release is uninstalled and reinstalled, the PVs (with ``Retain`` policy) will be in ``Released`` state and will not automatically rebind.
 
-To rebind, find the PV names and pass them in your values file:
+To preserve volume bindings across redeployments, generate the ``volumeName`` block for your values file:
 
 .. code-block:: shell-session
 
-    kubectl get pv -n graphistry
+    echo "volumeName:
+      dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+      localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+      gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
+      gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 
-Add the volume names to your values:
+Copy the output into your values file, for example:
 
 .. code-block:: yaml
 
@@ -137,14 +141,10 @@ Add the volume names to your values:
       gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
       gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
 
-Or pass them via ``--set`` during upgrade:
+Then run the normal upgrade command:
 
 .. code-block:: shell-session
 
     helm upgrade -i g-chart ./charts/graphistry-helm \
         --values ./your-values.yaml \
-        --set volumeName.dataMount=$(kubectl get pv -n graphistry | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
-        --set volumeName.localMediaMount=$(kubectl get pv -n graphistry | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
-        --set volumeName.gakPublic=$(kubectl get pv -n graphistry | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-        --set volumeName.gakPrivate=$(kubectl get pv -n graphistry | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
         --namespace graphistry --create-namespace

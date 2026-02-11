@@ -245,16 +245,22 @@ Once you open Graphistry in the browser, create an account for the admin user.
 Update Graphistry
 -----------------
 
-When updating, preserve existing volume bindings:
+When updating, preserve existing volume bindings so that data persists across redeployments. First, generate the ``volumeName`` block for your values file:
+
+.. code-block:: shell-session
+
+    echo "volumeName:
+      dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+      localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+      gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
+      gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
+
+Copy the output into your values file, then run the normal upgrade command:
 
 .. code-block:: shell-session
 
     helm upgrade -i g-chart ./charts/graphistry-helm \
         --values ./your-values.yaml \
-        --set volumeName.dataMount=$(kubectl get pv -n graphistry | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
-        --set volumeName.localMediaMount=$(kubectl get pv -n graphistry | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
-        --set volumeName.gakPublic=$(kubectl get pv -n graphistry | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-        --set volumeName.gakPrivate=$(kubectl get pv -n graphistry | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
         --namespace graphistry --create-namespace
 
 

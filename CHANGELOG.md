@@ -13,11 +13,17 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ## [Version 0.4.1 - 2026-02-05]
 
+### Removed
+
+- `graphistry-helm-resources` chart: Deleted from the repository. StorageClasses are now the cluster admin's responsibility, following Kubernetes and Helm ecosystem best practices. Platform guides include example StorageClass manifests. This chart was a separate Helm release (never a subchart of `graphistry-helm`), so upgrading `g-chart` does not affect existing deployments. StorageClasses and PVCs already provisioned by the old chart remain in the cluster.
+- ELK stack template (`templates/elk/elk.yaml`): Removed along with `elk.enabled` and `elk.version` from `values.yaml`. The ELK stack was disabled by default (`elk.enabled: false`). Users who had explicitly enabled it should migrate to the OpenTelemetry telemetry stack (Grafana, Prometheus, Jaeger) added in v0.3.8.
+- Morpheus AI Engine and MLflow plugin charts: Removed from chart bundler (`bundler.sh`) and Terraform (`terraform/aws/`). These were separate optional charts (never part of the `graphistry-helm` chart), unmaintained since 2023. Removed `enable-morpheus` and `ngc-api-key` Terraform variables. Removed `morpheus-docs.rst` and `morpheus-mlflow-docs.rst` from Sphinx docs.
+
 ### Added
 
+- Configurable StorageClass: Extended `global.storageClassNameOverride` to single-node mode. All PVCs now use a single configurable SC name (default: `retain-sc`). Platforms with pre-registered StorageClasses (e.g. Tanzu/vSphere) can set their own SC name without modifying templates.
 - Tanzu/vSphere Deployment Guide: New README and example values for deploying on VMware Tanzu Kubernetes Grid with vSphere CSI storage, GPU Operator driver install, vGPU/passthrough architecture documentation, PSA configuration, and CUDA driver compatibility table.
 - k3s Deployment Guide: Expanded README with GPU Operator options (operator-installed vs host driver), CUDA driver compatibility table, GPU verification steps, and storage cleanup commands.
-- Namespace-scoped StorageClass: New `retain-sc-<namespace>` template in graphistry-helm-resources for multi-tenant isolation of postgres backup repos on single clusters.
 - Grafana Dashboard Documentation: Added DCGM Exporter and Node Exporter Full dashboard paths to GKE, Tanzu, and k3s guides.
 - DCGM GPU Metrics Workaround: Documented fix for GKE (COS profiling module incompatibility) and Tanzu (vGPU environments) using GPU Operator's DCGM exporter as alternative scrape target.
 - GKE R570 Driver Install: New section for manual R570 DaemonSet deployment with kernel version validation, replacing GKE's default R535 (CUDA 12.2 max) and latest R580 (CUDA 13.x only).
@@ -26,6 +32,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### Changed
 
+- StorageClass: `uploads-files` PVC switched from `uploadfiles-sc` (Delete) to `retain-sc` (Retain). Upload data contains permanent processed files and should survive redeployments.
 - Default CUDA version: `11.4` -> `12.8` in base values.yaml.
 - Default image tag: `latest` -> `v2.45.11` in base values.yaml.
 - DCGM exporter image: `3.3.5-3.4.1-ubuntu22.04` -> `4.2.3-4.1.1-ubuntu22.04` in telemetry values.
@@ -35,17 +42,19 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Telemetry Config: Moved `telemetryStack` under `global:` in GKE and Tanzu example values for correct Helm subchart propagation.
 - Postgres Operator install: Changed from `helm upgrade -i postgres-operator ./charts-aux-bundled/postgres-operator` to `helm install pgo ./charts-aux-bundled/pgo`.
 - NGINX Ingress: Changed from remote repo fetch to local bundled chart (`./charts-aux-bundled/ingress-nginx`).
-- Postgres Cluster install: Removed `--set global.provisioner` (now handled by graphistry-resources).
-- GKE install order: Reordered to Dask Operator -> Postgres Operator -> Postgres Cluster -> Graphistry Resources (storage classes must exist before postgres pods can bind).
+- Install order: Replaced `helm install graphistry-resources` step with `kubectl apply -f retain-sc.yaml` in all platform guides.
 - Chart Bundler Dependency Upgrades: dask-kubernetes-operator (2023.7.2 -> 2025.7.0), cert-manager (v1.10.1 -> v1.19.3), eck-operator (2.5.0 -> 3.3.0), dcgm-exporter (3.0.0 -> 4.7.1), jupyterhub (2.0.0 -> 4.3.2), ingress-nginx (4.4.0 -> 4.14.3), pgo (git clone -> OCI helm pull v6.0.0).
-- Charts version upgrade: graphistry-helm, graphistry-helm-resources, telemetry (0.4.0 -> 0.4.1).
+- Charts version upgrade: graphistry-helm, telemetry (0.4.0 -> 0.4.1), postgres-cluster (0.7.4 -> 0.7.5).
 - Cleaned up redundant inline comments in base values.yaml.
+- Sphinx docs: Full refresh (v0.3.7 -> v0.4.1). Renamed Quick Start Guide to "10 Minutes to Graphistry on Kubernetes". Rewrote with GPU Operator, modern deployment flow, StorageClass configuration, Docker Hub access with Graphistry Support contact link. Added dedicated StorageClass guide (`configure-storageclass.rst`). Added comprehensive Telemetry guide (`telemetry-docs.rst`) covering local stack, cloud mode, cluster mode, OTEL Collector pipelines, component configuration, and resource requirements. Added Docker Access section to `graphistry-helm-docs.rst` and `Chart.yaml`. Updated values override docs with telemetry config and `storageClassNameOverride`. Removed outdated graphistry-resources and Morpheus references. Updated Sphinx dependencies (`requirements.txt`).
+- Removed `graphistry-resources` service from `dev-compose/docker-compose.yml` and `.github/workflows/dev-cluster-deployment.yaml`.
+- Removed `graphistry-resource-cd.yaml` ArgoCD Application (referenced deleted chart).
 
 ### Fixed
 
+- Postgres Backup PVC: Fixed pgBackRest backup volume defaulting to `retain-sc-{{ .Release.Namespace }}` (e.g., `retain-sc-graphistry`) which was never created by the `graphistry-helm-resources` chart. Both data and backup volumes now default to `retain-sc`, consistent with Crunchy Data PGO upstream examples.
 - GKE Cleanup: Fixed PGO release name (`postgres-operator` -> `pgo`), added missing GPU Operator uninstall, consolidated namespace deletes, removed redundant `kubectl get ns` and `--watch` on verify step.
 - k3s Cleanup: Fixed PGO release name (`postgres-operator` -> `pgo`), added missing GPU Operator uninstall and `gpu-operator` namespace deletion, added PV/PVC/StorageClass cleanup commands.
-- Graphistry Resources: Added missing `retain-sc-<namespace>` StorageClass. Previously, multiple single-node deployments in different namespaces on the same cluster would conflict because postgres-cluster expects a namespace-scoped storage class for pgBackRest backup repos.
 
 ## [Version 0.4.0 - 2025-12-16]
 

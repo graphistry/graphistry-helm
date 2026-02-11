@@ -29,6 +29,13 @@ global:
   # GKE storage provisioner
   provisioner: pd.csi.storage.gke.io
 
+  # Override the StorageClass name used by all PVCs (data-mount, local-media, gak-public,
+  # gak-private, uploads-files, and postgres volumes). The StorageClass must be pre-created
+  # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  # Example: storageClassNameOverride: "vsphere-sc"
+  storageClassNameOverride: ""
+
   # Node selector for GPU nodes
   nodeSelector:
     nvidia.com/gpu.present: "true"

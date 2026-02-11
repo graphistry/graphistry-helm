@@ -1,238 +1,294 @@
 
-10 mins to k8s
-======================
+10 Minutes to Graphistry on Kubernetes
+======================================
 
-This guide will walk you through the steps to deploy a basic Graphistry on Kubernetes without extra features. (TLS, argo, K8s-dashboard, prometheus stack,longhorn)
+This guide walks you through the steps to deploy Graphistry on Kubernetes. For platform-specific instructions, see the deployment guides for `k3s <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/k3s>`_, `GKE <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke>`_, `Tanzu <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/tanzu>`_, or `Cluster (multinode) <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/cluster>`_.
 
-Make Secrets
+Prerequisites
 -------------
-Contact a Graphistry Engineer to authorize to our dockerhub to pull the graphistry container images.
 
-.. code-block:: shell-session            
-              
-    
+- A running Kubernetes cluster with GPU nodes
+- ``kubectl`` configured to access the cluster
+- Helm 3.x installed
+
+Get Graphistry Helm Charts
+--------------------------
+
+.. code-block:: shell-session
+
+    git clone https://github.com/graphistry/graphistry-helm
+    cd graphistry-helm
+
+Run the chart bundler to fetch auxiliary chart dependencies:
+
+.. code-block:: shell-session
+
+    bash chart-bundler/bundler.sh
+
+
+Install GPU Support
+-------------------
+
+GPU Operator (Recommended)
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
+
+    helm install --wait --generate-name \
+        -n gpu-operator --create-namespace nvidia/gpu-operator \
+        --set driver.enabled=false \
+        --timeout 60m
+
+Set ``--set driver.enabled=true`` and ``--set driver.version="<VERSION>"`` if the NVIDIA driver is not already installed on the host.
+
+Graphistry publishes images for both CUDA 12.8 and CUDA 11.8. The GPU driver must be compatible with the chosen CUDA version:
+
+======== ============= ======================== =====
+CUDA     Min Driver    Recommended              Notes
+======== ============= ======================== =====
+12.8     >=570.26      ``570.195.03``           R570 branch or newer
+11.8     >=520.61.05   ``535.288.01``           R535 branch or newer
+======== ============= ======================== =====
+
+The chart default is ``cuda.version: "12.8"``. To use CUDA 11.8, add ``--set cuda.version="11.8"`` to your Graphistry helm install command.
+
+Wait for the operator pods to be ready:
+
+.. code-block:: shell-session
+
+    kubectl get pods -n gpu-operator --watch
+
+Device Plugin (Alternative)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If NVIDIA drivers are already installed on your nodes and you do not want to use the GPU Operator:
+
+.. code-block:: shell-session
+
+    kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+
+Verify GPU Access
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    kubectl get nodes -ojson | jq '.items[].status.capacity' | grep nvidia.com/gpu
+
+
+Install Kubernetes Operators
+-----------------------------
+
+Postgres Operator
+^^^^^^^^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    helm install pgo ./charts-aux-bundled/pgo \
+        --namespace postgres-operator --create-namespace
+
+    kubectl get pods --watch --namespace postgres-operator
+
+Dask Operator
+^^^^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    cd charts-aux-bundled/dask-kubernetes-operator/ && helm dep build && cd ../..
+
+    helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator \
+        --namespace dask-operator --create-namespace
+
+    kubectl get pods --watch --namespace dask-operator
+
+
+Configure StorageClass
+----------------------
+
+Graphistry requires a StorageClass with ``reclaimPolicy: Retain`` so data is preserved across redeployments. For full details, see :doc:`configure-storageclass`.
+
+Option A: Create a New StorageClass
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Use this reference template. Replace the ``provisioner`` with your platform's CSI driver:
+
+.. code-block:: yaml
+
+    apiVersion: storage.k8s.io/v1
+    kind: StorageClass
+    metadata:
+      name: retain-sc
+    provisioner: <your-csi-provisioner>
+    reclaimPolicy: Retain
+    volumeBindingMode: WaitForFirstConsumer
+    allowVolumeExpansion: true
+
+Apply it:
+
+.. code-block:: shell-session
+
+    kubectl apply -f retain-sc.yaml
+
+Common provisioners: ``rancher.io/local-path`` (k3s), ``pd.csi.storage.gke.io`` (GKE), ``csi.vsphere.vmware.com`` (Tanzu/vSphere).
+
+Option B: Use an Existing StorageClass
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you already have a StorageClass with ``reclaimPolicy: Retain``, set ``global.storageClassNameOverride`` in your values file:
+
+.. code-block:: yaml
+
+    global:
+      storageClassNameOverride: "your-existing-sc-name"
+
+
+Create Namespace and Secrets
+----------------------------
+
+.. code-block:: shell-session
+
+    kubectl create namespace graphistry
+
+Create a Docker Hub secret (your account must have access to Graphistry images). Contact `Graphistry Support <https://www.graphistry.com/support>`_ to get access.
+
+.. code-block:: shell-session
+
     kubectl create secret docker-registry docker-secret-prod \
         --namespace graphistry \
         --docker-server=docker.io \
-        --docker-username=<docker username> \
-        --docker-password=<docker password/token>
+        --docker-username=<YOUR_DOCKERHUB_USER> \
+        --docker-password=<YOUR_DOCKERHUB_TOKEN>
 
+Create a GAK Secret (Optional)
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Install Nvidia Device Plugin (if needed)
------------------------------------------
+For `Graph App Kit <https://github.com/graphistry/graph-app-kit>`_ dashboards:
 
-.. code-block:: shell-session            
-              
-    kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+.. code-block:: shell-session
 
-check to ensure the plugin was installed
-
-.. code-block:: shell-session            
-              
-    kubectl get nodes -ojson | jq .items[].status.capacity | grep nvidia.com/gpu
-
-Install Nginx Ingress Controller
----------------------------------
-  .. tabs::
-
-    .. tab:: Local From Source
-      .. code-block:: shell-session            
-                
-         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-         cd charts/ingress-nginx && helm dep build
-         helm upgrade -i ingress-nginx ./charts/ingress-nginx --namespace ingress-nginx --create-namespace 
-
-
-    .. tab:: From Ingress-Nginx Helm Repo
-      .. code-block:: shell-session            
-                
-         helm upgrade -i ingress-nginx ingress-nginx --repo https://kubernetes.github.io/ingress-nginx --namespace ingress-nginx --create-namespace
-
-
-    .. tab:: From Graphistry Helm Repo
-      .. code-block:: shell-session            
-                
-         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-         helm upgrade -i ingress-nginx graphistry-helm/ingress-nginx --namespace ingress-nginx --create-namespace  
-
-Install Postgres Operator , CRDs, Postgres Cluster
----------------------------------------------------
-  .. tabs::
-
-    .. tab:: Local from Source
-      .. code-block:: shell-session            
-                
-         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-         helm upgrade -i postgres-operator ./charts/postgres-operator --namespace postgres-operator --create-namespace 
-         helm upgrade -i  postgres-cluster ./charts/postgres-cluster --namespace graphistry --create-namespace 
-
-    .. tab:: From Graphistry Helm Repo
-      .. code-block:: shell-session            
-                
-         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-         helm upgrade -i postgres-operator graphistry-helm/pgo --namespace postgres-operator --create-namespace 
-         helm upgrade -i postgrescluster graphistry-helm/postgres-cluster --namespace graphistry --create-namespace  
-
-
-Configuring Postgres Cluster
-----------------------------
-
-After Cluster is deployed, find the pv that is created and add the following label to it. This will allow the cluster to bind the pv to the pod upon redeployment.
-      
-    .. code-block:: shell-session
-
-
-       kubectl get pv -n graphistry && kubectl label pv <pv name> pgo-postgres-cluster=graphistry-postgres        
-
-Change the postgres password if needed. The default password is randomly generated AlphaNumeric string.
-
-    .. code-block:: shell-session
- 
-
-       kubectl patch secret -n postgres-operator postgres-pguser-graphistry -p '{"stringData":{"password":"<password>","verifier":""}}'
-
-Install Dask Operator and CRDs
-------------------------------
-  .. tabs::
-
-    .. tab:: Local from Source
-      .. code-block:: shell-session            
-                
-         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-         cd charts/dask-kubernetes-operator && helm dep build
-         helm upgrade -i dask-operator ./charts/dask-kubernetes-operator --namespace dask-operator --create-namespace 
-
-
-    .. tab:: From Dask Helm Repo
-      .. code-block:: shell-session            
-                
-         helm upgrade -i dask-operator dask-kubernetes-operator --repo https://https://helm.dask.org/ --namespace dask-operator --create-namespace
-
-
-    .. tab:: From Graphistry Helm Repo
-      .. code-block:: shell-session            
-                
-         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-         helm upgrade -i dask-operator graphistry-helm/dask-kubernetes-operator --namespace dask-operator --create-namespace  
-
-
-
-Install Graphistry
--------------------
-
-
-  .. tabs::
-
-    .. tab:: Local from source
-      .. code-block:: shell-session            
-                
-         git clone https://github.com/graphistry/graphistry-helm && cd graphistry-helm
-         helm upgrade -i  graphistry-resources ./charts/graphistry-helm-resources --namespace graphistry --create-namespace 
-         helm upgrade -i  g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace 
-
-    .. tab:: From Graphistry Helm Repo
-      .. code-block:: shell-session            
-                
-         helm repo add graphistry-helm https://graphistry.github.io/graphistry-helm/
-         helm upgrade -i graphistry-resources graphistry-helm/graphistry-resources --namespace graphistry --create-namespace         
-         helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
-
-**NOTE:** graphistry resources must be installed first as this contains the storageclasses that the PVCs rely on in the graphistry-helm deployment.
-
-Create a Secret for Graph App Kit (OPTIONAL)
----------------------------------------------
-If you have a Graph App Kit enabled, you can create a secret to use it.
-
-
-.. code-block:: yaml            
-    :caption: gak-secret.yaml        
-
+    kubectl apply -f - <<EOF
     apiVersion: v1
     kind: Secret
-    metadata:  
+    metadata:
       name: gak-secret
       namespace: graphistry
     type: Opaque
     stringData:
-      username: <username here>
-      password: <password here>
-      
-Create the secret above as gak-secret.yaml and run the following command to create the secret:
-
-.. code-block:: shell-session            
-    
-    kubectl apply -f gak-secret.yaml  
-
-Once you have Created the user provided in the secret in Graphistry, Graph App Kit will display dashboards.
-
-Configuring Graphistry
-----------------------
-
-It is recommended to create a values.yaml override file to configure the chart. The default values.yaml file can be found in the chart directory. Examples can be found in the ./charts/values-overrides directory.
-There are some Deployment specifc values which will need to be set, such as the **global.provisioner**, and **graphistryResources.storageClassParameters**, **global.nodeSelector**, and the **global.Tag** depending on your release. An example values.yaml can be 
-seen below. This is an example based on an AWS EKS deployment's values.yaml
-
-    .. code-block:: yaml
-
-        volumeName:
-            dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
-            localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
-            gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
-            gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
+      username: graphistry_user
+      password: graphistry_password
+    EOF
 
 
-        graphistryResources:
-            storageClassParameters:
-                csi.storage.k8s.io/fstype: ext4
-                type: gp2
+Install Postgres Cluster
+------------------------
 
-            
-        global:
-            provisioner: ebs.csi.aws.com
-            tag: v2.39.28-admin
-            nodeSelector: {"kubernetes.io/hostname": "ip-171-00-00-0.us-east-2.compute.internal"}
-            imagePullPolicy: Always
-            imagePullSecrets: 
-              - name: docker-secret-prod
+.. code-block:: shell-session
 
-Once a values.yaml has been created it can be deployed with the following command:
+    helm upgrade -i postgres-cluster ./charts/postgres-cluster \
+        --namespace graphistry --create-namespace
 
-    .. code-block:: shell-session
+Wait for postgres pods to be running:
 
-        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./values.yaml
+.. code-block:: shell-session
 
-Once the deployment is complete, the Graphistry UI can be accessed from the caddy ingress endpoint. The ingress endpoint can be found by running the following command:
-
-    .. code-block:: shell-session
-
-        kubectl get ingress -n graphistry
+    kubectl get pods --watch -n graphistry
 
 
-Volume Binding
---------------
-After initial deployment , the PVCs (**gak-private,gak-public,data-mount,local-media-mount**) for graphistry will have PVs
-dynamically provisioned for them by the storageclasses that graphistry-resources deploy, and the pods will bind to them
-automatically. If the cluster is redeployed, the PVs will be released and the pods will not be able to bind to them. To fix this, 
-the PVCs must include the volumename from the PV that was provisioned for it. 
-Find the volume name by running the following command:
+Install Graphistry
+------------------
 
-    .. code-block:: shell-session
+Create a values file for your deployment. See :doc:`values-override` for configuration options and the platform-specific guides for examples.
 
-        kubectl get pv -n graphistry
+.. code-block:: shell-session
 
-This will return a list of PVs that were provisioned for the PVCs. The volumename can be found in the output of the command 
-corresponding to the PVC. Add the name to your values.yaml file under the volumeName section. An example values.yaml can be:
+    helm upgrade -i g-chart ./charts/graphistry-helm \
+        --values ./your-values.yaml \
+        --namespace graphistry --create-namespace
 
-    .. code-block:: yaml
+Wait for all pods to be running:
 
-        volumeName:
-            dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
-            localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
-            gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
-            gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
+.. code-block:: shell-session
 
-Once you have updated your values.yaml file the deployment can be redeployed/upgraded and the Pods will bind to the PVs automatically.
+    kubectl get pods --watch -n graphistry
 
-    .. code-block:: shell-session
 
-        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./<your-values.yaml>
+Access Graphistry
+-----------------
+
+Get the service address:
+
+.. code-block:: shell-session
+
+    kubectl get services -n graphistry | grep caddy
+
+Get the ingress address:
+
+.. code-block:: shell-session
+
+    kubectl get ingress -n graphistry
+
+When ``ENABLE_OPEN_TELEMETRY: true`` and ``telemetryStack.OTEL_CLOUD_MODE: false`` are set, the telemetry stack is deployed as part of the cluster:
+
+========================= ============================
+Service                   Path
+========================= ============================
+Graphistry                ``http://<ADDRESS>/``
+Grafana                   ``http://<ADDRESS>/grafana``
+Jaeger                    ``http://<ADDRESS>/jaeger``
+Prometheus                ``http://<ADDRESS>/prometheus``
+========================= ============================
+
+Once you open Graphistry in the browser, create an account for the admin user.
+
+
+Update Graphistry
+-----------------
+
+When updating, preserve existing volume bindings:
+
+.. code-block:: shell-session
+
+    helm upgrade -i g-chart ./charts/graphistry-helm \
+        --values ./your-values.yaml \
+        --set volumeName.dataMount=$(kubectl get pv -n graphistry | grep "data-mount" | tail -n 1 | awk '{print $1;}') \
+        --set volumeName.localMediaMount=$(kubectl get pv -n graphistry | grep "local-media-mount" | tail -n 1 | awk '{print $1;}') \
+        --set volumeName.gakPublic=$(kubectl get pv -n graphistry | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
+        --set volumeName.gakPrivate=$(kubectl get pv -n graphistry | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
+        --namespace graphistry --create-namespace
+
+
+Troubleshooting
+---------------
+
+Check Pod Status
+^^^^^^^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    kubectl get pods -n graphistry
+    kubectl describe pod <pod-name> -n graphistry
+
+Check Logs
+^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nexus) -f
+    kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep forge-etl-python) -f
+    kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nginx) -f
+
+Check PVC Status
+^^^^^^^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    kubectl get pvc -n graphistry
+
+GPU Issues
+^^^^^^^^^^
+
+.. code-block:: shell-session
+
+    kubectl get pods -n gpu-operator
+    kubectl describe node <node-name> | grep -A 5 "Capacity:"

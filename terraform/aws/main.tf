@@ -272,44 +272,6 @@ resource "helm_release" "grafana-stack" {
   ]
 }
 
-resource "helm_release" "morpheus-ai-engine" {
-  depends_on = [
-        kubectl_manifest.argo_apps
-    ]
-  count      = var.enable-morpheus ? 1 : 0 
-  name       = "morpheus"
-  chart      = "../../chart-bundle/Morpheus-ai-engine"
-  namespace  = "morpheus"
-  create_namespace = true
-
-  set {
-    name  = "ngc.apiKey"
-    value = var.ngc-api-key
-  }
-
-  set {
-    name  = "aiengine.args"
-    value = "{tritonserver,--model-repository=/common/models,--model-control-mode=explicit}"
-  }
-}
-
-resource "helm_release" "morpheus-mlflow" {
-  depends_on = [
-        kubectl_manifest.argo_apps,
-        helm_release.morpheus-ai-engine
-    ]
-  count      = var.enable-morpheus ? 1 : 0
-  name       = "morpheus-mlflow"
-  chart      = "../../chart-bundle/NVIDIA-morpheus-mlflow-plugin"
-  namespace  = "morpheus"
-  create_namespace = true
-
-  set {
-    name  = "ngc.apiKey"
-    value = var.ngc-api-key
-  }
-}
-
 resource "helm_release" "cert-manager" {
   depends_on = [
         kubectl_manifest.argo_apps
@@ -546,8 +508,6 @@ module "eks" {
   }
 }
 
-#if enable-morpheus is set to true apply terraform as below
-#terraform apply -var=ngc-api-key="<api key here>" -var=docker-username="<your docker username>" -var=docker-password="<your docker password>"
 #when node comes up run : (fixed with null_resource) can check via:
 #kubectl describe ds aws-node -n kube-system
 #kubectl set env daemonset aws-node -n kube-system ENABLE_PREFIX_DELEGATION=true WARM_PREFIX_TARGET=1

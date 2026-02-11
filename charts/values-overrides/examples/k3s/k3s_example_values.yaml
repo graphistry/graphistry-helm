@@ -281,6 +281,14 @@ global:  ## global settings for all charts
   #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   #provisioner: microk8s.io/hostpath   #storage class provisioner.
   provisioner: rancher.io/local-path
+
+  # Override the StorageClass name used by all PVCs (data-mount, local-media, gak-public,
+  # gak-private, uploads-files, and postgres volumes). The StorageClass must be pre-created
+  # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  # Example: storageClassNameOverride: "vsphere-sc"
+  storageClassNameOverride: ""
+
   postgresVolumeLabel:
   nodeSelector: #node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}
       nvidia.com/gpu.present: "true"

@@ -235,7 +235,7 @@ kubectl label --overwrite ns graphistry pod-security.kubernetes.io/enforce=privi
 ```
 
 ### Create Docker Hub Secret
-Your Docker Hub account must have access to Graphistry images (contact Graphistry support):
+Your Docker Hub account must have access to Graphistry images. Contact [Graphistry Support](https://www.graphistry.com/support) to get access.
 ```bash
 kubectl create secret docker-registry docker-secret-prod \
     --namespace graphistry \
@@ -349,66 +349,124 @@ Wait for the operator:
 kubectl get pods --watch --namespace dask-operator
 ```
 
+## Configure StorageClass
+
+Graphistry requires a StorageClass with `reclaimPolicy: Retain` so data (postgres, uploads, notebooks, visualizations) is preserved across redeployments. All PVCs reference a single StorageClass name (default: `retain-sc`).
+
+On Tanzu/vSphere, StorageClasses must be registered with a vSphere Storage Policy. Most Tanzu clusters already have pre-registered StorageClasses available.
+
+### Option A: Create a New StorageClass
+
+Use this reference template to create a StorageClass for Tanzu. Save as `retain-sc.yaml`:
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: retain-sc
+provisioner: csi.vsphere.vmware.com
+reclaimPolicy: Retain
+volumeBindingMode: WaitForFirstConsumer
+allowVolumeExpansion: true
+parameters:
+  storagepolicyname: "<your-vsphere-storage-policy>"
+```
+
+Replace `<your-vsphere-storage-policy>` with the name of your vSphere Storage Policy (e.g. `vSAN Default Storage Policy`).
+
+Apply it:
+```bash
+kubectl apply -f retain-sc.yaml
+```
+
+### Option B: Use an Existing StorageClass
+
+If you already have a StorageClass with `reclaimPolicy: Retain`, you can point all Graphistry PVCs to it by setting `global.storageClassNameOverride` in your values file:
+```yaml
+global:
+  # Override the StorageClass name used by all PVCs (data-mount, local-media, gak-public,
+  # gak-private, uploads-files, and postgres volumes). The StorageClass must be pre-created
+  # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  storageClassNameOverride: "your-existing-sc-name"
+```
+
+### StorageClass Requirements
+
+| Property | Value | Description |
+|----------|-------|-------------|
+| `reclaimPolicy` | Retain | Data preserved when PVC deleted (manual cleanup required) |
+| `volumeBindingMode` | WaitForFirstConsumer | PV created only when a pod needs it |
+| `allowVolumeExpansion` | true | Allows resizing volumes without recreating them |
+
+### PVCs and Services (graphistry-helm and postgres-cluster charts)
+
+| PVC | Used By Services |
+|-----|------------------|
+| `data-mount` | nexus, nginx, forge-etl-python, streamgl-gpu, streamgl-viz, streamgl-sessions, dask-scheduler, dask-cuda-worker, redis, pivot, caddy, notebook |
+| `local-media-mount` | nexus, nginx |
+| `gak-public` | graph-app-kit-public, notebook |
+| `gak-private` | graph-app-kit-private, notebook |
+| `uploads-files` | nginx, forge-etl-python |
+
+**Note**: The Postgres Cluster also requires the same StorageClass.
+
 ## Install Postgres Cluster
+
+The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using the same StorageClass:
+- Instance data volume (e.g., `postgres-instance1-xxxx-0`).
+- Backup repository volume for pgBackRest.
+
+```bash
+helm show values ./charts/postgres-cluster
+```
+
+The chart defaults to StorageClass `retain-sc`, the same default used by the Graphistry chart.
+
+In case you created the StorageClass as indicated in [Option A](#option-a-create-a-new-storageclass), install the cluster chart with the following command:
 
 ```bash
 helm upgrade -i postgres-cluster ./charts/postgres-cluster \
     --namespace graphistry --create-namespace
 ```
 
-Verify the pods are created (both will be `Pending` until `graphistry-resources` creates the required storage classes in a later step):
+In case you are using a custom StorageClass name ([Option B](#option-b-use-an-existing-storageclass)), pass it explicitly:
+
 ```bash
-kubectl get pods -n graphistry
-```
-
-**Note**: Both postgres pods will stay in `Pending` state. They require storage classes (`retain-sc` and `retain-sc-<namespace>`) which are created by `graphistry-resources` in the next step. The postgres-cluster chart does not use `global.provisioner` directly — it references storage class names (`retain-sc`, `retain-sc-<namespace>`) that are created by `graphistry-resources`.
-
-## Install Graphistry Resources
-
-View available values:
-```bash
-helm show values ./charts/graphistry-helm-resources
-```
-
-Install the graphistry-resources chart using this command:
-```bash
-helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources \
-    --set global.provisioner="csi.vsphere.vmware.com" \
+helm upgrade -i postgres-cluster ./charts/postgres-cluster \
+    --set global.storageClassNameOverride=your-existing-sc-name \
     --namespace graphistry --create-namespace
 ```
 
-This chart creates the required storage classes using your provisioner (`csi.vsphere.vmware.com`).
-
-### Storage Classes Created
-
-| Storage Class | reclaimPolicy | Description |
-|---------------|---------------|-------------|
-| `retain-sc` | Retain | Data preserved when PVC deleted (manual cleanup required) |
-| `retain-sc-<namespace>` | Retain | Namespace-scoped retain class for postgres backup repo isolation |
-| `uploadfiles-sc` | Delete | Data deleted when PVC deleted |
-
-### PVCs and Services (graphistry-helm chart)
-
-| PVC | Storage Class | Used By Services |
-|-----|---------------|------------------|
-| `data-mount` | retain-sc | nexus, nginx, forge-etl-python, streamgl-gpu, streamgl-viz, streamgl-sessions, dask-scheduler, dask-cuda-worker, redis, pivot, caddy, notebook |
-| `local-media-mount` | retain-sc | nexus, nginx |
-| `gak-public` | retain-sc | graph-app-kit-public, notebook |
-| `gak-private` | retain-sc | graph-app-kit-private, notebook |
-| `uploads-files` | uploadfiles-sc | nginx, forge-etl-python |
-
-### Postgres Storage (postgres-cluster chart)
-
-The `postgres-cluster` chart creates a `PostgresCluster` CR. The PGO operator dynamically provisions PVCs using:
-- Instance data volume on `retain-sc` (e.g., `postgres-instance1-xxxx-0`)
-- Backup repository volume on `retain-sc-<namespace>` for multi-tenant isolation
-
-Wait for resources (the `postgres-instance` pod should now start running):
+Verify the pods are created. Since the StorageClass was configured in the previous step, the postgres pods should start running:
 ```bash
 kubectl get pods --watch -n graphistry
 ```
 
+**Note**: If pods stay in `Pending` state, verify the StorageClass is correctly configured (see [Configure StorageClass](#configure-storageclass)).
+
 ## Install Graphistry
+
+Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8`). You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/tanzu/tanzu_example_values.yaml`:
+```yaml
+cuda:
+  version: "12.8"   # or "11.8" - must match the GPU driver installed above
+
+global:  ## global settings for all charts
+  tag: v2.45.11
+```
+
+Also verify that the values file references the correct Docker Hub pull secret ([Create Docker Hub Secret](#create-docker-hub-secret)) and StorageClass configuration ([Configure StorageClass](#configure-storageclass)):
+```yaml
+global:
+  imagePullSecrets:
+    - name: docker-secret-prod
+  storageClassNameOverride: ""  # leave empty for default "retain-sc", or set to your custom SC name
+```
+
+Print more values:
+```bash
+helm show values ./charts/graphistry-helm
+```
 
 Using the Tanzu-specific values file:
 ```bash
@@ -421,6 +479,8 @@ Wait for all pods to be running:
 ```bash
 kubectl get pods --watch -n graphistry
 ```
+
+**Note**: If pods stay in `Pending` or `ImagePullBackOff` state, verify the StorageClass is correctly configured (see [Configure StorageClass](#configure-storageclass)) and that the Docker Hub secret is created with valid credentials (see [Create Docker Hub Secret](#create-docker-hub-secret)).
 
 ## Access Graphistry
 
@@ -601,8 +661,7 @@ kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nginx
 # Uninstall Graphistry
 helm uninstall g-chart -n graphistry
 
-# Uninstall resources
-helm uninstall graphistry-resources -n graphistry
+# Uninstall postgres-cluster
 helm uninstall postgres-cluster -n graphistry
 
 # Uninstall operators

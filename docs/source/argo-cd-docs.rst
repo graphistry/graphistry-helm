@@ -7,6 +7,17 @@ Argo-cd
 
 
 
+Prerequisites
+-------------
+
+Before deploying Graphistry applications via ArgoCD, the cluster admin must:
+
+1. **Create a StorageClass** with ``reclaimPolicy: Retain``. ArgoCD itself does not require persistent storage, but the Graphistry and PostgreSQL applications it deploys do. All PVCs expect a StorageClass named ``retain-sc`` (or the name set via ``global.storageClassNameOverride``). See :doc:`configure-storageclass` for details.
+
+2. **Create the graphistry namespace and secrets** (Docker Hub pull secret, optional GAK secret). ArgoCD will sync the Helm releases into this namespace but cannot create the image pull secret for you.
+
+Without a StorageClass, Postgres pods will stay ``Pending`` and Graphistry PVCs will fail to bind.
+
 Install ArgoCD to manage the Graphistry Helm Charts
 ---------------------------------------------------
   .. tabs::

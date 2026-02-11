@@ -26,6 +26,13 @@ global:
   # vSphere CSI storage provisioner for Tanzu
   provisioner: csi.vsphere.vmware.com
 
+  # Override the StorageClass name used by all PVCs (data-mount, local-media, gak-public,
+  # gak-private, uploads-files, and postgres volumes). The StorageClass must be pre-created
+  # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  # Example: storageClassNameOverride: "vsphere-sc"
+  storageClassNameOverride: "vsphere-sc"
+
   # Node selector for GPU nodes
   # Check available labels with: kubectl get nodes --show-labels
   # Common Tanzu/vSphere GPU node labels:

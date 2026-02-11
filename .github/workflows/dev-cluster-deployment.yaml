@@ -101,11 +101,6 @@ jobs:
 #        if: "${{ contains(github.event.inputs.argo , 'true') }}"
 #        run:  docker-compose -f dev-compose/docker-compose.yml up deploy-argo
 
-# deploy graphistry-resources
-      - name: deploy graphistry resources
-        if: "${{ !contains(github.event.inputs.scale-to-zero , 'true') }}"
-        run: docker-compose -f dev-compose/docker-compose.yml up graphistry-resources
-
 # deploy to skinny dev cluster
       - name: deploy the dev cluster
         if: "${{ env.CLUSTER_NAME == 'skinny' && !contains(github.event.inputs.scale-to-zero , 'true') }}"

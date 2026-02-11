@@ -29,15 +29,6 @@ rm -rf prometheus-community-helm-charts
 cd kube-prom-stack && helm dep build && cd ../
 
 
-echo "gathering morpheus charts"
-git clone https://github.com/graphistry/Morpheus-ai-engine
-
-
-echo "gathering nvidia morpheus mlflow charts"
-git clone https://github.com/graphistry/NVIDIA-morpheus-mlflow-plugin
-
-
-
 echo "gathering dask operator charts"
 
 helm fetch \

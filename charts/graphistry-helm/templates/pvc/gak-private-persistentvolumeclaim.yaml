@@ -33,7 +33,7 @@ spec:
 {{- else }}
   accessModes:
     - ReadWriteOnce
-  storageClassName: retain-sc
+  storageClassName: {{ .Values.global.storageClassNameOverride | default "retain-sc" }}
 {{- end }}
   resources:
     requests:

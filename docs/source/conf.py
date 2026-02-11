@@ -19,11 +19,11 @@ sys.path.insert(0, os.path.abspath("../.."))
 # -- Project information -----------------------------------------------------
 
 project = 'Graphistry Helm Charts'
-copyright = '2022, Graphistry, Inc.'
+copyright = '2022-2026, Graphistry, Inc.'
 author = "Graphistry, Inc."
 
 # The full version, including alpha/beta/rc tags
-release = 'v0.3.7'
+release = 'v0.4.1'
 
 
 # -- General configuration ---------------------------------------------------

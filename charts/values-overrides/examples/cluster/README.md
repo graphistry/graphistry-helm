@@ -137,18 +137,35 @@ kubectl get pods --watch --namespace postgres-operator
 
 ## Deploy and Configure the Graphistry Cluster
 
-### 1. Install the Graphistry Resources chart
+### 1. Configure StorageClass
 
-The Graphistry Resources chart includes the storage class used for dynamic provisioning of volume claims for the Postgres cluster, as well as the `gak-public` and `gak-private` pods.  The remaining Graphistry pods will utilize an `NFS` volume that connects directly to the shared `NFS` directory.
+Graphistry requires a StorageClass with `reclaimPolicy: Retain` so data is preserved across redeployments. The NFS provisioner installed above creates a `nfs-client` StorageClass with `Delete` policy. For cluster mode, the chart defaults to `retain-sc-cluster`.
 
-Show all the values and options for this chart:
-```bash
-helm show values ./charts/graphistry-helm-resources
+#### Option A: Create a New StorageClass
+
+Create a StorageClass with Retain policy using the NFS provisioner. Save as `retain-sc-cluster.yaml`:
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: retain-sc-cluster
+provisioner: cluster.local/nfs-subdir-external-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
 ```
 
-Install the storage class `retain-sc-cluster`:
+Apply it:
 ```bash
-helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml
+kubectl apply -f retain-sc-cluster.yaml
+```
+
+#### Option B: Use an Existing StorageClass
+
+If you already have a StorageClass with `reclaimPolicy: Retain`, set `global.storageClassNameOverride` in `cluster-storage.yaml`:
+```yaml
+global:
+  storageClassNameOverride: "your-existing-sc-name"
 ```
 
 ### 2. Deploy the leader instance

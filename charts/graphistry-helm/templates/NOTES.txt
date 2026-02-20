@@ -96,7 +96,7 @@ can change to any label provided by kubectl describe node <node_name> just follo
 
 MULTI NODE - 
 
-multiNode- is set to {{ .Values.multiNode }}
+multiNode- is set to {{ .Values.global.multiNode }}
 
 HOW TO:
 

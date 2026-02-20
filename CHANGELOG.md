@@ -29,6 +29,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - GKE R570 Driver Install: New section for manual R570 DaemonSet deployment with kernel version validation, replacing GKE's default R535 (CUDA 12.2 max) and latest R580 (CUDA 13.x only).
 - GKE Cluster Create: Added flag explanations for gpu-driver-version=disabled, machine-type n1-highmem-8, and UBUNTU_CONTAINERD image type.
 - GKE Telemetry: Added service path table and access instructions for Grafana, Prometheus, and Jaeger endpoints.
+- Troubleshooting Guide: New comprehensive troubleshooting, debugging, and verification guide (`charts/values-overrides/examples/troubleshooting.md`) covering all 11 deployment stages with verified commands, expected sample outputs from a live k3s deployment, service dependency chain documentation, and GPU/telemetry diagnostics. Referenced from all platform READMEs.
 
 ### Changed
 
@@ -55,6 +56,8 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 - Postgres Backup PVC: Fixed pgBackRest backup volume defaulting to `retain-sc-{{ .Release.Namespace }}` (e.g., `retain-sc-graphistry`) which was never created by the `graphistry-helm-resources` chart. Both data and backup volumes now default to `retain-sc`, consistent with Crunchy Data PGO upstream examples.
 - GKE Cleanup: Fixed PGO release name (`postgres-operator` -> `pgo`), added missing GPU Operator uninstall, consolidated namespace deletes, removed redundant `kubectl get ns` and `--watch` on verify step.
 - k3s Cleanup: Fixed PGO release name (`postgres-operator` -> `pgo`), added missing GPU Operator uninstall and `gpu-operator` namespace deletion, added PV/PVC/StorageClass cleanup commands.
+- Postgres init containers: Replaced `k8s-wait-for pod -lapp=postgres` with [`pg_isready`](https://www.postgresql.org/docs/current/app-pg-isready.html) targeting the `postgres-primary` service in nexus, forge-etl-python, pivot, and streamgl-viz templates. The old approach matched any pod with the `app=postgres` label, including backup CronJob pods in Error or Completed state, which could cause init containers to pass or fail incorrectly. `pg_isready` checks actual database connection readiness, is immune to backup pod status, and removes the third-party `groundnuty/k8s-wait-for` dependency for these four services.
+- Postgres backup schedule collision: Changed incremental backup schedule from `*/30 * * * *` (runs at :00 and :30) to `15,45 * * * *` (runs at :15 and :45). The old schedule collided with the differential backup at `0 3 * * *` (3:00 AM), causing PGO to create two backup jobs simultaneously. The new schedule maintains the same 30-minute frequency while avoiding the :00 marks used by full and differential backups.
 
 ## [Version 0.4.0 - 2025-12-16]
 

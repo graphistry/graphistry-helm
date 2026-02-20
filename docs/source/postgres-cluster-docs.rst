@@ -377,8 +377,8 @@ The following table lists the configurable parameters of the Postgrescluster cha
 
 
    * - ``postgresCluster.backups.pgbackrest.repos.repo1.schedules.incremental``
-     - Every 30 minutes for incremental backups                                                            
-     - ``"*/30 * * * *"``                                
+     - Every 30 minutes for incremental backups (offset to :15 and :45 to avoid collision with full/diff at :00)
+     - ``"15,45 * * * *"``                                
 
 
 

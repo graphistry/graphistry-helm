@@ -527,21 +527,21 @@ A Kubernetes [Operator](https://kubernetes.io/docs/concepts/extend-kubernetes/op
 PostgreSQL is the central data store for all Graphistry persistent state. Two services connect directly to the same PostgreSQL database with independent connections:
 
 ```
-                    +-------------------+
-                    |    PostgreSQL      |
-                    | (managed by PGO)  |
-                    +---------+---------+
-                              |
-                +-------------+-------------+
-                |                           |
-    +-----------+-----------+   +-----------+-----------+
-    |        nexus          |   |  streamgl-sessions    |
-    |   (Django ORM)        |   |   (Sequelize ORM)     |
-    |   Schema OWNER        |   |   Schema CONSUMER     |
-    |   runs migrations     |   |   reads/writes same   |
-    |   on every startup    |   |   tables directly     |
-    +-----------+-----------+   +-----------+-----------+
-                |                           |
+                    ┌───────────────────┐
+                    │    PostgreSQL     │
+                    │ (managed by PGO)  │
+                    └─────────┬─────────┘
+                              │
+                ┌─────────────┴─────────────┐
+                │                           │
+    ┌───────────┴───────────┐   ┌───────────┴───────────┐
+    │        nexus          │   │  streamgl-sessions    │
+    │   (Django ORM)        │   │   (Sequelize ORM)     │
+    │   Schema OWNER        │   │   Schema CONSUMER     │
+    │   runs migrations     │   │   reads/writes same   │
+    │   on every startup    │   │   tables directly     │
+    └───────────┬───────────┘   └───────────┬───────────┘
+                │                           │
      auth gateway, user/org/        session metadata,
      dataset/file management,       visualization state
      internal APIs for other        (layout, filters,
@@ -576,17 +576,17 @@ Graphistry uses [Dask](https://www.dask.org/) for GPU-accelerated distributed co
 
 ```
 forge-etl-python (Graphistry ETL web service)
-    |
-    |  dask.distributed.Client(address='dask-scheduler:8786')
-    |  (plain TCP connection)
-    v
+    │
+    │  dask.distributed.Client(address='dask-scheduler:8786')
+    │  (plain TCP connection)
+    ▼
 dask-scheduler (coordinates task distribution, port 8786)
-    |
-    |  Dask internal protocol (task graph distribution)
-    v
+    │
+    │  Dask internal protocol (task graph distribution)
+    ▼
 dask-cuda-worker (executes GPU compute via cuDF/RAPIDS)
-    |
-    v
+    │
+    ▼
   GPU(s)
 ```
 
@@ -722,7 +722,7 @@ helm upgrade -i dask-operator ./charts-aux-bundled/dask-kubernetes-operator \
 
 Expected output:
 
-```
+```bash
 Release "dask-operator" does not exist. Installing it now.
 NAME: dask-operator
 LAST DEPLOYED: Thu Feb 19 21:52:30 2026
@@ -822,7 +822,7 @@ kubectl get namespace graphistry
 
 Expected output:
 
-```
+```bash
 NAME         STATUS   AGE
 graphistry   Active   41s
 ```
@@ -833,7 +833,7 @@ kubectl get secret -n graphistry
 
 Expected output (should include `docker-secret-prod` and optionally `gak-secret`):
 
-```
+```bash
 NAME                 TYPE                             DATA   AGE
 docker-secret-prod   kubernetes.io/dockerconfigjson   1      32s
 gak-secret           Opaque                           2      17s
@@ -1271,51 +1271,51 @@ postgres-replicas   ClusterIP   10.43.xxx.xxx   <none>   5432/TCP   71s
 
 ```
   postgres-operator namespace                graphistry namespace
-  +-----------------------+                  +----------------------------------------------+
-  |  PGO Controller       |   watches CR     |  PostgresCluster CR ("postgres")             |
-  |  (pgo pod)            | ===============> |  (created by helm: postgres-cluster chart)   |
-  +-----------------------+                  +----------------------------------------------+
-                                                |  PGO reconciles: creates pods, services,
-                                                |  secrets, PVCs, CronJobs automatically
-                                                v
-                                             +----------------------------------------------+
-                                             |  Pods:                                       |
-                                             |    postgres-instance1-xxxx-0 (4 containers)  |
-                                             |      - database (PostgreSQL 14 + Patroni)    |
-                                             |      - replication-cert-copy                 |
-                                             |      - pgbackrest (backup sidecar)           |
-                                             |      - pgbackrest-config                     |
-                                             |    postgres-repo-host-0 (2 containers)       |
-                                             |      - pgbackrest (backup repo server)       |
-                                             |      - pgbackrest-config                     |
-                                             +----------------------------------------------+
-                                                |
-                                                v
-                                             +----------------------------------------------+
-                                             |  Services (port 5432):                       |
-                                             |    postgres-primary  -> postgres-ha ClusterIP|
-                                             |    postgres-ha       -> leader pod (Patroni) |
-                                             |    postgres-replicas -> read replicas only   |
-                                             |  Internal (no port):                         |
-                                             |    postgres-ha-config -> Patroni DCS         |
-                                             |    postgres-pods      -> pod discovery       |
-                                             +----------------------------------------------+
-                                                |
-                                                v
-                                             +----------------------------------------------+
-                                             |  Secret: postgres-pguser-graphistry          |
-                                             |    host: postgres-primary.graphistry.svc     |
-                                             |    port: 5432                                |
-                                             |    dbname: graphistry                        |
-                                             |    user: graphistry                          |
-                                             |    password: <auto-generated>                |
-                                             +----------------------------------------------+
-                                                |          |
-                                    reads secret|          |reads secret
-                                                v          v
-                                             +--------+ +--------------------+
-                                             | nexus  | | streamgl-sessions  |
-                                             +--------+ +--------------------+
+  ┌───────────────────────┐                  ┌──────────────────────────────────────────────┐
+  │  PGO Controller       │   watches CR     │  PostgresCluster CR ("postgres")             │
+  │  (pgo pod)            │ ═══════════════> │  (created by helm: postgres-cluster chart)   │
+  └───────────────────────┘                  └──────────────────────────────────────────────┘
+                                                │  PGO reconciles: creates pods, services,
+                                                │  secrets, PVCs, CronJobs automatically
+                                                ▼
+                                             ┌──────────────────────────────────────────────┐
+                                             │  Pods:                                       │
+                                             │    postgres-instance1-xxxx-0 (4 containers)  │
+                                             │      - database (PostgreSQL 14 + Patroni)    │
+                                             │      - replication-cert-copy                 │
+                                             │      - pgbackrest (backup sidecar)           │
+                                             │      - pgbackrest-config                     │
+                                             │    postgres-repo-host-0 (2 containers)       │
+                                             │      - pgbackrest (backup repo server)       │
+                                             │      - pgbackrest-config                     │
+                                             └──────────────────────────────────────────────┘
+                                                │
+                                                ▼
+                                             ┌──────────────────────────────────────────────┐
+                                             │  Services (port 5432):                       │
+                                             │    postgres-primary  -> postgres-ha ClusterIP│
+                                             │    postgres-ha       -> leader pod (Patroni) │
+                                             │    postgres-replicas -> read replicas only   │
+                                             │  Internal (no port):                         │
+                                             │    postgres-ha-config -> Patroni DCS         │
+                                             │    postgres-pods      -> pod discovery       │
+                                             └──────────────────────────────────────────────┘
+                                                │
+                                                ▼
+                                             ┌──────────────────────────────────────────────┐
+                                             │  Secret: postgres-pguser-graphistry          │
+                                             │    host: postgres-primary.graphistry.svc     │
+                                             │    port: 5432                                │
+                                             │    dbname: graphistry                        │
+                                             │    user: graphistry                          │
+                                             │    password: <auto-generated>                │
+                                             └──────────────────────────────────────────────┘
+                                                │          │
+                                    reads secret│          │reads secret
+                                                ▼          ▼
+                                             ┌────────┐ ┌────────────────────┐
+                                             │ nexus  │ │ streamgl-sessions  │
+                                             └────────┘ └────────────────────┘
 ```
 
 **Service roles explained:**
@@ -1334,19 +1334,19 @@ PGO uses a two-level routing design to decouple the client-facing service name f
 
 ```
 Client (nexus, streamgl-sessions)
-  |
-  | resolves postgres-primary.graphistry.svc via DNS
-  v
+  │
+  │ resolves postgres-primary.graphistry.svc via DNS
+  ▼
 postgres-primary (headless, ClusterIP: None, no pod selector)
-  |
-  | PGO-managed Endpoints point to postgres-ha's ClusterIP
-  | (cluster.go line 172: endpoints.Subsets = {{IP: leader.Spec.ClusterIP}})
-  v
+  │
+  │ PGO-managed Endpoints point to postgres-ha's ClusterIP
+  │ (cluster.go line 172: endpoints.Subsets = {{IP: leader.Spec.ClusterIP}})
+  ▼
 postgres-ha (ClusterIP: 10.43.x.x, no pod selector)
-  |
-  | Patroni-managed Endpoints point to the elected leader pod IP
-  | (patroni.go line 239: "let Patroni manage the Endpoints")
-  v
+  │
+  │ Patroni-managed Endpoints point to the elected leader pod IP
+  │ (patroni.go line 239: "let Patroni manage the Endpoints")
+  ▼
 postgres-instance1-xxxx-0 (leader pod)
 ```
 
@@ -1415,7 +1415,7 @@ kubectl exec -n graphistry -it $(kubectl get pods -n graphistry \
 
 Expected output (single-instance setup):
 
-```
+```bash
 +---------------------------+-----------------------------------------+--------+---------+----+-----------+
 | Member                    | Host                                    | Role   | State   | TL | Lag in MB |
 + Cluster: postgres-ha (xxxxxxxxxxxxxxxxxxxx) ------------------------+--------+---------+----+-----------+
@@ -1676,28 +1676,28 @@ The full dependency chain:
 ```
 PGO secret "postgres-pguser-graphistry" must exist
 (created by PGO operator when postgres-cluster chart is installed)
-  |
-  |  ALL pods below are blocked in CreateContainerConfigError without this secret
-  |
-  +-> postgres pod (no init container deps, starts first)
-  |     |
-  |     +-> nexus (init: pg_isready against postgres-primary service)
-  |     |     |
-  |     |     +-> dask-scheduler (init: waits for nexus service)
-  |     |     |     |
-  |     |     |     +-> forge-etl-python (init: waits for dask-scheduler service + pg_isready)
-  |     |     |
-  |     |     +-> dask-cuda-worker (init: waits for nexus service)
-  |     |     +-> streamgl-gpu (init: waits for nexus service)
-  |     |     +-> pivot (init: waits for nexus service + pg_isready)
-  |     |
-  |     +-> streamgl-viz (init: pg_isready + redis service wait)
-  |
-  +-> redis (no init container deps, but blocked without PGO secret)
-  +-> caddy (no init container deps, but blocked without PGO secret)
-  +-> streamgl-sessions (no init container deps, but blocked without PGO secret)
-  +-> notebook (init: volume chown only, no service wait, but blocked without PGO secret)
-  +-> graph-app-kit-* (init: copy files only, does NOT need PGO secret, uses gak-secret which is optional)
+  │
+  │  ALL pods below are blocked in CreateContainerConfigError without this secret
+  │
+  ├── postgres pod (no init container deps, starts first)
+  │     │
+  │     ├── nexus (init: pg_isready against postgres-primary service)
+  │     │     │
+  │     │     ├── dask-scheduler (init: waits for nexus service)
+  │     │     │     │
+  │     │     │     └── forge-etl-python (init: waits for dask-scheduler service + pg_isready)
+  │     │     │
+  │     │     ├── dask-cuda-worker (init: waits for nexus service)
+  │     │     ├── streamgl-gpu (init: waits for nexus service)
+  │     │     └── pivot (init: waits for nexus service + pg_isready)
+  │     │
+  │     └── streamgl-viz (init: pg_isready + redis service wait)
+  │
+  ├── redis (no init container deps, but blocked without PGO secret)
+  ├── caddy (no init container deps, but blocked without PGO secret)
+  ├── streamgl-sessions (no init container deps, but blocked without PGO secret)
+  ├── notebook (init: volume chown only, no service wait, but blocked without PGO secret)
+  └── graph-app-kit-* (init: copy files only, does NOT need PGO secret, uses gak-secret which is optional)
 
 nginx (init: waits for forge-etl-python + streamgl-gpu + streamgl-sessions -- LAST in chain)
 ```
@@ -2941,17 +2941,17 @@ All 6 observability components are deployed in-cluster:
 
 ```
 Graphistry Services (nexus, streamgl-viz, streamgl-gpu, forge-etl-python, ...)
-        |
-        | (OTLP push)
-        v
+        │
+        │ (OTLP push)
+        ▼
   otel-collector
-        |
-        +---> Prometheus (metrics storage and querying)
-        +---> Jaeger (distributed tracing)
-        +---> Grafana (visualization, reads from Prometheus)
+        │
+        ├───> Prometheus (metrics storage and querying)
+        ├───> Jaeger (distributed tracing)
+        └───> Grafana (visualization, reads from Prometheus)
 
-  dcgm-exporter ----> Prometheus (GPU metrics via scrape)
-  node-exporter ----> Prometheus (system metrics via scrape)
+  dcgm-exporter ────> Prometheus (GPU metrics via scrape)
+  node-exporter ────> Prometheus (system metrics via scrape)
 ```
 
 **Cloud mode** (`OTEL_CLOUD_MODE: true`):
@@ -2960,13 +2960,13 @@ Only the otel-collector is deployed in-cluster. It forwards all telemetry to an 
 
 ```
 Graphistry Services (nexus, streamgl-viz, streamgl-gpu, forge-etl-python, ...)
-        |
-        | (OTLP push)
-        v
+        │
+        │ (OTLP push)
+        ▼
   otel-collector
-        |
-        | (OTLP/HTTP export)
-        v
+        │
+        │ (OTLP/HTTP export)
+        ▼
   External Cloud Platform (Grafana Cloud, Datadog, New Relic, etc.)
 ```
 

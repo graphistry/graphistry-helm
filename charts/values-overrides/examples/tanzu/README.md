@@ -572,95 +572,30 @@ For more configuration options, see the [Graphistry Kubernetes Telemetry Documen
 
 ## Troubleshooting
 
-### Check Pod Status
+For comprehensive troubleshooting, debugging, and verification commands covering all deployment stages, see the [Troubleshooting Guide](../troubleshooting.md).
+
+### Tanzu-Specific Notes
+
+**Pod Security Admission (PSA)**: Tanzu enforces PSA by default. If pods fail to start with security policy violations, label the namespace:
 ```bash
-kubectl get pods -n graphistry
-kubectl describe pod <pod-name> -n graphistry
+kubectl label namespace graphistry pod-security.kubernetes.io/enforce=privileged --overwrite
 ```
 
-### Check Logs
-```bash
-# Nexus logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nexus) -f
+**DCGM profiling error on vGPU environments**: The DCGM profiling module does not support vGPU. If `dcgm-exporter` is in CrashLoopBackOff, apply the configmap patch that disables profiling metrics (see the DCGM fix section earlier in this guide).
 
-# forge-etl-python logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep forge-etl-python) -f
+**NSX networking**: If the LoadBalancer EXTERNAL-IP stays `<pending>`, Tanzu requires [NSX Advanced Load Balancer (Avi)](https://techdocs.broadcom.com/us/en/vmware-tanzu/standalone-components/tanzu-kubernetes-grid/2-5/tkg/mgmt-reqs-network-nsx-alb-overview.html) or MetalLB. Check with your vSphere admin for firewall rules and network policies.
 
-# nginx logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nginx) -f
-```
-
-### Check PVC Status
-```bash
-kubectl get pvc -n graphistry
-```
-
-### Check Storage Class
+**vSphere CSI StorageClass**: If PVCs are stuck Pending, verify the vSphere CSI driver is installed and the StorageClass provisioner matches your environment:
 ```bash
 kubectl get sc
-kubectl describe sc retain-sc
+kubectl get pods -n vmware-system-csi
 ```
 
-### GPU Issues
+**SSL/TLS issues**: If using TLS, ensure cert-manager is installed and certificates are issued:
 ```bash
-# Check GPU operator status
-kubectl get pods -n gpu-operator
-
-# Check GPU availability on nodes
-kubectl describe node <node-name> | grep -A 5 "Capacity:"
+kubectl get pods -n cert-manager
+kubectl get certificates -n graphistry
 ```
-
-### Networking Issues
-
-#### Verify Ingress Controller
-```bash
-# Check ingress controller is running
-kubectl get pods -n ingress-nginx
-
-# Check ingress controller service has external IP
-kubectl get svc -n ingress-nginx ingress-nginx-controller
-
-# Check ingress resource is created
-kubectl get ingress -n graphistry
-kubectl describe ingress caddy-ingress-graphistry -n graphistry
-```
-
-#### Verify Traffic Flow
-```bash
-# Test caddy health endpoint (from inside cluster)
-kubectl run -it --rm debug --image=curlimages/curl --restart=Never -- \
-    curl -v http://caddy-graphistry.graphistry.svc.cluster.local/caddy/health/
-
-# Check caddy logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep caddy) -f
-
-# Check nginx logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nginx) -f
-```
-
-#### Common Networking Problems
-
-1. **No external IP on LoadBalancer**: Tanzu requires [NSX Advanced Load Balancer (Avi)](https://techdocs.broadcom.com/us/en/vmware-tanzu/standalone-components/tanzu-kubernetes-grid/2-5/tkg/mgmt-reqs-network-nsx-alb-overview.html) or MetalLB for LoadBalancer services
-   ```bash
-   # Check if service is pending
-   kubectl get svc -n ingress-nginx
-   # If EXTERNAL-IP shows <pending>, consider using NodePort instead:
-   # --set controller.service.type=NodePort
-   ```
-
-2. **NSX-T / network policies blocking traffic**: Check with your vSphere admin for firewall rules and network policies
-
-3. **Session affinity issues**: WebSocket connections may fail if affinity is not working
-   ```bash
-   # Verify ingress annotations
-   kubectl get ingress -n graphistry -o yaml | grep -A5 annotations
-   ```
-
-4. **SSL/TLS issues**: If using `tls: true`, ensure cert-manager is installed
-   ```bash
-   kubectl get pods -n cert-manager
-   kubectl get certificates -n graphistry
-   ```
 
 ## Cleanup
 

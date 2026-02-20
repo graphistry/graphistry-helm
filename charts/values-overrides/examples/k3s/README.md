@@ -368,36 +368,19 @@ Telemetry is enabled by default (`ENABLE_OPEN_TELEMETRY: true`). For configurati
 
 ## Troubleshooting
 
-### Check Pod Status
+For comprehensive troubleshooting, debugging, and verification commands covering all deployment stages, see the [Troubleshooting Guide](../troubleshooting.md).
+
+### k3s-Specific Notes
+
+**k3s service restart**: If the NVIDIA runtime is not being detected after editing `/etc/systemd/system/k3s.service`, restart the service:
 ```bash
-kubectl get pods -n graphistry
-kubectl describe pod <pod-name> -n graphistry
+systemctl daemon-reload
+systemctl restart k3s
 ```
 
-### Check Logs
+**Local-path provisioner**: k3s uses `rancher.io/local-path` as its default provisioner. If PVCs are stuck Pending, verify the local-path-provisioner pod is running:
 ```bash
-# Nexus logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nexus) -f
-
-# forge-etl-python logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep forge-etl-python) -f
-
-# nginx logs
-kubectl logs -n graphistry $(kubectl get pods -n graphistry -o name | grep nginx) -f
-```
-
-### Check PVC Status
-```bash
-kubectl get pvc -n graphistry
-```
-
-### GPU Issues
-```bash
-# Check GPU operator status
-kubectl get pods -n gpu-operator
-
-# Check GPU availability on nodes
-kubectl describe node <node-name> | grep -A 5 "Capacity:"
+kubectl get pods -n kube-system | grep local-path
 ```
 
 ## Cleanup

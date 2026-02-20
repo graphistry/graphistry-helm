@@ -634,59 +634,14 @@ Also, it's possible to delete the K8s cluster:
 gcloud container clusters delete demo-cluster --zone us-central1-a
 ```
 
-## Utility and troubleshooting commands
+## Troubleshooting
 
-### caddy-ingress
-```bash
-kubectl describe ingress caddy-ingress-graphistry -n graphistry
-kubectl describe $(kubectl get pods -o name | grep caddy)
+For comprehensive troubleshooting, debugging, and verification commands covering all deployment stages, see the [Troubleshooting Guide](../troubleshooting.md).
 
-# print the logs
-kubectl -n graphistry logs $(kubectl -n graphistry get pods -o name | grep caddy) -f
-```
+### GKE-Specific Notes
 
-### nexus
-```bash
-# print the logs
-kubectl logs $(kubectl get pods -o name -n graphistry | grep nexus) -n graphistry -f
+**DCGM profiling error on COS nodes**: The DCGM profiling module is incompatible with GKE Container-Optimized OS (COS). If `dcgm-exporter` is in CrashLoopBackOff, apply the configmap patch that disables profiling metrics (see the DCGM fix section earlier in this guide).
 
-# get into the container
-kubectl exec -i -t $(kubectl get pods -o name -n graphistry | grep nexus) -n graphistry --container nexus -- /bin/bash
-```
+**GKE GPU driver version**: GKE auto-installs GPU drivers by default. If you need a specific driver version (e.g., R570 for CUDA 12.8), use `--gpu-driver-version=disabled` at cluster creation and install the driver manually via DaemonSet (see the R570 Driver Install section earlier in this guide).
 
-### streamgl-gpu
-```bash
-kubectl describe $(kubectl get pods -o name -n graphistry | grep streamgl-gpu) -n graphistry
-
-# print the logs
-kubectl logs $(kubectl get pods -o name -n graphistry | grep streamgl-gpu) -n graphistry -f
-```
-
-### forge-etl-python
-```bash
-kubectl describe $(kubectl get pods -o name -n graphistry | grep forge-etl-python) -n graphistry
-
-# print the logs
-kubectl logs $(kubectl get pods -o name -n graphistry | grep forge-etl-python) -n graphistry -f
-
-# get into the container
-kubectl exec -i -t $(kubectl get pods -o name -n graphistry | grep forge-etl-python) -n graphistry --container forge-etl-python -- /bin/bash
-```
-
-### dask-cuda
-```bash
-kubectl describe $(kubectl get pods -o name -n graphistry | grep dask-cuda) -n graphistry
-
-# print the logs
-kubectl logs $(kubectl get pods -o name  -n graphistry | grep dask-cuda) -n graphistry -f
-```
-
-### pivot
-If this service work, feel free to kill the pod and start a new instance, that should solve the glitch.
-
-```bash
-kubectl describe $(kubectl get pods -o name -n graphistry | grep pivot) -n graphistry
-
-# print the logs
-kubectl logs $(kubectl get pods -o name  -n graphistry | grep pivot)  -n graphistry -f
-```
+**n1-highmem-4 resource pressure**: PGO backup pods may stay Pending on `n1-highmem-4` instances due to insufficient CPU. Use `n1-highmem-8` or larger.

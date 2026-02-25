@@ -397,6 +397,45 @@ For example, driver 575.57.08 (reporting CUDA 12.9 in nvidia-smi) falls within t
 - [GPU Operator / Driver Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix): Supported Kubernetes versions (1.30-1.35), container runtimes (containerd, CRI-O), operating systems, cloud providers (EKS, GKE, AKS), and GPU architectures for each GPU Operator release. Check this before installing to confirm your platform is supported.
 - [GPU Operator on GKE](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/google-gke.html): GKE-specific instructions for the GPU Operator, including the `RUNTIME_CONFIG_SOURCE=file` workaround for GKE 1.33+ containerd config issue.
 
+### Verification (NVIDIA Device Plugin without GPU Operator)
+
+If you are using the NVIDIA Device Plugin directly (Option 2 in the platform READMEs) instead of the full GPU Operator, the device plugin only registers `nvidia.com/gpu` as a **resource** in the node's Capacity/Allocatable. It does **not** add the `nvidia.com/gpu.present=true` node **label**. That label is set by GPU Feature Discovery (GFD), which is a component of the GPU Operator.
+
+Graphistry's default `nodeSelector` requires `nvidia.com/gpu.present: "true"`. Without this label, all Graphistry pods will be stuck in `Pending` with:
+
+```
+0/1 nodes are available: 1 node(s) didn't match Pod's node affinity/selector
+```
+
+After installing the device plugin, verify the GPU resource is registered:
+
+```bash
+kubectl get nodes -ojson | jq '.items[] | {name: .metadata.name, gpu: .status.capacity["nvidia.com/gpu"]}'
+```
+
+Expected output:
+
+```json
+{
+  "name": "your-node",
+  "gpu": "1"
+}
+```
+
+Then manually add the required label on each GPU node:
+
+```bash
+kubectl label node <node-name> nvidia.com/gpu.present=true
+```
+
+Verify the label was applied:
+
+```bash
+kubectl get nodes --show-labels | grep "nvidia.com/gpu.present"
+```
+
+> **Note:** This manual label is not managed by any operator and will persist across reboots. If you add new GPU nodes later, remember to label them as well.
+
 ### Troubleshoot and Debug
 
 **GPU not detected (`nvidia.com/gpu` shows 0 or `<no value>` after installing the operator):**
@@ -3310,6 +3349,80 @@ kubectl get pv -o json | \
 ```
 
 If the command produces no output, there are no Released PVs to patch (all PVs are already Bound, which is the healthy state). After patching, the PVCs should automatically bind to the freed PVs. However, using `volumeName` in the values file (as shown above) is the recommended approach because it avoids this issue entirely.
+
+**Stale volumeName pointing to deleted PVs (fresh deployment after full cleanup):**
+
+If you deleted everything (PVs, PVCs, namespace) and then redeployed, but your values file still has `volumeName` entries from the previous deployment, all pods (except postgres and telemetry DaemonSets) will be stuck in `Pending`:
+
+```bash
+kubectl get pods -n graphistry
+```
+
+Output:
+```bash
+NAME                              READY   STATUS    AGE
+caddy-graphistry-xxx              0/1     Pending   10m
+nexus-xxx                         0/1     Pending   10m
+dask-scheduler-xxx                0/1     Pending   10m
+...
+postgres-instance1-xxx            4/4     Running   11m   # PGO manages its own PVCs
+dcgm-exporter-xxx                 1/1     Running   10m   # DaemonSets with no PVC
+```
+
+The PVCs will show `Pending` with a VOLUME column referencing PVs that no longer exist:
+
+```bash
+kubectl get pvc -n graphistry
+```
+
+Output:
+```bash
+NAME             STATUS    VOLUME                                     STORAGECLASS
+data-mount       Pending   pvc-6327f91b-8c7f-4644-93b1-e3eb6f79b49a   retain-sc
+gak-private      Pending   pvc-7e49e1e1-de5f-4847-821b-041d4376d941   retain-sc
+```
+
+And `kubectl describe pod` will show:
+
+```bash
+Events:
+  Warning  FailedScheduling  default-scheduler  0/1 nodes are available: pod has unbound immediate PersistentVolumeClaims. not found
+```
+
+The root cause is `volumeName` in your values file pinning PVCs to PVs that were deleted.
+
+```yaml
+# Before (stale values from previous deployment):
+volumeName:
+  dataMount: pvc-6327f91b-8c7f-4644-93b1-e3eb6f79b49a
+  localMediaMount: pvc-76680b21-4688-4c81-a79e-b01317a6f4db
+  gakPublic: pvc-fbcee9c7-c985-4c73-8f79-74943eae87a3
+  gakPrivate: pvc-7e49e1e1-de5f-4847-821b-041d4376d941
+```
+
+For a fresh deployment, comment out or remove the `volumeName` block in your values file:
+```yaml
+# After (for fresh deployment):
+#volumeName:
+#  dataMount:
+#  localMediaMount:
+#  gakPublic:
+#  gakPrivate:
+```
+
+Then delete the stuck PVCs and redeploy:
+```bash
+kubectl delete pvc data-mount local-media-mount gak-public gak-private uploads-files -n graphistry
+```
+
+Then redeploy using the standard upgrade command from your platform README (for example, for k3s):
+```bash
+helm upgrade -i g-chart ./charts/graphistry-helm \
+    --values ./charts/values-overrides/examples/k3s/k3s_example_values.yaml \
+    --namespace graphistry --create-namespace
+```
+
+The StorageClass provisioner will create fresh PVs and the PVCs will bind normally. Once the deployment is healthy, generate new `volumeName` entries (see [Preserving Data Across Redeployments](#preserving-data-across-redeployments) above) for future redeployments.
 
 
 ## Appendix: Quick Reference Commands

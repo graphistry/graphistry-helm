@@ -211,7 +211,13 @@ kubectl get pods -n gpu-operator --watch
 ### Option 2: NVIDIA Device Plugin (If drivers pre-installed on nodes)
 If NVIDIA drivers are already installed on your Tanzu nodes:
 ```bash
-kubectl create -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/master/nvidia-device-plugin.yml
+kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.4/deployments/static/nvidia-device-plugin.yml
+```
+
+**Important:** The device plugin only registers `nvidia.com/gpu` as a resource in the node's Capacity/Allocatable. It does NOT add the `nvidia.com/gpu.present=true` node label (that label is set by GPU Feature Discovery, which is part of the GPU Operator). Graphistry's default `nodeSelector` requires this label, so you must add it manually on each GPU node:
+
+```bash
+kubectl label node <node-name> nvidia.com/gpu.present=true
 ```
 
 ### Verify GPU Access

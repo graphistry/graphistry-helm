@@ -5,9 +5,9 @@ global:  ## global settings for all charts
   ENABLE_OPEN_TELEMETRY: true
 
   telemetryStack:
-    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials below
 
-# Log levels: INFO (default), DEBUG, TRACE (for troubleshooting)
-logs:
+  # Log levels: INFO (default), DEBUG, TRACE (for troubleshooting)
+  logs:
     LogLevel: INFO
     GraphistryLogLevel: INFO

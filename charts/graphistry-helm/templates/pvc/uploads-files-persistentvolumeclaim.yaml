@@ -1,4 +1,3 @@
-{{- if eq .Values.global.ENABLE_CLUSTER_MODE false }}
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
@@ -23,14 +22,16 @@ spec:
   accessModes:
     - ReadWriteMany
   storageClassName: datamount-longhorn
+{{- else if eq .Values.global.ENABLE_CLUSTER_MODE true  }}
+  accessModes:
+    - "ReadWriteMany"
+  storageClassName: {{ .Values.global.storageClassNameOverride | default "retain-sc-cluster" }}
 {{- else }}
   accessModes:
     - ReadWriteOnce
   storageClassName: {{ .Values.global.storageClassNameOverride | default "retain-sc" }}
 {{- end }}
-  #volumeName: pvc-8147f3f6-9b84-4974-b2bb-298a6395ad5a
   resources:
     requests:
       storage: 40Gi
 status: {}
-{{- end }}

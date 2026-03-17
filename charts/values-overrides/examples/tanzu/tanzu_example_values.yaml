@@ -31,7 +31,8 @@ global:
   # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
   # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
   # Example: storageClassNameOverride: "vsphere-sc"
-  storageClassNameOverride: "vsphere-sc"
+  # Must match the StorageClass name created in the README (Option A creates "retain-sc")
+  storageClassNameOverride: "retain-sc"
 
   # Node selector for GPU nodes
   # Check available labels with: kubectl get nodes --show-labels
@@ -55,7 +56,7 @@ global:
   # Telemetry stack configuration
   # Documentation: https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
   telemetryStack:
-    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials below
     openTelemetryCollector:
       OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
       OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP

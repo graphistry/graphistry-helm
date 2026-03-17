@@ -1,11 +1,12 @@
 tls: false
 
-#volume pv names go here after initial deployment and provisioning
+# Optional: pin PVCs to specific PVs after initial deployment.
+# Get volume names with: kubectl get pvc -o jsonpath='{range .items[*]}{.metadata.name}{"\t"}{.spec.volumeName}{"\n"}{end}'
 volumeName:
-  dataMount: pvc-6327f91b-8c7f-4644-93b1-e3eb6f79b49a
-  localMediaMount: pvc-76680b21-4688-4c81-a79e-b01317a6f4db
-  gakPublic: pvc-fbcee9c7-c985-4c73-8f79-74943eae87a3
-  gakPrivate: pvc-7e49e1e1-de5f-4847-821b-041d4376d941
+  dataMount: ""
+  localMediaMount: ""
+  gakPublic: ""
+  gakPrivate: ""
 
 ## createServiceAccount: true only true on initial deployment
 k8sDashboard:

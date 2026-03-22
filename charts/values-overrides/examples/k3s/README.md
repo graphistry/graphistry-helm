@@ -4,48 +4,52 @@ This guide provides step-by-step instructions for deploying Graphistry on k3s, a
 
 ## Prerequisites
 
-### k3s Cluster
-- A running k3s cluster with GPU nodes
-- `kubectl` configured to access the cluster (or use `k3s kubectl`)
-- Helm 3.x installed
+### Requirements
+- A machine with one or more NVIDIA GPUs
+- NVIDIA drivers installed on the host, or use the GPU Operator to install them (see [Option 1](#option-1-nvidia-gpu-operator-recommended))
+- Ubuntu 22.04+ or similar Linux distribution
 
 ### Install k3s
+
+The install command below configures k3s with the NVIDIA container runtime and sets up kubeconfig permissions so non-root users in the specified group can run `kubectl` and `helm` without `sudo`:
+
 ```bash
-curl -sfL https://get.k3s.io | sh -
+curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="server \
+    --default-runtime nvidia \
+    --write-kubeconfig-mode 640 \
+    --write-kubeconfig-group <your-group> \
+    --node-name <your-node-name>" sh -
 ```
 
-If you don't have `kubectl` you can set up an alias:
+Replace `<your-group>` with the OS group whose members should have kubectl access (e.g., your user's group, `graphistry`, `docker`, `sudo`), and `<your-node-name>` with a name for this node.
+
+| Flag | Purpose |
+|------|---------|
+| `--default-runtime nvidia` | Sets NVIDIA as the default container runtime (required for GPU pods) |
+| `--write-kubeconfig-mode 640` | Makes kubeconfig readable by group members (default is 600, root-only) |
+| `--write-kubeconfig-group <group>` | Sets the group owner of `/etc/rancher/k3s/k3s.yaml` |
+| `--node-name <name>` | Sets a custom node name instead of the hostname |
+
+Set up KUBECONFIG so `kubectl` and `helm` work in all sessions:
+
 ```bash
-alias kubectl='k3s kubectl'
+# Make KUBECONFIG available for all users on login
+cat > /etc/profile.d/k3s-env.sh << 'EOF'
+export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
+EOF
 ```
 
-### Verify Cluster Access
+> **Note:** Open a new terminal session (or run `source /etc/profile.d/k3s-env.sh`) for the KUBECONFIG to take effect.
+
+Install Helm if not already present:
+
+```bash
+command -v helm &>/dev/null || curl -fsSL https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+```
+
+### Verify k3s Installation
 ```bash
 kubectl get nodes -o wide
-```
-
-## Setup NVIDIA Container Runtime
-
-Verify that the container runtime supports NVIDIA GPUs:
-```bash
-apt-get install nvidia-container-runtime
-```
-
-Edit the k3s service to use NVIDIA runtime:
-```bash
-nano /etc/systemd/system/k3s.service
-```
-
-Add `--default-runtime nvidia` to the ExecStart command:
-```bash
-ExecStart=/usr/local/bin/k3s \
-    server --default-runtime nvidia
-```
-
-Restart k3s:
-```bash
-systemctl daemon-reload
-systemctl restart k3s
 ```
 
 ## Install NVIDIA GPU Support
@@ -85,7 +89,7 @@ kubectl get pods -n gpu-operator --watch
 ```
 
 ### Option 2: NVIDIA Device Plugin
-If NVIDIA drivers are already installed on your nodes:
+Lightweight alternative for clusters with NVIDIA drivers already installed on the host (e.g., DGX systems, GPU workstations):
 ```bash
 kubectl apply -f https://raw.githubusercontent.com/NVIDIA/k8s-device-plugin/v0.17.4/deployments/static/nvidia-device-plugin.yml
 ```
@@ -122,6 +126,15 @@ Example output (in case of 2 GPUs):
   "pods": "110"
 }
 ```
+
+Test that a GPU container can actually run (uses a temporary pod that cleans up after itself):
+
+```bash
+kubectl run gpu-test --rm -it --restart=Never \
+    --image=nvidia/cuda:12.8.0-base-ubuntu22.04 -- nvidia-smi
+```
+
+Expected output: nvidia-smi table showing your GPU model, driver version, and CUDA version. The driver must be in the compatible range for Graphistry's CUDA 12.8 images (driver 525-579). See the [troubleshooting guide](../troubleshooting.md#2-gpu-support) for the full driver compatibility table.
 
 ## Get Graphistry Helm Charts
 
@@ -337,7 +350,7 @@ For k3s with Traefik ingress:
 kubectl get ingress -n graphistry
 ```
 
-All services share the same ingress IP (`ADDRESS` from the command above). When `ENABLE_OPEN_TELEMETRY: true` and `telemetryStack.OTEL_CLOUD_MODE: false` are set in your values file, the telemetry stack (Grafana, Prometheus, Jaeger) is deployed as part of the cluster:
+All services share the same ingress IP (`ADDRESS` from the command above). When `ENABLE_OPEN_TELEMETRY: true` and `telemetryStack.OTEL_CLOUD_MODE: false` are set in your values file, the telemetry stack (Grafana, Prometheus, Jaeger) is deployed alongside Graphistry:
 
 | Service | Path |
 |---|---|
@@ -421,6 +434,32 @@ kubectl get pv | grep graphistry | awk '{print $1}' | xargs kubectl delete pv
 
 # Delete the StorageClass
 kubectl delete sc retain-sc --ignore-not-found
+```
+
+### Uninstall k3s (full k3s removal)
+
+If you want to completely remove k3s from the machine (not just Graphistry):
+
+```bash
+# Stop k3s service
+systemctl stop k3s
+
+# Kill lingering Traefik/containerd processes
+/usr/local/bin/k3s-killall.sh
+
+# Verify ports 80/443 are free
+ss -tlnp | grep -E ':80|:443'
+# Should be empty
+
+# Remove k3s entirely (deletes all k3s data, containers, and networking)
+/usr/local/bin/k3s-uninstall.sh
+
+# Remove KUBECONFIG profile script
+rm -f /etc/profile.d/k3s-env.sh
+
+# Remove helm binary and local cache/repos (optional)
+rm -f /usr/local/bin/helm
+rm -rf ~/.cache/helm ~/.config/helm ~/.local/share/helm
 ```
 
 ## References

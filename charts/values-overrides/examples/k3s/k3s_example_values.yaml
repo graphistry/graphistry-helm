@@ -1,11 +1,11 @@
 tls: false
 
 #volume pv names go here after initial deployment and provisioning
-volumeName:
-  dataMount: pvc-6327f91b-8c7f-4644-93b1-e3eb6f79b49a
-  localMediaMount: pvc-76680b21-4688-4c81-a79e-b01317a6f4db
-  gakPublic: pvc-fbcee9c7-c985-4c73-8f79-74943eae87a3
-  gakPrivate: pvc-7e49e1e1-de5f-4847-821b-041d4376d941
+#volumeName:
+#  dataMount:
+#  localMediaMount:
+#  gakPublic:
+#  gakPrivate:
 
 ## createServiceAccount: true only true on initial deployment
 k8sDashboard:
@@ -292,6 +292,7 @@ global:  ## global settings for all charts
   postgresVolumeLabel:
   nodeSelector: #node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}
       nvidia.com/gpu.present: "true"
+#      kubernetes.io/hostname: "node1"
 # multinode selector switch to determine if going multi/single node
   multiNode: false # multinode selector switch to determine if going multi/single node
   #dev mode for debugging with nexus, postgres and nginx

@@ -27,7 +27,29 @@ Install Graphistry
         helm upgrade -i g-chart graphistry-helm/Graphistry-Helm-Chart --namespace graphistry --create-namespace 
 
 
-**NOTE:** graphistry resources must be installed first as this contains the storageclasses that the PVCs rely on in the graphistry-helm deployment.
+**NOTE:** A StorageClass with reclaimPolicy: Retain must be configured before deploying. See the Configure StorageClass section in the documentation.
+
+Configure Docker Access
+-----------------------
+Graphistry images are hosted on Docker Hub. Your Docker Hub account must have access to the Graphistry organization. Contact `Graphistry Support <https://www.graphistry.com/support>`_ to get access.
+
+Create the image pull secret in the ``graphistry`` namespace:
+
+.. code-block:: shell-session
+
+    kubectl create secret docker-registry docker-secret-prod \
+        --namespace graphistry \
+        --docker-server=docker.io \
+        --docker-username=<YOUR_DOCKERHUB_USER> \
+        --docker-password=<YOUR_DOCKERHUB_TOKEN>
+
+Then reference it in your values.yaml:
+
+.. code-block:: yaml
+
+    global:
+      imagePullSecrets:
+        - name: docker-secret-prod
 
 Create a Secret for Graph App Kit (OPTIONAL)
 ---------------------------------------------
@@ -59,8 +81,7 @@ Configuring Graphistry
 ----------------------
 
 It is recommended to create a values.yaml override file to configure the chart. The default values.yaml file can be found in the chart directory. Examples can be found in the ./charts/values-overrides directory.
-There are some Deployment specifc values which will need to be set, such as the **global.provisioner**, and **graphistryResources.storageClassParameters**, **global.nodeSelector**, and the **global.Tag** depending on your release. An example values.yaml can be 
-seen below. This is an example based on an AWS EKS deployment's values.yaml
+There are some deployment-specific values which must be set, such as **global.provisioner**, **global.nodeSelector**, and **global.tag** depending on your release. An example values.yaml:
 
     .. code-block:: yaml
 
@@ -70,19 +91,14 @@ seen below. This is an example based on an AWS EKS deployment's values.yaml
             gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
             gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
 
-
-        graphistryResources:
-            storageClassParameters:
-                csi.storage.k8s.io/fstype: ext4
-                type: gp2
-
-            
         global:
-            provisioner: ebs.csi.aws.com
-            tag: v2.39.28-admin
-            nodeSelector: {"kubernetes.io/hostname": "ip-171-00-00-0.us-east-2.compute.internal"}
+            provisioner: <your-csi-provisioner>
+            tag: v2.45.11
+            storageClassNameOverride: ""
+            nodeSelector:
+              nvidia.com/gpu.present: "true"
             imagePullPolicy: Always
-            imagePullSecrets: 
+            imagePullSecrets:
               - name: docker-secret-prod
 
 Once a values.yaml has been created it can be deployed with the following command:
@@ -100,18 +116,21 @@ Once the deployment is complete, the Graphistry UI can be accessed from the cadd
 
 Volume Binding
 --------------
-After initial deployment , the PVCs (**gak-private,gak-public,data-mount,local-media-mount**) for graphistry will have PVs
-dynamically provisioned for them by the storageclasses that graphistry-resources deploy, and the pods will bind to them
-automatically. If the cluster is redeployed, the PVs will be released and the pods will not be able to bind to them. To fix this, 
-the PVCs must include the volumename from the PV that was provisioned for it. 
-Find the volume name by running the following command:
+After initial deployment, the PVCs (**gak-private, gak-public, data-mount, local-media-mount**) for Graphistry will have PVs
+dynamically provisioned for them by the StorageClass configured via ``global.storageClassNameOverride`` (default: ``retain-sc``), and the pods will bind to them
+automatically. If the Helm release is uninstalled and reinstalled, the PVs (with Retain policy) will be in Released state and will not automatically rebind.
+
+To preserve volume bindings across redeployments, generate the ``volumeName`` block for your values file:
 
     .. code-block:: shell-session
 
-        kubectl get pv -n graphistry
+        echo "volumeName:
+          dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+          localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+          gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
+          gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 
-This will return a list of PVs that were provisioned for the PVCs. The volumename can be found in the output of the command 
-corresponding to the PVC. Add the name to your values.yaml file under the volumeName section. An example values.yaml can be:
+Copy the output into your values file under the ``volumeName`` section, for example:
 
     .. code-block:: yaml
 
@@ -121,11 +140,11 @@ corresponding to the PVC. Add the name to your values.yaml file under the volume
             gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
             gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
 
-Once you have updated your values.yaml file the deployment can be redeployed/upgraded and the Pods will bind to the PVs automatically.
+Then run the normal upgrade command and the pods will bind to the existing PVs automatically:
 
     .. code-block:: shell-session
 
-        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./<your-values.yaml>  
+        helm upgrade -i g-chart ./charts/graphistry-helm --namespace graphistry --create-namespace --values ./<your-values.yaml>
 
 
 Configuration
@@ -133,91 +152,683 @@ Configuration
 
 The following table lists the configurable parameters of the Graphistry-helm-chart chart and their default values.
 
-================================================== ==================================================================================================== ==================================================
-Parameter                                          Description                                                                                          Default
-================================================== ==================================================================================================== ==================================================
-``ingress.management.annotations``                 ingress management - determines if ingress is going to be on internal load balance                   ``null``                                          
-``graphistry``                                     graphistry tag for the docker image                                                                  ``"graphistry"``                                  
-``volumeName.dataMount``                           data-mount pvc volume name                                                                           ``null``                                          
-``volumeName.localMediaMount``                     local-media-mount pvc volume name                                                                    ``null``                                          
-``volumeName.gakPublic``                           gak-public pvc volume name                                                                           ``null``                                          
-``volumeName.gakPrivate``                          data-mount pvc volume name                                                                           ``null``                                          
-``ingressNamespace``                               the namespace of the ingress controller                                                              ``"ingress-nginx"``                               
-``maxSurge``                                       max surge of pods in rolling updates                                                                 ``"10%"``                                         
-``fwdHeaders``                                     forwards backend proxy's headers to ingress controller                                               ``false``                                         
-``httpTesting``                                    for testing purposes only - used to do http testing on ingress and nginx/caddy                       ``false``                                         
-``nodeEnv``                                        sets the Node environment - set to development in dev mode                                           ``"production"``                                  
-``appEnvironment``                                 sets the appEnvironment for nexus - set to development in dev mode                                   ``"production"``                                  
-``djangoSettingsModule``                           Sets the django settings - set to config.settings.dev in dev mode                                    ``"config.settings.production"``                  
-``graphistryCPUMode``                              sets graphistry to cpu mode - to be used in dev mode set to 1                                        ``"0"``                                           
-``djangoDebug``                                    sets django in debug mode set to true in dev mode                                                    ``"False"``                                       
-``nginxPorts.portOne``                             port for nginx service to listen on                                                                  ``80``                                            
-``nginxPorts.portTwo``                             port for nginx service to listen on                                                                  ``443``                                           
-``metrics``                                        enables metrics for prometheus - must have kube-prometheus-stack installed                           ``false``                                         
-``nexusPort.portOne``                              ports for nexus service to listen on                                                                 ``8000``                                          
-``nexusPort.portTwo``                              ports for nexus service to listen on                                                                 ``8080``                                          
-``graphAppKitPublic``                              graph app kit public - determines if public dashboard is going to be deployed                        ``true``                                          
-``graphAppKitPrivate``                             graph app kit private - determines if private dashboard is going to be deployed                      ``true``                                          
-``networkPolicy``                                  network policy for for deployment, this limits traffic                                               ``null``                                          
-``rollingUpdate``                                  rolling update deployment strategy switch                                                            ``false``                                         
-``sessionCookieAge``                               django session cookie timeout (seconds)                                                              ``"1209600"``                                     
-``jwtExpirationDelta``                             django drf-jwt, jwt token timeout (seconds)                                                          ``"3600"``                                        
-``enableDjangoSilk``                               ENABLE django silk - performance analysis library                                                    ``"False"``                                       
-``domain``                                         domain - set to a domain of your choosing                                                            ``null``                                          
-``tlsStaging``                                     set tlsStaging to true to enable use of LetsEncrypt staging environment                              ``false``                                         
-``tls``                                            set tls to true to enable use of LetsEncrypt TLS                                                     ``false``                                         
-``tlsEmail``                                       email to send tls notifications to                                                                   ``""``                                            
-``longhornDashboard``                              enables longhorn dashboard - needs longhorn installed                                                ``false``                                         
-``cuda.version``                                   cuda version                                                                                         ``"11.4"``                                        
-``caddy.repository``                               caddy repository name                                                                                ``"caddy"``                                       
-``graphAppKit.repository``                         graph app kit repository name                                                                        ``"graph-app-kit-st"``                            
-``redis.repository``                               redis repository name                                                                                ``"redis"``                                       
-``redis.tag``                                      redis repository tag                                                                                 ``"6.2.7"``                                       
-``streamglviz.repository``                         streamgl-viz repository name                                                                         ``"streamgl-viz"``                                
-``streamglvizDev.repository``                      streamgl-viz-Dev repository name                                                                     ``"graphistry-viz-dev"``                          
-``nginx.repository``                               nginx repository name                                                                                ``"streamgl-nginx"``                              
-``nginxDev.repository``                            nginx repository name                                                                                ``"graphistry-nginx-dev"``                        
-``streamglvgraph.repository``                      streamgl-vgraph-etl repository name                                                                  ``"streamgl-vgraph-etl"``                         
-``streamglgpu.repository``                         streamgl-gpu repository name                                                                         ``"streamgl-gpu"``                                
-``streamglsessions.repository``                    streamgl-sessions repository name                                                                    ``"streamgl-sessions"``                           
-``pivot.repository``                               graphistry pivot repository name                                                                     ``"graphistry-pivot"``                            
-``pivotDev.repository``                            graphistry pivot dev repository                                                                      ``"graphistry-pivot-dev"``                        
-``notebook.repository``                            jupyter notebook repository name                                                                     ``"jupyter-notebook"``                            
-``nexus.repository``                               graphistry nexus repository name                                                                     ``"graphistry-nexus"``                            
-``nexusDev.repository``                            graphistry nexus dev repository name                                                                 ``"graphistry-nexus-dev"``                        
-``forgeetlpython.repository``                      forge-etl-python repository name                                                                     ``"etl-server-python"``                           
-``forgeetlpythonDev.repository``                   forge-etl-python dev repository name                                                                 ``"graphistry-forge-python-dev"``                 
-``forgeetl.repository``                            forge-etl repository name                                                                            ``"etl-server"``                                  
-``dask.workers``                                   sets the number of dask cuda workers                                                                 ``1``                                             
-``daskscheduler.repository``                       dask-scheduler repository name                                                                       ``"etl-server-python"``                           
-``daskscheduler.location``                         dask-scheduler location                                                                              ``"dask-scheduler:8786"``                         
-``daskcudaworker.repository``                      dask-cuda-worker repository name                                                                     ``"etl-server-python"``                           
-``forgeWorkers``                                   sets the number of forge workers recommend 1 per 4 GB GPU memory                                     ``"1"``                                           
-``forgeMemory``                                    sets the amount of memory to limit on forge etl python                                               ``"4Gi"``                                         
-``graphistryKey``                                  graphistry key for dev mode in pivot deployment                                                      ``null``                                          
-``global.provisioner``                             storage class provisioner.                                                                           ``"kubernetes.io/aws-ebs"``                       
-``global.multiNode``                               multinode selector switch to determine if going multi/single node                                    ``false``                                         
-``global.containerregistry.name``                  container registry name                                                                              ``"docker.io"``                                   
-``global.devMode``                                 dev mode for debugging with nexus, postgres and nginx                                                ``false``                                         
-``global.postgres.repository``                     postgres repository name                                                                             ``"graphistry-postgres"``                         
-``global.postgres.name``                           db name                                                                                              ``"graphistry"``                                  
-``global.postgres.user``                           db user                                                                                              ``"graphistry"``                                  
-``global.postgres.port``                           port for postgres service to listen on                                                               ``5432``                                          
-``global.postgres.host``                           hostname for postgres                                                                                ``"postgres"``                                    
-``global.tag``                                     tag for the docker image                                                                             ``"latest"``                                      
-``global.imagePullPolicy``                         image pull policy could also be Always                                                               ``"IfNotPresent"``                                
-``global.restartPolicy``                           restart policy                                                                                       ``"Always"``                                      
-``global.imagePullSecrets``                        image pull secrets name                                                                              ``[]``                                            
-``global.nodeSelector``                            node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}             ``null``                                          
-``global.logs.LogLevel``                           log level for the application                                                                        ``"INFO"``                                        
-``global.logs.GraphistryLogLevel``                 log level for graphistry                                                                             ``"INFO"``                                        
-``env``                                            environment variables                                                                                ``[{"name": "HOST", "value": "0.0.0.0"}, {"name": "AUTH_LDAP_BIND_PASSWORD", "value": "abc123xyz"}, {"name": "DJANGO_SECRET_KEY", "value": "abc123xyz"}, {"name": "LEGACY_API_KEY_CANARY", "value": "abc123xyz"}, {"name": "LEGACY_API_KEY_SECRET", "value": "abc123xyz"}, {"name": "DASK_DISTRIBUTED__WORKER__DAEMON", "value": "False"}, {"name": "CHUNK_DASK_CUDF_ROWS", "value": "500000"}, {"name": "DASK_CSV_BLOCKSIZE", "value": "64 MiB"}, {"name": "DASK_CUDF_CSV_CHUNKSIZE", "value": "64 MiB"}, {"name": "REMOTE_DASK_DIAGNOSTICS", "value": "dask-scheduler:8787"}, {"name": "AIR_GAPPED", "value": "0"}, {"name": "PIVOT_PORT", "value": "8080"}, {"name": "PORT", "value": "8080"}, {"name": "NODE_NO_WARNINGS", "value": "1"}, {"name": "USE_LOCAL_USER", "value": "false"}, {"name": "NODE_OPTIONS", "value": "--max-old-space-size=64000 --stack-trace-limit=20"}, {"name": "REDIS_URL", "value": "redis://redis:6379"}, {"name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0"}, {"name": "CELERY_FLOWER_PASSWORD", "value": "JPkK3b2ihuwAGLJ8AjE3aNRmEEvYm5jyCTVlqDbRzzOAMrZhyzJ3SfgnQZMrBBCw"}, {"name": "CELERY_FLOWER_USER", "value": "ATZpVOzzQgESuKVmUYQDoJwNqjvueLoP"}, {"name": "DJANGO_ADMIN_URL", "value": "admin/"}, {"name": "DJANGO_ALLOWED_HOSTS", "value": "*"}, {"name": "DJANGO_SECURE_SSL_REDIRECT", "value": "False"}, {"name": "GOOGLE_ANALYTICS_ID", "value": "UA-59712214-2"}, {"name": "IS_SIGNUPS_OPEN_AFTER_FIRST_DEFAULT", "value": "false"}, {"name": "IS_SOCIAL_AUTH_GITHUB_OPEN_DEFAULT", "value": "false"}, {"name": "IS_SOCIAL_AUTH_GOOGLE_OPEN_DEFAULT", "value": "false"}, {"name": "JWT_AUTH_COOKIE", "value": "graphistry_jwt"}, {"name": "REDIS_URL", "value": "redis://redis:6379/0"}, {"name": "USE_DOCKER", "value": "yes"}, {"name": "PIVOT_CONFIG_FILES", "value": "/opt/graphistry/apps/core/pivot/data/config/config.json"}, {"name": "CLEAR_LOCAL_DATASET_CACHE_ON_STARTUP", "value": "false"}, {"name": "CLEAR_LOCAL_SESSION_CACHE_ON_STARTUP", "value": "true"}, {"name": "FORGE_ETL_HOSTNAME", "value": "nginx"}, {"name": "FORGE_ETL_PATH", "value": "/api/v1/etl/"}, {"name": "FORGE_ETL_PORT", "value": "80"}, {"name": "GRAPH_PLAY_TIMEOUTMS", "value": "60000"}, {"name": "LOCAL_DATASET_CACHE", "value": "true"}, {"name": "LOCAL_DATASET_CACHE_DIR", "value": "/opt/graphistry/data"}, {"name": "LOCAL_SESSIONS_CACHE_DIR", "value": "/opt/graphistry/data"}, {"name": "LOCAL_WORKBOOK_CACHE", "value": "true"}, {"name": "LOCAL_WORKBOOK_CACHE_DIR", "value": "/opt/graphistry/data"}, {"name": "NGINX_HOST", "value": "nginx"}, {"name": "PM2_MAX_WORKERS", "value": "4"}, {"name": "STREAMGL_CPU_NUM_WORKERS", "value": "4"}, {"name": "STREAMGL_INACTIVITY_TIMEOUT_MS", "value": "30000"}, {"name": "STREAMGL_NUM_WORKERS", "value": "4"}, {"name": "UPLOAD_MAX_SIZE", "value": "1G"}, {"name": "ZIPKIN_ENABLED", "value": "false"}, {"name": "ACME_AGREE", "value": "true"}, {"name": "ENABLE_TELEMETRY", "value": "false"}]``
-``streamlitEnv``                                   graph-app-kit (streamlit) environment variables                                                      ``[{"name": "LOG_LEVEL", "value": "DEBUG"}, {"name": "BASE_PATH", "value": "dashboard/"}, {"name": "BASE_URL", "value": "http://localhost:8501/dashboard"}, {"name": "FAVICON_URL", "value": "https://hub.graphistry.com/pivot/favicon/favicon.ico"}, {"name": "USE_DOCKER", "value": "True"}, {"name": "ST_PUBLIC_PORT", "value": 8501}, {"name": "GRAPH_VIEWS", "value": "/apps/views"}, {"name": "COMPOSE_PROJECT_NAME", "value": null}, {"name": "VERSION_BASE", "value": "v2.32.4"}, {"name": "NEPTUNE_READER_PROTOCOL", "value": null}, {"name": "NEPTUNE_READER_HOST", "value": null}, {"name": "NEPTUNE_READER_PORT", "value": null}, {"name": "NEPTUNE_KEY_PATH", "value": null}, {"name": "NEPTUNE_TUNNEL_HOST", "value": null}, {"name": "NEPTUNE_TUNNEL_USER", "value": null}, {"name": "TIGERGRAPH_HOST", "value": null}, {"name": "TIGERGRAPH_USERNAME", "value": null}, {"name": "TIGERGRAPH_PASSWORD", "value": null}, {"name": "TIGERGRAPH_GRAPHNAME", "value": null}, {"name": "TIGERGRAPH_SECRET", "value": null}]``
-================================================== ==================================================================================================== ==================================================
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
+
+   * - Parameter
+     - Description
+     - Default
+
+
+
+   * - ``ingress.management.annotations``                
+     - ingress management - determines if ingress is going to be on internal load balance                  
+     - ``null``                                          
+
+
+
+   * - ``graphistry``                                    
+     - graphistry tag for the docker image                                                                 
+     - ``"graphistry"``                                  
+
+
+
+   * - ``volumeName.dataMount``                          
+     - data-mount pvc volume name                                                                          
+     - ``null``                                          
+
+
+
+   * - ``volumeName.localMediaMount``                    
+     - local-media-mount pvc volume name                                                                   
+     - ``null``                                          
+
+
+
+   * - ``volumeName.gakPublic``                          
+     - gak-public pvc volume name                                                                          
+     - ``null``                                          
+
+
+
+   * - ``volumeName.gakPrivate``                         
+     - data-mount pvc volume name                                                                          
+     - ``null``                                          
+
+
+
+   * - ``ingressNamespace``                              
+     - the namespace of the ingress controller                                                             
+     - ``"ingress-nginx"``                               
+
+
+
+   * - ``CaddyResources``                                
+     - Resources for the Caddy pod                                                                         
+     - ``{}``                                            
+
+
+
+   * - ``DaskSchedulerResources``                        
+     - Resources for the Dask Scheduler pod                                                                
+     - ``{}``                                            
+
+
+
+   * - ``DaskWorkerResources``                           
+     - Resources for the Dask worker pod                                                                   
+     - ``{}``                                            
+
+
+
+   * - ``ForgeETLPythonResources``                       
+     - Resources for the Forge ETL python pod                                                              
+     - ``{}``                                            
+
+
+
+   * - ``GAKResources``                                  
+     - Resources for the graph app kit pods                                                                
+     - ``{}``                                            
+
+
+
+   * - ``NexusResources``                                
+     - Resources for the nexus pod                                                                         
+     - ``{}``                                            
+
+
+
+   * - ``NginxResources``                                
+     - Resources for the nginx pod                                                                         
+     - ``{}``                                            
+
+
+
+   * - ``InitContainerResources``                        
+     - Resources for the notebook pod                                                                      
+     - ``{}``                                            
+
+
+
+   * - ``NotebookResources``                             
+     - Resources for the notebook pod                                                                      
+     - ``{}``                                            
+
+
+
+   * - ``PivotResources``                                
+     - Resources for the pivot pod                                                                         
+     - ``{}``                                            
+
+
+
+   * - ``RedisResources``                                
+     - Resources for the redis pod                                                                         
+     - ``{}``                                            
+
+
+
+   * - ``StreamglGpuResources``                          
+     - Resources for the streamgl gpu pod                                                                  
+     - ``{}``                                            
+
+
+
+   * - ``StreamglSessionsResources``                     
+     - Resources for the streamgl sessions pod                                                             
+     - ``{}``                                            
+
+
+
+   * - ``StreamglVizResources``                          
+     - Resources for the streamgl viz pod                                                                  
+     - ``{}``                                            
+
+
+
+   * - ``maxSurge``                                      
+     - max surge of pods in rolling updates                                                                
+     - ``"10%"``                                         
+
+
+
+   * - ``fwdHeaders``                                    
+     - forwards backend proxy's headers to ingress controller                                              
+     - ``false``                                         
+
+
+
+   * - ``httpTesting``                                   
+     - for testing purposes only - used to do http testing on ingress and nginx/caddy                      
+     - ``false``                                         
+
+
+
+   * - ``nodeEnv``                                       
+     - sets the Node environment - set to development in dev mode                                          
+     - ``"production"``                                  
+
+
+
+   * - ``appEnvironment``                                
+     - sets the appEnvironment for nexus - set to development in dev mode                                  
+     - ``"production"``                                  
+
+
+
+   * - ``djangoSettingsModule``                          
+     - Sets the django settings - set to config.settings.dev in dev mode                                   
+     - ``"config.settings.production"``                  
+
+
+
+   * - ``graphistryCPUMode``                             
+     - sets graphistry to cpu mode - to be used in dev mode set to 1                                       
+     - ``"0"``                                           
+
+
+
+   * - ``djangoDebug``                                   
+     - sets django in debug mode set to true in dev mode                                                   
+     - ``"False"``                                       
+
+
+
+   * - ``nginxPorts.portOne``                            
+     - port for nginx service to listen on                                                                 
+     - ``80``                                            
+
+
+
+   * - ``nginxPorts.portTwo``                            
+     - port for nginx service to listen on                                                                 
+     - ``443``                                           
+
+
+
+   * - ``metrics``                                       
+     - enables metrics for prometheus - must have kube-prometheus-stack installed                          
+     - ``false``                                         
+
+
+
+   * - ``nexusPort.portOne``                             
+     - ports for nexus service to listen on                                                                
+     - ``8000``                                          
+
+
+
+   * - ``nexusPort.portTwo``                             
+     - ports for nexus service to listen on                                                                
+     - ``8080``                                          
+
+
+
+   * - ``graphAppKitPublic``                             
+     - graph app kit public - determines if public dashboard is going to be deployed                       
+     - ``true``                                          
+
+
+
+   * - ``graphAppKitPrivate``                            
+     - graph app kit private - determines if private dashboard is going to be deployed                     
+     - ``true``                                          
+
+
+
+   * - ``networkPolicy``                                 
+     - network policy for for deployment, this limits traffic                                              
+     - ``null``                                          
+
+
+
+   * - ``rollingUpdate``                                 
+     - rolling update deployment strategy switch                                                           
+     - ``false``                                         
+
+
+
+   * - ``sessionCookieAge``                              
+     - django session cookie timeout (seconds)                                                             
+     - ``"1209600"``                                     
+
+
+
+   * - ``jwtExpirationDelta``                            
+     - django drf-jwt, jwt token timeout (seconds)                                                         
+     - ``"3600"``                                        
+
+
+
+   * - ``enableDjangoSilk``                              
+     - ENABLE django silk - performance analysis library                                                   
+     - ``"False"``                                       
+
+
+
+   * - ``domain``                                        
+     - domain - set to a domain of your choosing                                                           
+     - ``null``                                          
+
+
+
+   * - ``tlsStaging``                                    
+     - set tlsStaging to true to enable use of LetsEncrypt staging environment                             
+     - ``false``                                         
+
+
+
+   * - ``tls``                                           
+     - set tls to true to enable use of LetsEncrypt TLS                                                    
+     - ``false``                                         
+
+
+
+   * - ``tlsEmail``                                      
+     - email to send tls notifications to                                                                  
+     - ``""``                                            
+
+
+
+   * - ``longhornDashboard``                             
+     - enables longhorn dashboard - needs longhorn installed                                               
+     - ``false``                                         
+
+
+
+   * - ``cuda.version``                                  
+     - cuda version                                                                                        
+     - ``"12.8"``                                        
+
+
+
+   * - ``caddy.repository``                              
+     - caddy repository name                                                                               
+     - ``"caddy"``                                       
+
+
+
+   * - ``graphAppKit.repository``                        
+     - graph app kit repository name                                                                       
+     - ``"graph-app-kit-st"``                            
+
+
+
+   * - ``redis.repository``                              
+     - redis repository name                                                                               
+     - ``"redis"``                                       
+
+
+
+   * - ``redis.tag``                                     
+     - redis repository tag                                                                                
+     - ``"6.2.7"``                                       
+
+
+
+   * - ``streamglviz.repository``                        
+     - streamgl-viz repository name                                                                        
+     - ``"streamgl-viz"``                                
+
+
+
+   * - ``streamglvizDev.repository``                     
+     - streamgl-viz-Dev repository name                                                                    
+     - ``"graphistry-viz-dev"``                          
+
+
+
+   * - ``nginx.repository``                              
+     - nginx repository name                                                                               
+     - ``"streamgl-nginx"``                              
+
+
+
+   * - ``nginxDev.repository``                           
+     - nginx repository name                                                                               
+     - ``"graphistry-nginx-dev"``                        
+
+
+
+   * - ``streamglgpu.repository``                        
+     - streamgl-gpu repository name                                                                        
+     - ``"streamgl-gpu"``                                
+
+
+
+   * - ``streamglsessions.repository``                   
+     - streamgl-sessions repository name                                                                   
+     - ``"streamgl-sessions"``                           
+
+
+
+   * - ``pivot.repository``                              
+     - graphistry pivot repository name                                                                    
+     - ``"graphistry-pivot"``                            
+
+
+
+   * - ``pivotDev.repository``                           
+     - graphistry pivot dev repository                                                                     
+     - ``"graphistry-pivot-dev"``                        
+
+
+
+   * - ``notebook.repository``                           
+     - jupyter notebook repository name                                                                    
+     - ``"jupyter-notebook"``                            
+
+
+
+   * - ``nexus.repository``                              
+     - graphistry nexus repository name                                                                    
+     - ``"graphistry-nexus"``                            
+
+
+
+   * - ``ForgeMaxFileWait``                              
+     - milliseconds to wait for file creation                                                              
+     - ``"10000"``                                       
+
+
+
+   * - ``FepDevMode``                                    
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``HypercornOpts``                                 
+     -                                                                                                     
+     - ``null``                                          
+
+
+
+   * - ``nexusDev.repository``                           
+     - graphistry nexus dev repository name                                                                
+     - ``"graphistry-nexus-dev"``                        
+
+
+
+   * - ``forgeetlpython.repository``                     
+     - forge-etl-python repository name                                                                    
+     - ``"etl-server-python"``                           
+
+
+
+   * - ``forgeetlpythonDev.repository``                  
+     - forge-etl-python dev repository name                                                                
+     - ``"graphistry-forge-python-dev"``                 
+
+
+
+   * - ``dask.workers``                                  
+     - sets the number of dask cuda workers                                                                
+     - ``1``                                             
+
+
+
+   * - ``dask.operator``                                 
+     - enables dask operator                                                                               
+     - ``false``                                         
+
+
+
+   * - ``daskscheduler.repository``                      
+     - dask-scheduler repository name                                                                      
+     - ``"etl-server-python"``                           
+
+
+
+   * - ``daskscheduler.location``                        
+     - dask-scheduler location                                                                             
+     - ``"dask-scheduler:8786"``                         
+
+
+
+   * - ``vgpu``                                          
+     - enables vgpu mode for bigger than memory workloads on VGPU                                          
+     - ``false``                                         
+
+
+
+   * - ``daskcudaworker.repository``                     
+     - dask-cuda-worker repository name                                                                    
+     - ``"etl-server-python"``                           
+
+
+
+   * - ``forgeWorkers``                                  
+     - sets the number of forge workers recommend 1 per 4 GB GPU memory                                    
+     - ``"1"``                                           
+
+
+
+   * - ``ProxyBodySize``                                 
+     - sets the proxy body size for ingress controller and uploads to 20 GB                                
+     - ``"20000m"``                                      
+
+
+
+   * - ``graphistryKey``                                 
+     - graphistry key for dev mode in pivot deployment                                                     
+     - ``null``                                          
+
+
+
+   * - ``global.ingressClassName``                       
+     -                                                                                                     
+     - ``"nginx"``                                       
+
+
+
+   * - ``global.provisioner``                            
+     -                                                                                                     
+     - ``"kubernetes.io/aws-ebs"``                       
+
+
+
+   * - ``global.storageClassNameOverride``               
+     -                                                                                                     
+     - ``""``                                            
+
+
+
+   * - ``global.multiNode``                              
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``global.containerregistry.name``                 
+     -                                                                                                     
+     - ``"docker.io/graphistry"``                        
+
+
+
+   * - ``global.devMode``                                
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``global.postgres.repository``                    
+     -                                                                                                     
+     - ``"graphistry-postgres"``                         
+
+
+
+   * - ``global.postgres.name``                          
+     -                                                                                                     
+     - ``"graphistry"``                                  
+
+
+
+   * - ``global.postgres.user``                          
+     -                                                                                                     
+     - ``"graphistry"``                                  
+
+
+
+   * - ``global.postgres.port``                          
+     -                                                                                                     
+     - ``5432``                                          
+
+
+
+   * - ``global.postgres.host``                          
+     -                                                                                                     
+     - ``"postgres"``                                    
+
+
+
+   * - ``global.tag``                                    
+     -                                                                                                     
+     - ``"v2.45.11"``                                    
+
+
+
+   * - ``global.imagePullPolicy``                        
+     -                                                                                                     
+     - ``"IfNotPresent"``                                
+
+
+
+   * - ``global.restartPolicy``                          
+     -                                                                                                     
+     - ``"Always"``                                      
+
+
+
+   * - ``global.imagePullSecrets``                       
+     -                                                                                                     
+     - ``[]``                                            
+
+
+
+   * - ``global.nodeSelector``                           
+     -                                                                                                     
+     - ``{}``                                            
+
+
+
+   * - ``global.logs.LogLevel``                          
+     -                                                                                                     
+     - ``"INFO"``                                        
+
+
+
+   * - ``global.logs.GraphistryLogLevel``                
+     -                                                                                                     
+     - ``"INFO"``                                        
+
+
+
+   * - ``global.ENABLE_OPEN_TELEMETRY``                  
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``global.OTEL_EXPORTER_OTLP_ENDPOINT``            
+     -                                                                                                     
+     - ``"http://otel-collector:4317"``                  
+
+
+
+   * - ``global.OTEL_EXPORTER_OTLP_TIMEOUT``             
+     -                                                                                                     
+     - ``"60000"``                                       
+
+
+
+   * - ``global.OTEL_EXPORTER_OTLP_TRACES_TIMEOUT``      
+     -                                                                                                     
+     - ``"60000"``                                       
+
+
+
+   * - ``global.OTEL_EXPORTER_OTLP_METRICS_TIMEOUT``     
+     -                                                                                                     
+     - ``"60000"``                                       
+
+
+
+   * - ``global.OTEL_EXPORTER_OTLP_LOGS_TIMEOUT``        
+     -                                                                                                     
+     - ``"60000"``                                       
+
+
+
+   * - ``global.OT_METRIC_EXPORT_INTERVAL``              
+     -                                                                                                     
+     - ``"60000"``                                       
+
+
+
+   * - ``global.OT_METRIC_EXPORT_TIMEOUT``               
+     -                                                                                                     
+     - ``"30000"``                                       
+
+
+
+   * - ``global.ENABLE_CLUSTER_MODE``                    
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``global.IS_FOLLOWER``                            
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``global.GRAPHISTRY_INSTANCE_NAME``               
+     -                                                                                                     
+     - ``"leader"``                                      
+
+
+
+   * - ``global.POSTGRES_HOST``                          
+     -                                                                                                     
+     - ``"postgres"``                                    
+
+
+
+   * - ``global.REDIS_URL``                              
+     -                                                                                                     
+     - ``"redis://redis:6379"``                          
+
+
+
+   * - ``global.REDIS_URL_NEXUS_FEP``                    
+     - e.g. use for entitlements GPU metrics                                                               
+     - ``"redis://redis:6379"``                          
+
+
+
+   * - ``env``                                           
+     - environment variables                                                                               
+     - ``[{"name": "HOST", "value": "0.0.0.0"}, {"name": "AUTH_LDAP_BIND_PASSWORD", "value": "abc123xyz"}, {"name": "DJANGO_SECRET_KEY", "value": "abc123xyz"}, {"name": "LEGACY_API_KEY_CANARY", "value": "abc123xyz"}, {"name": "LEGACY_API_KEY_SECRET", "value": "abc123xyz"}, {"name": "DASK_DISTRIBUTED__WORKER__DAEMON", "value": "False"}, {"name": "CHUNK_DASK_CUDF_ROWS", "value": "500000"}, {"name": "DASK_CSV_BLOCKSIZE", "value": "64 MiB"}, {"name": "DASK_CUDF_CSV_CHUNKSIZE", "value": "64 MiB"}, {"name": "REMOTE_DASK_DIAGNOSTICS", "value": "dask-scheduler:8787"}, {"name": "AIR_GAPPED", "value": "0"}, {"name": "PIVOT_PORT", "value": "8080"}, {"name": "PORT", "value": "8080"}, {"name": "NODE_NO_WARNINGS", "value": "1"}, {"name": "USE_LOCAL_USER", "value": "false"}, {"name": "NODE_OPTIONS", "value": "--max-old-space-size=64000 --stack-trace-limit=20"}, {"name": "NODE_TLS_REJECT_UNAUTHORIZED", "value": "0"}, {"name": "CELERY_FLOWER_PASSWORD", "value": "JPkK3b2ihuwAGLJ8AjE3aNRmEEvYm5jyCTVlqDbRzzOAMrZhyzJ3SfgnQZMrBBCw"}, {"name": "CELERY_FLOWER_USER", "value": "ATZpVOzzQgESuKVmUYQDoJwNqjvueLoP"}, {"name": "DJANGO_ADMIN_URL", "value": "admin/"}, {"name": "DJANGO_ALLOWED_HOSTS", "value": "*"}, {"name": "DJANGO_SECURE_SSL_REDIRECT", "value": "False"}, {"name": "GOOGLE_ANALYTICS_ID", "value": "UA-59712214-2"}, {"name": "IS_SIGNUPS_OPEN_AFTER_FIRST_DEFAULT", "value": "false"}, {"name": "IS_SOCIAL_AUTH_GITHUB_OPEN_DEFAULT", "value": "false"}, {"name": "IS_SOCIAL_AUTH_GOOGLE_OPEN_DEFAULT", "value": "false"}, {"name": "JWT_AUTH_COOKIE", "value": "graphistry_jwt"}, {"name": "USE_DOCKER", "value": "yes"}, {"name": "PIVOT_CONFIG_FILES", "value": "/opt/graphistry/apps/core/pivot/data/config/config.json"}, {"name": "CLEAR_LOCAL_DATASET_CACHE_ON_STARTUP", "value": "false"}, {"name": "CLEAR_LOCAL_SESSION_CACHE_ON_STARTUP", "value": "true"}, {"name": "FORGE_ETL_HOSTNAME", "value": "nginx"}, {"name": "FORGE_ETL_PATH", "value": "/api/v1/etl/"}, {"name": "FORGE_ETL_PORT", "value": "80"}, {"name": "GRAPH_PLAY_TIMEOUTMS", "value": "60000"}, {"name": "LOCAL_DATASET_CACHE", "value": "true"}, {"name": "LOCAL_DATASET_CACHE_DIR", "value": "/opt/graphistry/data"}, {"name": "LOCAL_SESSIONS_CACHE_DIR", "value": "/opt/graphistry/data"}, {"name": "LOCAL_WORKBOOK_CACHE", "value": "true"}, {"name": "LOCAL_WORKBOOK_CACHE_DIR", "value": "/opt/graphistry/data"}, {"name": "NGINX_HOST", "value": "nginx"}, {"name": "PM2_MAX_WORKERS", "value": "4"}, {"name": "STREAMGL_CPU_NUM_WORKERS", "value": "4"}, {"name": "STREAMGL_INACTIVITY_TIMEOUT_MS", "value": "30000"}, {"name": "STREAMGL_NUM_WORKERS", "value": "4"}, {"name": "UPLOAD_MAX_SIZE", "value": "1G"}, {"name": "ZIPKIN_ENABLED", "value": "false"}, {"name": "ACME_AGREE", "value": "true"}]``
+
+
+
+   * - ``streamlitEnv``                                  
+     - graph-app-kit (streamlit) environment variables                                                     
+     - ``[{"name": "LOG_LEVEL", "value": "DEBUG"}, {"name": "BASE_PATH", "value": "dashboard/"}, {"name": "BASE_URL", "value": "http://localhost:8501/dashboard"}, {"name": "FAVICON_URL", "value": "https://hub.graphistry.com/pivot/favicon/favicon.ico"}, {"name": "USE_DOCKER", "value": "True"}, {"name": "ST_PUBLIC_PORT", "value": 8501}, {"name": "GRAPH_VIEWS", "value": "/apps/views"}, {"name": "COMPOSE_PROJECT_NAME", "value": null}, {"name": "VERSION_BASE", "value": "v2.32.4"}, {"name": "NEPTUNE_READER_PROTOCOL", "value": null}, {"name": "NEPTUNE_READER_HOST", "value": null}, {"name": "NEPTUNE_READER_PORT", "value": null}, {"name": "NEPTUNE_KEY_PATH", "value": null}, {"name": "NEPTUNE_TUNNEL_HOST", "value": null}, {"name": "NEPTUNE_TUNNEL_USER", "value": null}, {"name": "TIGERGRAPH_HOST", "value": null}, {"name": "TIGERGRAPH_USERNAME", "value": null}, {"name": "TIGERGRAPH_PASSWORD", "value": null}, {"name": "TIGERGRAPH_GRAPHNAME", "value": null}, {"name": "TIGERGRAPH_SECRET", "value": null}]``
+
 
 See :doc:`values-override` for more details on how to configure the chart. 
 
 
 
+----
+
+Documentation generated by Frigate_.
+
+.. _Frigate: https://frigate.readthedocs.io
 
 

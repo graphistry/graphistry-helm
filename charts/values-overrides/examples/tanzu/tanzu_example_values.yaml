@@ -1,0 +1,69 @@
+# Tanzu Kubernetes Grid (TKG) Example Values for Graphistry
+# Based on vSphere CSI storage provisioner
+
+tls: false
+fwdHeaders: true
+
+networkPolicy:
+  strict: false
+
+ingress:
+  management:
+    annotations:
+      kubernetes.io/ingress.class: nginx
+
+ingressNamespace: ingress-nginx
+
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
+global:
+  # Ingress class - change to "traefik" if using Traefik ingress controller
+  ingressClassName: nginx
+
+  # vSphere CSI storage provisioner for Tanzu
+  provisioner: csi.vsphere.vmware.com
+
+  # Override the StorageClass name used by all PVCs (data-mount, local-media, gak-public,
+  # gak-private, uploads-files, and postgres volumes). The StorageClass must be pre-created
+  # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  # Example: storageClassNameOverride: "vsphere-sc"
+  storageClassNameOverride: "vsphere-sc"
+
+  # Node selector for GPU nodes
+  # Check available labels with: kubectl get nodes --show-labels
+  # Common Tanzu/vSphere GPU node labels:
+  #   nvidia.com/gpu.present: "true"           # Set by NVIDIA GPU Operator
+  #   node-role.kubernetes.io/gpu: "true"       # Custom label set by admin
+  nodeSelector:
+    nvidia.com/gpu.present: "true"
+
+  # Graphistry version
+  tag: v2.45.11
+
+  # Image settings
+  imagePullPolicy: Always
+  imagePullSecrets:
+    - name: docker-secret-prod
+
+  # Telemetry: https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
+  ENABLE_OPEN_TELEMETRY: true
+
+  # Telemetry stack configuration
+  # Documentation: https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
+  telemetryStack:
+    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+    openTelemetryCollector:
+      OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+      OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
+      OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
+    grafana:
+      GF_SERVER_ROOT_URL: "/grafana"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    dcgmExporter:
+      DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
+
+postgresVolumeLabel: graphistry-postgres

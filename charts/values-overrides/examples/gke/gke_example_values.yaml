@@ -1,0 +1,73 @@
+# GKE Example Values for Graphistry
+
+tls: false
+fwdHeaders: true
+
+networkPolicy:
+  strict: false
+
+ingress:
+  management:
+    annotations:
+      kubernetes.io/ingress.class: nginx
+
+ingressNamespace: ingress-nginx
+
+graphistryResources:
+  storageClassParameters:
+    pd.csi.storage.gke.io/fstype: ext4
+
+k8sDashboard:
+  enabled: true
+  readonly: false
+  createServiceAccount: false
+
+cuda:
+  version: "12.8"
+
+global:
+  # GKE storage provisioner
+  provisioner: pd.csi.storage.gke.io
+
+  # Override the StorageClass name used by all PVCs (data-mount, local-media, gak-public,
+  # gak-private, uploads-files, and postgres volumes). The StorageClass must be pre-created
+  # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  # Example: storageClassNameOverride: "vsphere-sc"
+  storageClassNameOverride: ""
+
+  # Node selector for GPU nodes
+  nodeSelector:
+    nvidia.com/gpu.present: "true"
+
+  # Graphistry version
+  tag: v2.45.11
+
+  # Image settings
+  imagePullPolicy: Always
+  imagePullSecrets:
+    - name: docker-secret-prod
+
+  # Log levels: INFO (default), DEBUG, TRACE (for troubleshooting)
+  logs:
+      LogLevel: INFO
+      GraphistryLogLevel: INFO
+
+  # Telemetry: https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
+  ENABLE_OPEN_TELEMETRY: true
+
+  # Telemetry stack configuration
+  # Documentation: https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
+  telemetryStack:
+    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+    openTelemetryCollector:
+      OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""   # e.g. Grafana OTLP HTTP endpoint for Graphistry Hub https://otlp-gateway-prod-us-east-0.grafana.net/otlp
+      OTEL_COLLECTOR_OTLP_USERNAME: ""   # e.g. Grafana Cloud Instance ID for OTLP
+      OTEL_COLLECTOR_OTLP_PASSWORD: ""   # e.g. Grafana Cloud API Token for OTLP
+    grafana:
+      GF_SERVER_ROOT_URL: "/grafana"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+    dcgmExporter:
+      DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000  # milliseconds
+
+postgresVolumeLabel: graphistry-postgres

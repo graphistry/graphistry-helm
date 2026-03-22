@@ -1,102 +1,95 @@
 
-Configuring the Override
-========================
+Configuring Values
+==================
 
-The values.yaml is a cluster-wide configuration file.  It is used to configure the default values for all the charts in the cluster.
-The values.yaml file is a hierarchical file.  
-The values at the top of the file are chart specific and will only be applied to the chart they are associated with.  
-The values at the bottom of the file are are global and will be applied to all charts.
-The Charts are organized as "sibling charts" so the values can be applied and overridden at the chart level with the values in a section named after the corresponding Helm Chart.
+The ``values.yaml`` is a configuration file used to customize the Helm chart deployment. It supports hierarchical overrides: values at the top of the file are chart-specific, while values under ``global:`` are shared across all charts.
 
-Here is an example of a values.yaml for all of the individual services taken from a AWS EKS deployment:
+It is recommended to create a values override file rather than modifying the chart's default ``values.yaml`` directly. Platform-specific examples are available:
 
-    .. code-block:: yaml
+- `k3s example <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/k3s>`_
+- `GKE example <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke>`_
+- `Tanzu example <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/tanzu>`_
+- `Cluster (multinode) example <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/cluster>`_
 
-        ##values for graphistry-helm
-        domain: your-site.com 
-        tlsEmail: "admin@your-site.com" 
-        tls: true
-        metrics: true
-        fwdHeaders: true
-        volumeName:
-            dataMount: pvc-91ac0b15-f7c9-471c-a00d-ab6dfb59885f
-            localMediaMount: pvc-89de61bf-2d96-4613-9a24-fb19a93d2c43
-            gakPublic: pvc-97b39989-9cfa-4058-b489-fbcab0c3dc7f
-            gakPrivate: pvc-9afe0118-e483-4b90-85a5-79a7181071e5
+Example Values File
+-------------------
 
-        ##values for graphistry-resources
-        graphistryResources:
-            storageClassParameters:
-                csi.storage.k8s.io/fstype: ext4
-                type: gp2
+Below is an example ``values.yaml`` for a single-node deployment:
 
-        ##values for kubernetes dashboard
+.. code-block:: yaml
 
-        k8sDashboard:
-            enabled: true
-            readonly: false
-            createServiceAccount: false  ## createServiceAccount: true only on initial deployment
+    tls: false
+    fwdHeaders: true
 
-        ##values for grafana
+    networkPolicy:
+      strict: false
+
+    ingress:
+      management:
+        annotations:
+          kubernetes.io/ingress.class: nginx
+
+    ingressNamespace: ingress-nginx
+
+    k8sDashboard:
+      enabled: true
+      readonly: false
+      createServiceAccount: false
+
+    global:
+      ingressClassName: nginx
+      provisioner: <your-csi-provisioner>
+
+      # Override the StorageClass name used by all PVCs.
+      # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+      # Example: storageClassNameOverride: "vsphere-sc"
+      storageClassNameOverride: ""
+
+      nodeSelector:
+        nvidia.com/gpu.present: "true"
+
+      tag: v2.45.11
+      imagePullPolicy: Always
+      imagePullSecrets:
+        - name: docker-secret-prod
+
+      # Telemetry
+      ENABLE_OPEN_TELEMETRY: true
+      telemetryStack:
+        OTEL_CLOUD_MODE: false
+        openTelemetryCollector:
+          OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT: ""
+          OTEL_COLLECTOR_OTLP_USERNAME: ""
+          OTEL_COLLECTOR_OTLP_PASSWORD: ""
         grafana:
-            grafana.ini:
-                server:
-                    domain: your-site.com
-                    root_url: https://your-site.com/k8s/grafana
-                    serve_from_sub_path: true
-                auth.anonymous:
-                    enabled: true
+          GF_SERVER_ROOT_URL: "/grafana"
+          GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+        dcgmExporter:
+          DCGM_EXPORTER_CLOCK_EVENTS_COUNT_WINDOW_SIZE: 1000
 
-        ##values for prometheus
-        prometheus:
-            prometheusSpec:
-                serviceMonitorSelectorNilUsesHelmValues: false
+Deploy with:
 
-        ##values for ingress-nginx ingress controller when prometheus is installed
-        ingress-nginx:
-            controller:
-                metrics:
-                enabled: true 
-                serviceMonitor:
-                    enabled: true 
-                    additionalLabels:
-                    release: "prometheus"
+.. code-block:: shell-session
 
-        ##values for cert-manager
-        cert-manager: #defined by either the name or alias of your dependency in Chart.yaml
-            namespace: cert-manager
-            installCRDs: true
-            createCustomResource: true
-            
-        ##values for global    
-        global:
-            provisioner: ebs.csi.aws.com
-            tag: v2.39.28-admin
-            nodeSelector: {"kubernetes.io/hostname": "ip-171-00-00-0.us-west-2.compute.internal"}
-            logs:
-              LogLevel: "TRACE"
-                  GraphistryLogLevel: "TRACE"
-            imagePullPolicy: Always
-            imagePullSecrets: 
-              - name: docker-secret-prod
-
-If you're deploying Graphistry on Google Kubernetes Engine (GKE), you can override values for GKE-specific configurations.  For detailed examples and guidance, refer to the `Deploy a Graphistry K8s cluster using GKE <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke>`_.
+    helm upgrade -i g-chart ./charts/graphistry-helm \
+        --namespace graphistry --create-namespace \
+        --values ./your-values.yaml
 
 Mandatory Values
 ----------------
 
-Some of the global values are mandatory to work correctly.  These are:
+The following values must be set for a working deployment:
 
-* **global.imagePullSecrets**
-* **global.provisioner**
-* **global.nodeSelector**
-* **graphistryResources.storageClassParameters**
-* **global.tag**
+* **global.imagePullSecrets** -- Docker registry credentials for pulling Graphistry images
+* **global.provisioner** -- CSI storage provisioner for your platform (e.g., ``rancher.io/local-path``, ``pd.csi.storage.gke.io``)
+* **global.nodeSelector** -- Label selector to schedule pods on GPU nodes
+* **global.tag** -- Graphistry version tag (e.g., ``v2.45.11``)
 
+Optional but Recommended
+-------------------------
 
+* **global.storageClassNameOverride** -- Use a pre-existing StorageClass instead of the default ``retain-sc``. See :doc:`configure-storageclass`.
+* **global.ENABLE_OPEN_TELEMETRY** -- Enable the OpenTelemetry telemetry stack (Grafana, Prometheus, Jaeger). See `Telemetry Documentation <https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html>`_.
+* **global.telemetryStack.OTEL_CLOUD_MODE** -- Set to ``true`` to export telemetry to an external backend (e.g., Grafana Cloud) instead of deploying a local stack.
 
-For more information on configuration options for each chart, see the Configuration section in each corresponding chapter.
-
-
-
-
+For the full list of configurable parameters, see :doc:`graphistry-helm-docs`.

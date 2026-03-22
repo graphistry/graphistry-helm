@@ -48,83 +48,354 @@ Configuration
 
 The following table lists the configurable parameters of the Postgrescluster chart and their default values.
 
-================================================== ==================================================================================================== ==================================================
-Parameter                                          Description                                                                                          Default
-================================================== ==================================================================================================== ==================================================
-``global.provisioner``                             storage class provisioner                                                                            ``"kubernetes.io/aws-ebs"``                       
-``global.multiNode``                               multinode selector switch to determine if going multi/single node                                    ``false``                                         
-``global.containerregistry.name``                                                                                                                       ``"acrgraphistryk8s.azurecr.io"``                 
-``global.devMode``                                 dev mode for debugging with nexus, postgres and nginx                                                ``false``                                         
-``global.postgres.repository``                     postgres repository name                                                                             ``"graphistry-postgres"``                         
-``global.postgres.name``                           postgres db name                                                                                     ``"graphistry"``                                  
-``global.postgres.user``                           postgres db user                                                                                     ``"graphistry"``                                  
-``global.postgres.port``                           port for postgres service to listen on                                                               ``5432``                                          
-``global.postgres.host``                           hostname for postgres                                                                                ``"postgres"``                                    
-``global.tag``                                     tag for the docker image                                                                             ``"latest"``                                      
-``global.imagePullPolicy``                         image pull policy could also be Always                                                               ``"IfNotPresent"``                                
-``global.restartPolicy``                           restart policy                                                                                       ``"Always"``                                      
-``global.imagePullSecrets``                        image pull secrets name                                                                              ``[]``                                            
-``global.nodeSelector``                            node selector to determine which node to deploy cluster to                                           ``null``                                          
-``global.logs.LogLevel``                                                                                                                                ``"INFO"``                                        
-``global.logs.GraphistryLogLevel``                                                                                                                      ``"INFO"``                                        
-``global.postgresVolumeLabel``                     postgres volume label                                                                                ``null``                                          
-================================================== ==================================================================================================== ==================================================
+.. list-table::
+   :header-rows: 1
+   :stub-columns: 1
 
-The following table lists the configurable parameters of the Postgres cluster and their default values.  These settings control various aspects of the Postgres cluster, including storage, replication, backups, and resource allocation.
+   * - Parameter
+     - Description
+     - Default
 
-For ``postgresCluster.instance1.*`` (e.g. ``postgresCluster.instance1.dataVolumeClaimSpec.resources.requests.storage``):
 
-==================================================== ========================================== ==========
-Parameter                                            Description                                Default
-==================================================== ========================================== ==========
-``.dataVolumeClaimSpec.resources.requests.storage``  Storage request for the Postgres instance. ``10Gi``                                       
-==================================================== ========================================== ==========
 
-For ``postgresCluster.patroni.*`` (e.g. ``postgresCluster.patroni.dynamicConfiguration.postgresql.pg_hba``):
+   * - ``global.ENABLE_CLUSTER_MODE``                    
+     -                                                                                                     
+     - ``false``                                         
 
-=========================================== ========================================================= ======================================
-Parameter                                   Description                                               Default
-=========================================== ========================================================= ======================================
-``.dynamicConfiguration.postgresql.pg_hba`` List of PostgreSQL `pg_hba` entries for auth/replication. ``host all all 0.0.0.0/0 trust``
-                                                                                                      ``host all postgres 127.0.0.1/32 md5``
-=========================================== ========================================================= ======================================
 
-For ``backups.pgbackrest.*`` (e.g. ``backups.pgbackrest.global.repo1-bundle-size``):
 
-================================================================== ================================================= ==================
-Parameter                                                          Description                                       Default
-================================================================== ================================================= ==================
-``.global.repo1-bundle-size``                                      Maximum size for each backup bundle.              ``1G``
-``.global.repo1-bundle-limit``                                     Limit on the number of backup bundles to keep.    ``15``
-``.global.repo1-retention-full``                                   Retention policy for full backups.                ``5``
-``.global.repo1-retention-archive``                                Retention policy for archive logs.                ``10``
-``.global.repo1-retention-diff``                                   Retention policy for differential backups.        ``7``
-``.repoHost.resources.requests.cpu``                               CPU request for the backup repository host.       ``200m``
-``.repoHost.resources.requests.memory``                            Memory request for the backup repository host.    ``256Mi``
-``.repoHost.resources.limits.cpu``                                 CPU limit for the backup repository host.         ``200m``
-``.repoHost.resources.limits.memory``                              Memory limit for the backup repository host.      ``256Mi``
-``.sidecars.pgbackrest.resources.requests.cpu``                    CPU request for the pgbackrest sidecar.           ``100m``
-``.sidecars.pgbackrest.resources.requests.memory``                 Memory request for the pgbackrest sidecar.        ``128Mi``
-``.sidecars.pgbackrest.resources.limits.cpu``                      CPU limit for the pgbackrest sidecar.             ``100m``
-``.sidecars.pgbackrest.resources.limits.memory``                   Memory limit for the pgbackrest sidecar.          ``128Mi``
-``.sidecars.pgbackrestConfig.resources.requests.cpu``              CPU request for the pgbackrest config sidecar.    ``200m``
-``.sidecars.pgbackrestConfig.resources.requests.memory``           Memory request for the pgbackrest config sidecar. ``128Mi``
-``.sidecars.pgbackrestConfig.resources.limits.cpu``                CPU limit for the pgbackrest config sidecar.      ``200m``
-``.sidecars.pgbackrestConfig.resources.limits.memory``             Memory limit for the pgbackrest config sidecar.   ``128Mi``
-``.jobs.resources.requests.cpu``                                   CPU request for the backup jobs.                  ``200m``
-``.jobs.resources.requests.memory``                                Memory request for the backup jobs.               ``128Mi``
-``.jobs.resources.limits.cpu``                                     CPU limit for the backup jobs.                    ``200m``
-``.jobs.resources.limits.memory``                                  Memory limit for the backup jobs.                 ``128Mi``
-``.restore.repoName``                                              The repository name to use for restores.          ``repo1``
-``.restore.enabled``                                               Enable or disable restore functionality.          ``false``
-``.restore.resources.requests.cpu``                                CPU request for the restore job.                  ``100m``
-``.restore.resources.requests.memory``                             Memory request for the restore job.               ``128Mi``
-``.restore.resources.limits.cpu``                                  CPU limit for the restore job.                    ``100m``
-``.restore.resources.limits.memory``                               Memory limit for the restore job.                 ``128Mi``
-``.repos.repo1.schedules.full``                                    Full backup schedule (Cron expression).           ``"0 1 * * 0"``
-``.repos.repo1.schedules.differential``                            Differential backup schedule (Cron expression).   ``"0 3 * * *"``
-``.repos.repo1.schedules.incremental``                             Incremental backup schedule (Cron expression).    ``"*/30 * * * *"``
-``.repos.repo1.volume.volumeClaimSpec.resources.requests.storage`` Storage request for backup volume.                ``50Gi``
-================================================================== ================================================= ==================
+   * - ``global.IS_FOLLOWER``                            
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``global.provisioner``                            
+     - storage class provisioner                                                                           
+     - ``"kubernetes.io/aws-ebs"``                       
+
+
+
+   * - ``global.storageClassNameOverride``               
+     -                                                                                                     
+     - ``""``                                            
+
+
+
+   * - ``global.multiNode``                              
+     - multinode selector switch to determine if going multi/single node                                   
+     - ``false``                                         
+
+
+
+   * - ``global.containerregistry.name``                 
+     -                                                                                                     
+     - ``"docker.io/graphistry"``                        
+
+
+
+   * - ``global.devMode``                                
+     - dev mode for debugging with nexus, postgres and nginx                                               
+     - ``false``                                         
+
+
+
+   * - ``global.postgres.repository``                    
+     - postgres repository name                                                                            
+     - ``"graphistry-postgres"``                         
+
+
+
+   * - ``global.postgres.name``                          
+     - postgres db name                                                                                    
+     - ``"graphistry"``                                  
+
+
+
+   * - ``global.postgres.user``                          
+     - postgres db user                                                                                    
+     - ``"graphistry"``                                  
+
+
+
+   * - ``global.postgres.port``                          
+     - port for postgres service to listen on                                                              
+     - ``5432``                                          
+
+
+
+   * - ``global.postgres.host``                          
+     - hostname for postgres                                                                               
+     - ``"postgres"``                                    
+
+
+
+   * - ``global.tag``                                    
+     - tag for the docker image                                                                            
+     - ``"latest"``                                      
+
+
+
+   * - ``global.imagePullPolicy``                        
+     - image pull policy could also be Always                                                              
+     - ``"IfNotPresent"``                                
+
+
+
+   * - ``global.restartPolicy``                          
+     - restart policy                                                                                      
+     - ``"Always"``                                      
+
+
+
+   * - ``global.imagePullSecrets``                       
+     - image pull secrets name                                                                             
+     - ``[]``                                            
+
+
+
+   * - ``global.nodeSelector``                           
+     - node selector to determine which node to deploy cluster to                                          
+     - ``null``                                          
+
+
+
+   * - ``global.logs.LogLevel``                          
+     -                                                                                                     
+     - ``"INFO"``                                        
+
+
+
+   * - ``global.logs.GraphistryLogLevel``                
+     -                                                                                                     
+     - ``"INFO"``                                        
+
+
+
+   * - ``global.postgresVolumeLabel``                    
+     - postgres volume label                                                                               
+     - ``null``                                          
+
+
+
+   * - ``global.PostgresResources.limits.cpu``           
+     -                                                                                                     
+     - ``"100m"``                                        
+
+
+
+   * - ``global.PostgresResources.limits.memory``        
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.instance1.dataVolumeClaimSpec.resources.requests.storage``
+     -                                                                                                     
+     - ``"10Gi"``                                        
+
+
+
+   * - ``postgresCluster.patroni.dynamicConfiguration.postgresql.pg_hba``
+     -                                                                                                     
+     - ``["host all all 0.0.0.0/0 trust", "host all postgres 127.0.0.1/32 md5"]``
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.global.repo1-bundle-size``
+     - Set a 1GB maximum size for each 'backup bundle'                                                     
+     - ``"1G"``                                          
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.global.repo1-bundle-limit``
+     - Limit to 15 'backup bundles'                                                                        
+     - ``"15"``                                          
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.global.repo1-retention-full``
+     - Keeps 5 'full backups'                                                                              
+     - ``"5"``                                           
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.global.repo1-retention-archive``
+     - Retain the last 10 archive logs                                                                     
+     - ``"10"``                                          
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.global.repo1-retention-diff``
+     - Retain 7 'differential backups'                                                                     
+     - ``"7"``                                           
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repoHost.resources.requests.cpu``
+     -                                                                                                     
+     - ``"200m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repoHost.resources.requests.memory``
+     -                                                                                                     
+     - ``"256Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repoHost.resources.limits.cpu``
+     -                                                                                                     
+     - ``"200m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repoHost.resources.limits.memory``
+     -                                                                                                     
+     - ``"256Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrest.resources.requests.cpu``
+     -                                                                                                     
+     - ``"100m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrest.resources.requests.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrest.resources.limits.cpu``
+     -                                                                                                     
+     - ``"100m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrest.resources.limits.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrestConfig.resources.requests.cpu``
+     -                                                                                                     
+     - ``"200m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrestConfig.resources.requests.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrestConfig.resources.limits.cpu``
+     -                                                                                                     
+     - ``"200m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.sidecars.pgbackrestConfig.resources.limits.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.jobs.resources.requests.cpu``
+     -                                                                                                     
+     - ``"200m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.jobs.resources.requests.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.jobs.resources.limits.cpu``
+     -                                                                                                     
+     - ``"200m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.jobs.resources.limits.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.restore.repoName``
+     -                                                                                                     
+     - ``"repo1"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.restore.enabled``
+     -                                                                                                     
+     - ``false``                                         
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.restore.resources.requests.cpu``
+     -                                                                                                     
+     - ``"100m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.restore.resources.requests.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.restore.resources.limits.cpu``
+     -                                                                                                     
+     - ``"100m"``                                        
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.restore.resources.limits.memory``
+     -                                                                                                     
+     - ``"128Mi"``                                       
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repos.repo1.schedules.full``
+     - Weekly full backup every Sunday at 1 AM                                                             
+     - ``"0 1 * * 0"``                                   
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repos.repo1.schedules.differential``
+     - Daily differential backup                                                                           
+     - ``"0 3 * * *"``                                   
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repos.repo1.schedules.incremental``
+     - Every 30 minutes for incremental backups (offset to :15 and :45 to avoid collision with full/diff at :00)
+     - ``"15,45 * * * *"``                                
+
+
+
+   * - ``postgresCluster.backups.pgbackrest.repos.repo1.volume.volumeClaimSpec.resources.requests.storage``
+     -                                                                                                     
+     - ``"50Gi"``                                        
+
+
 
 For more information on the CrunchyData Postgres Cluster visit the PGO documentation: `CrunchyData PGO Documentation <https://access.crunchydata.com/documentation/postgres-operator/latest/>`_ 
+
+
+
+----
+
+Documentation generated by Frigate_.
+
+.. _Frigate: https://frigate.readthedocs.io
+
+

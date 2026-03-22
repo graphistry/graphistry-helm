@@ -27,15 +27,9 @@ addons = [
 enable-ingress-nginx = true
 enable-cert-manager = true
 #enable-grafana = true
-#enable-morpheus = true
 ####ssh access with key
 #key_pair_name = "<your key here>"
 enable-ssh = true
-
-#if enable-morpheus is set to true apply terraform as below
-#terraform apply -var=ngc_api_key="<api key here>"
-#else set enable-morpheus to false and apply terraform as below
-#terraform apply
 
 ###terraform destroy -target=module.vpc
 ### will fail to destory unless manually delete load balancer

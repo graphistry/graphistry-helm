@@ -1,11 +1,11 @@
 tls: false
 
 #volume pv names go here after initial deployment and provisioning
-volumeName:
-  dataMount: 
-  localMediaMount: 
-  gakPublic: 
-  gakPrivate: 
+#volumeName:
+#  dataMount:
+#  localMediaMount:
+#  gakPublic:
+#  gakPrivate:
 
 ## createServiceAccount: true only true on initial deployment
 k8sDashboard:
@@ -270,9 +270,9 @@ graphAppKitPrivate: true # graph app kit private - determines if private dashboa
 
 forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
-#cuda version
+# CUDA version - 12.8 supports modern GPUs including Blackwell
 cuda:
-  version: "11.8" #cuda version
+  version: "12.8"
 
 global:  ## global settings for all charts
   # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: traefik
@@ -281,9 +281,18 @@ global:  ## global settings for all charts
   #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   #provisioner: microk8s.io/hostpath   #storage class provisioner.
   provisioner: rancher.io/local-path
+
+  # Override the StorageClass name used by all PVCs (data-mount, local-media, gak-public,
+  # gak-private, uploads-files, and postgres volumes). The StorageClass must be pre-created
+  # by the cluster admin with reclaimPolicy: Retain to preserve data across redeployments.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  # Example: storageClassNameOverride: "vsphere-sc"
+  storageClassNameOverride: ""
+
   postgresVolumeLabel:
   nodeSelector: #node selector to determine which node to deploy cluster to ex: {"accelerator": "nvidia"}
       nvidia.com/gpu.present: "true"
+#      kubernetes.io/hostname: "node1"
 # multinode selector switch to determine if going multi/single node
   multiNode: false # multinode selector switch to determine if going multi/single node
   #dev mode for debugging with nexus, postgres and nginx
@@ -301,9 +310,11 @@ global:  ## global settings for all charts
   restartPolicy: Always #restart policy
   imagePullSecrets:   #image pull secrets name
     - name: docker-secret-prod
+  # Log levels: INFO (default), DEBUG, TRACE (for troubleshooting)
   logs:
-    LogLevel: TRACE #log level for the application
-    GraphistryLogLevel: TRACE #log level for graphistry
+    LogLevel: INFO
+    GraphistryLogLevel: INFO
+  # Telemetry: https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
   ENABLE_OPEN_TELEMETRY: true
 
   telemetryStack:

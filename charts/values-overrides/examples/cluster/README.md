@@ -137,18 +137,35 @@ kubectl get pods --watch --namespace postgres-operator
 
 ## Deploy and Configure the Graphistry Cluster
 
-### 1. Install the Graphistry Resources chart
+### 1. Configure StorageClass
 
-The Graphistry Resources chart includes the storage class used for dynamic provisioning of volume claims for the Postgres cluster, as well as the `gak-public` and `gak-private` pods.  The remaining Graphistry pods will utilize an `NFS` volume that connects directly to the shared `NFS` directory.
+Graphistry requires a StorageClass with `reclaimPolicy: Retain` so data is preserved across redeployments. The NFS provisioner installed above creates a `nfs-client` StorageClass with `Delete` policy. For cluster mode, the chart defaults to `retain-sc-cluster`.
 
-Show all the values and options for this chart:
-```bash
-helm show values ./charts/graphistry-helm-resources
+#### Option A: Create a New StorageClass
+
+Create a StorageClass with Retain policy using the NFS provisioner. Save as `retain-sc-cluster.yaml`:
+```yaml
+apiVersion: storage.k8s.io/v1
+kind: StorageClass
+metadata:
+  name: retain-sc-cluster
+provisioner: cluster.local/nfs-subdir-external-provisioner
+reclaimPolicy: Retain
+volumeBindingMode: Immediate
+allowVolumeExpansion: true
 ```
 
-Install the storage class `retain-sc-cluster`:
+Apply it:
 ```bash
-helm upgrade -i graphistry-resources ./charts/graphistry-helm-resources -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml
+kubectl apply -f retain-sc-cluster.yaml
+```
+
+#### Option B: Use an Existing StorageClass
+
+If you already have a StorageClass with `reclaimPolicy: Retain`, set `global.storageClassNameOverride` in `cluster-storage.yaml`:
+```yaml
+global:
+  storageClassNameOverride: "your-existing-sc-name"
 ```
 
 ### 2. Deploy the leader instance
@@ -351,17 +368,31 @@ kubectl get services --namespace graphistry1 | grep caddy
 
 ## Redeploying Instances (Upgrading Helm Charts)
 
-The Persistent Volume Claims must be reused each time the instances are redeployed.
-Here is how the `leader` instance can be redeployed for `GKE`:
+The Persistent Volume Claims must be reused each time the instances are redeployed. First, generate the `volumeName` block for each instance namespace and add it to your values file.
+
+For the **leader** instance (`graphistry1`):
+```bash
+echo "volumeName:
+  gakPublic: $(kubectl get pvc gak-public -n graphistry1 -o jsonpath='{.spec.volumeName}')
+  gakPrivate: $(kubectl get pvc gak-private -n graphistry1 -o jsonpath='{.spec.volumeName}')"
+```
+
+For the **follower** instance (`graphistry2`):
+```bash
+echo "volumeName:
+  gakPublic: $(kubectl get pvc gak-public -n graphistry2 -o jsonpath='{.spec.volumeName}')
+  gakPrivate: $(kubectl get pvc gak-private -n graphistry2 -o jsonpath='{.spec.volumeName}')"
+```
+
+Copy the output into the corresponding values file (e.g. `leader.yaml` or `follower.yaml`), then run the normal upgrade command.
+
+Redeploy the `leader` instance for `GKE`:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
-  --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
-  -f ./charts/values-overrides/examples/gke/gke_values.yaml \
+  --values ./charts/values-overrides/examples/gke/gke_example_values.yaml \
   -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml \
   -f ./charts/values-overrides/examples/cluster/global-common.yaml \
   -f ./charts/values-overrides/examples/cluster/leader.yaml \
-  --set volumeName.gakPublic=$(kubectl --namespace graphistry1 get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-  --set volumeName.gakPrivate=$(kubectl --namespace graphistry1 get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
   --namespace graphistry1 --create-namespace
 ```
 
@@ -372,21 +403,16 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml \
   -f ./charts/values-overrides/examples/cluster/global-common.yaml \
   -f ./charts/values-overrides/examples/cluster/leader.yaml \
-  --set volumeName.gakPublic=$(kubectl --namespace graphistry1 get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-  --set volumeName.gakPrivate=$(kubectl --namespace graphistry1 get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
   --namespace graphistry1 --create-namespace
 ```
 
-And here is how the `follower` instance can be redeployed for `GKE`:
+Redeploy the `follower` instance for `GKE`:
 ```bash
 helm upgrade -i g-chart ./charts/graphistry-helm \
-  --values ./charts/values-overrides/examples/gke/default_gke_values.yaml \
-  -f ./charts/values-overrides/examples/gke/gke_values.yaml \
+  --values ./charts/values-overrides/examples/gke/gke_example_values.yaml \
   -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml \
   -f ./charts/values-overrides/examples/cluster/global-common.yaml \
   -f ./charts/values-overrides/examples/cluster/follower.yaml \
-  --set volumeName.gakPublic=$(kubectl --namespace graphistry2 get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-  --set volumeName.gakPrivate=$(kubectl --namespace graphistry2 get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
   --namespace graphistry2 --create-namespace
 ```
 
@@ -397,8 +423,6 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
   -f ./charts/values-overrides/examples/cluster/cluster-storage.yaml \
   -f ./charts/values-overrides/examples/cluster/global-common.yaml \
   -f ./charts/values-overrides/examples/cluster/follower.yaml \
-  --set volumeName.gakPublic=$(kubectl --namespace graphistry2 get pv | grep "gak-public" | tail -n 1 | awk '{print $1;}') \
-  --set volumeName.gakPrivate=$(kubectl --namespace graphistry2 get pv | grep "gak-private" | tail -n 1 | awk '{print $1;}') \
   --namespace graphistry2 --create-namespace
 ```
 

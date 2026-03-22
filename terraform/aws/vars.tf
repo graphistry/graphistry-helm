@@ -85,11 +85,6 @@ variable "enable-cert-manager" {
   default = false
 }
 
-variable "ngc-api-key" {
-  type = string
-  description = "value of NGC api key"
-}
-
 variable "enable-ingress-nginx" {
   description = "If set to true, it will create a ingress-nginx namespace and install ingres-nginx controller"
   type = bool
@@ -98,12 +93,6 @@ variable "enable-ingress-nginx" {
 
 variable "enable-grafana" {
   description = "If set to true, it will create a prometheus namespace and install prometheus and grafana"
-  type = bool
-  default = false
-}
-
-variable "enable-morpheus" {
-  description = "If set to true, it will create a morpheus namespace and install morpheus & mlflow"
   type = bool
   default = false
 }

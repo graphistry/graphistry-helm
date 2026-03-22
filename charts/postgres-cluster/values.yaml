@@ -5,6 +5,10 @@ global:
 
    #- Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
   provisioner: kubernetes.io/aws-ebs #storage class provisioner
+  # Override the StorageClass name used by postgres data and backup PVCs.
+  # Must be pre-created by the cluster admin with reclaimPolicy: Retain.
+  # When empty, defaults to "retain-sc" (single-node) or "retain-sc-cluster" (cluster mode).
+  storageClassNameOverride: ""
   multiNode: false # multinode selector switch to determine if going multi/single node
   containerregistry:  #container registry name
     name: docker.io/graphistry
@@ -111,9 +115,9 @@ postgresCluster:
       repos:
         repo1:
           schedules:
-            full: "0 1 * * 0"  # Weekly full backup every Sunday at 1 AM
-            differential: "0 3 * * *"  # Daily differential backup
-            incremental: "*/30 * * * *"  # Every 30 minutes for incremental backups
+            full: "0 1 * * 0"  # Weekly full backup every Sunday at 1:00 AM
+            differential: "0 3 * * *"  # Daily differential backup at 3:00 AM
+            incremental: "15,45 * * * *"  # Every 30 minutes at :15 and :45 (avoids :00 collision with full/diff)
           volume:
             volumeClaimSpec:
               resources:

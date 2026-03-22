@@ -46,16 +46,6 @@ services:
       - APP_TAG=${APP_TAG}
       - GRAFANA=${GRAFANA}
 
-  graphistry-resources:
-    image: helm-docker
-    command: helm upgrade -i g-chart-resources ./charts/graphistry-helm-resources --values ./charts/values.yaml --set global.multiNode=${MULTINODE} --namespace ${NAMESPACE} --create-namespace   
-    volumes:
-      - ~/.aws:/root/.aws
-      - ~/.kube:/root/.kube
-    environment:
-      - MULTINODE=${MULTINODE}
-
-
   launch-grafana:
     build:
       context: ./scripts

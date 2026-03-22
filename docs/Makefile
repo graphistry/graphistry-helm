@@ -34,11 +34,8 @@ deps:
 # Generate the docs with frigate
 frigate:
 	$(FRIGATE) ../charts/graphistry-helm -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/graphistry-helm-docs.$(FRIGATE_OUTPUT) && \
-	$(FRIGATE) ../charts/graphistry-helm-resources -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/graphistry-resources-docs.$(FRIGATE_OUTPUT) && \
 	$(FRIGATE) ../charts/k8s-dashboard -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/k8s-dashboard-docs.$(FRIGATE_OUTPUT) && \
-	$(FRIGATE) ../charts/postgres-cluster -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/postgres-cluster-docs.$(FRIGATE_OUTPUT) && \
-	$(FRIGATE) ../chart-bundle/Morpheus-ai-engine -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/morpheus-docs.$(FRIGATE_OUTPUT) && \
-	$(FRIGATE) ../chart-bundle/NVIDIA-morpheus-mlflow-plugin -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/morpheus-mlflow-docs.$(FRIGATE_OUTPUT)
+	$(FRIGATE) ../charts/postgres-cluster -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/postgres-cluster-docs.$(FRIGATE_OUTPUT)
 #$(FRIGATE) ../charts/ingress-nginx -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/ingress-nginx-docs.$(FRIGATE_OUTPUT) 
 #$(FRIGATE) ../charts/graphistry-jupyter-hub -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/graphistry-jupyter-hub-docs.$(FRIGATE_OUTPUT) && \
 #$(FRIGATE) ../charts/kube-prometheus-stack -o $(FRIGATE_OUTPUT) > ./$(SOURCEDIR)/kube-prometheus-stack-docs.$(FRIGATE_OUTPUT) 

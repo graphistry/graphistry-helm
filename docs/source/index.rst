@@ -5,8 +5,14 @@
 
 Welcome to Graphistry Helm Charts's documentation!
 ==================================================
-Welcome to Graphistry Helm Charts's documentation we will cover the basics to get a Graphistry cluster up and running on Kubernetes.
-We have sections for most of the charts we have in our Helm repo. For a quick start please see the :doc:`10mins-to-k8s` section.
+Welcome to the Graphistry Helm Charts documentation. This guide covers deploying Graphistry on Kubernetes.
+
+For a quick start, see the :doc:`10mins-to-k8s` section. For platform-specific guides, see:
+
+- `k3s <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/k3s>`_
+- `GKE <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/gke>`_
+- `Tanzu <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/tanzu>`_
+- `Cluster (multinode) <https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/cluster>`_
 
 
 
@@ -17,14 +23,13 @@ We have sections for most of the charts we have in our Helm repo. For a quick st
 
    10mins-to-k8s
    values-override
+   configure-storageclass
    graphistry-helm-docs
-   graphistry-resources-docs
    dask-kubernetes-operator-docs
    argo-cd-docs
    cert-manager-docs
    k8s-dashboard-docs
    postgres-cluster-docs
    postgres-operator-docs
-   morpheus-docs
-   morpheus-mlflow-docs
    ingress-nginx-docs
+   telemetry-docs

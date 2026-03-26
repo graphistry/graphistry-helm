@@ -339,11 +339,10 @@ kubectl exec -n gpu-operator $(kubectl get pods -n gpu-operator -o name | grep d
 
 This confirms the driver is functional and shows the GPU model, driver version, CUDA version, memory, and temperature. If this command fails, the driver is not working correctly and must be fixed before proceeding. See [Troubleshoot and Debug](#troubleshoot-and-debug-1) below.
 
-Verify the GPU is usable by Graphistry CUDA containers. The previous step confirmed the GPU Operator pods can access the GPU. This step verifies that a standalone CUDA container can also use it, which is how Graphistry services run. Graphistry supports CUDA 11.8 and CUDA 12.8, so the test pod uses one of these CUDA base images. CUDA 13 support will be part of future releases.
+Verify the GPU is usable by Graphistry CUDA containers. The previous step confirmed the GPU Operator pods can access the GPU. This step verifies that a standalone CUDA container can also use it, which is how Graphistry services run. Graphistry v2.50.0+ supports CUDA 12 and CUDA 13 (see driver compatibility table below).
 
 ```bash
-# Graphistry supports CUDA 11.8 and 12.8, you can test with any version in that range (try using CUDA_VERSION=12.8.0 or CUDA_VERSION=11.8.0).
-# CUDA 13 support will be part of future releases.
+# Graphistry supports CUDA 12 (driver 535+) and CUDA 13 (driver 590+). Test with the version matching your driver.
 (CUDA_VERSION=12.8.0; GPU_TEST_POD=graphistry-gpu-test-$$; \
   kubectl delete pod $GPU_TEST_POD --ignore-not-found && \
   kubectl run $GPU_TEST_POD --restart=Never --image=nvidia/cuda:${CUDA_VERSION}-base-ubuntu22.04 -- nvidia-smi && \
@@ -377,18 +376,20 @@ pod "graphistry-gpu-test-3407611" deleted from default namespace
 
 > **Note (Tanzu vGPU):** In vGPU mode, nvidia-smi will show the **vGPU profile name** instead of the physical GPU model (e.g., `NVIDIA A100-4C` instead of `NVIDIA A100-PCIE-40GB`), and memory will reflect the vGPU allocation, not the full physical GPU memory. It will also display a `vGPU Software License Status` line showing `Licensed` (with expiry) or `Unlicensed`. If it shows `Unlicensed`, verify the licensing secret (`gridd.conf` and `client_configuration_token.tok`) in the `gpu-operator` namespace. See the [Tanzu README](tanzu/README.md) for vGPU licensing setup.
 
-**Driver compatibility for Graphistry CUDA images** (source: [CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/)):
+**Driver compatibility for Graphistry v2.50.0+ CUDA images** (sources: [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/), [CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/)):
 
-| Graphistry CUDA Image | Min Driver (Linux) | Recommended Driver | Compatible Driver Range |
-|---|---|---|---|
-| 12.8 | >= 570.26 | 570.124.06+ (R570 branch) | >= 525 and < 580 |
-| 11.8 | >= 520.61.05 | 535.288.01+ (R535 branch) | >= 450 and < 525 |
+Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"`. Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
 
-The "Compatible Driver Range" column reflects NVIDIA's [minor version compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) guarantee: within the same CUDA major version, any driver in that range is guaranteed to run applications compiled for that CUDA version. Drivers outside the upper bound (e.g., a CUDA 13 driver >= 580 running CUDA 12.x apps) are not covered by this formal guarantee.
+| Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
+|---|---|---|---|---|
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01). GKE: R570 (570.133.20, T4, forward compat) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01). Docker compose: R590 (590.48.01) |
 
-For example, driver 575.57.08 (reporting CUDA 12.9 in nvidia-smi) falls within the 525-579 range, so it is fully compatible with Graphistry's CUDA 12.8 images.
+We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry.
 
-> **Warning:** CUDA 13 drivers (>= 580) introduce a new major version boundary. NVIDIA's minor version compatibility guarantee does **not** extend across major versions. Graphistry's current CUDA 12.8 and 11.8 images are **not compatible** with CUDA 13 drivers. Do not upgrade your GPU driver to >= 580 until you are running a Graphistry release with CUDA 13 support. CUDA 13 support is in active internal development and will be included in a future Graphistry release. Always consult the [CUDA Compatibility Guide](https://docs.nvidia.com/deploy/cuda-compatibility/) and the [CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) before upgrading drivers.
+The CUDA 13 flavor requires R590+ because the RAPIDS 26.02 base image (`rapidsai/base:26.02-cuda13-py3.10`) bakes CUDA 13.1 runtime (`CUDA_VERSION=13.1.0`), not 13.0. Drivers in the R580 range support CUDA 13.0 but not 13.1, so they are compatible with the CUDA 12 flavor only.
+
+For example, driver 580.126.20 (reporting CUDA 13.0 in nvidia-smi) works with Graphistry's CUDA 12 build but fails with the CUDA 13 build because CUDA 13.1 requires R590+.
 
 **NVIDIA reference documentation:**
 

@@ -23,7 +23,7 @@ k8sDashboard:
   createServiceAccount: false
 
 cuda:
-  version: "12.8"
+  version: "12"
 
 global:
   # GKE storage provisioner
@@ -41,7 +41,7 @@ global:
     nvidia.com/gpu.present: "true"
 
   # Graphistry version
-  tag: v2.45.11
+  tag: v2.50.0
 
   # Image settings
   imagePullPolicy: Always

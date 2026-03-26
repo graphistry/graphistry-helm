@@ -42,7 +42,7 @@ global:
     nvidia.com/gpu.present: "true"
 
   # Graphistry version
-  tag: v2.45.11
+  tag: v2.50.0
 
   # Image settings
   imagePullPolicy: Always

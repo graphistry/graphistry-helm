@@ -270,11 +270,14 @@ graphAppKitPrivate: true # graph app kit private - determines if private dashboa
 
 forgeWorkers: "1" #sets the number of forge workers recommend 1 per 4 GB GPU memory
 
-# CUDA version - 12.8 supports modern GPUs including Blackwell
+# CUDA version - 12 or 13
 cuda:
-  version: "12.8"
+  version: "12"
 
 global:  ## global settings for all charts
+  # Graphistry version: Your Docker Hub account must have access to Graphistry images (Contact Graphistry Support: https://www.graphistry.com/support to get access).
+  tag: v2.50.0
+
   # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: traefik
   ingressClassName: traefik
 
@@ -304,7 +307,6 @@ global:  ## global settings for all charts
     user: graphistry #db user
     port: 5432 #port for postgres service to listen on
     host: postgres #hostname for postgres
-  tag: v2.45.11
 
   imagePullPolicy: Always   #image pull policy could also be Always
   restartPolicy: Always #restart policy

@@ -190,14 +190,14 @@ helm install --wait --generate-name \
 
 **Choose `<DRIVER_VERSION>` based on your CUDA version:**
 
-Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8` vs `graphistry/nexus:v2.45.11-11.8`). The GPU driver installed on the node must be compatible with the chosen CUDA version:
+Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes Docker images in two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"` and selects which image variant to pull (e.g., `graphistry/nexus:v2.50.0-12`). Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
 
-| CUDA Version | Minimum Driver | Recommended `driver.version` | Notes |
-|---|---|---|---|
-| 12.8 | >=570.26 | `570.195.03` | R570 branch or newer |
-| 11.8 | >=520.61.05 | `535.288.01` | R535 branch or newer |
+| Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
+|---|---|---|---|---|
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01). GKE: R570 (570.133.20, T4, forward compat) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01). Docker compose: R590 (590.48.01) |
 
-The chart default is `cuda.version: "12.8"`. If using CUDA 11.8, add `--set cuda.version="11.8"` to your Graphistry helm install command (the [Install Graphistry](#install-graphistry) step, not the GPU Operator). See the [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix and the [GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported driver versions per operator release.
+We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry. The chart default is `cuda.version: "12"`. The CUDA 13 flavor requires R590+ because the RAPIDS 26.02 base image (`rapidsai/base:26.02-cuda13-py3.10`) bakes CUDA 13.1 runtime (`CUDA_VERSION=13.1.0`), not 13.0. See the [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/) matrix, [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix, and the [GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported driver versions per operator release.
 
 Notes:
 1. `driver.enabled=true`: The GPU Operator installs the NVIDIA driver on Tanzu nodes (unlike GKE which uses a separate DaemonSet).
@@ -279,8 +279,8 @@ For environments with limited or no internet access, update your values file:
 global:
   # Redirect image pulls to your private registry
   # Images are pulled as: <containerregistry.name>/<image>:<tag>
-  # Default: docker.io/graphistry (e.g., docker.io/graphistry/nexus:v2.45.11)
-  # Air-gapped: my-registry.local/graphistry (e.g., my-registry.local/graphistry/nexus:v2.45.11)
+  # Default: docker.io/graphistry (e.g., docker.io/graphistry/nexus:v2.50.0-12)
+  # Air-gapped: my-registry.local/graphistry (e.g., my-registry.local/graphistry/nexus:v2.50.0-12)
   containerregistry:
     name: my-private-registry.local/graphistry
 
@@ -452,13 +452,13 @@ kubectl get pods --watch -n graphistry
 
 ## Install Graphistry
 
-Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8`). You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/tanzu/tanzu_example_values.yaml`:
+You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/tanzu/tanzu_example_values.yaml`:
 ```yaml
 cuda:
-  version: "12.8"   # or "11.8" - must match the GPU driver installed above
+  version: "12"   # or "13" - must match the GPU driver installed above
 
 global:  ## global settings for all charts
-  tag: v2.45.11
+  tag: v2.50.0
 ```
 
 Also verify that the values file references the correct Docker Hub pull secret ([Create Docker Hub Secret](#create-docker-hub-secret)) and StorageClass configuration ([Configure StorageClass](#configure-storageclass)):

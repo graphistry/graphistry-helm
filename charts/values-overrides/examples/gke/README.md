@@ -103,7 +103,14 @@ gcloud beta container clusters create demo-cluster \
 - `--machine-type "n1-highmem-8"`: 8 vCPUs / 52 GB RAM. T4 GPUs [only attach to N1 machines](https://docs.cloud.google.com/compute/docs/gpus) (max 24 vCPUs with 1 T4). The `n1-highmem-4` (4 vCPUs) is too small — the PostgreSQL Operator (PGO) reserves ~1 CPU with Guaranteed QoS, and backup CronJobs need additional CPU to schedule. With 4 vCPUs the node runs at ~96% CPU, causing backup pods to stay Pending and block all downstream services.
 
 ## Get cluster credentials
-The next command should fill the credentials in `~/.kube/config`:
+
+If you have other Kubernetes installations on this machine (e.g., k3s, minikube), make sure `KUBECONFIG` points to the GKE config file so credentials and contexts don't conflict:
+
+```bash
+export KUBECONFIG=~/.kube/config
+```
+
+Then fetch the GKE cluster credentials:
 ```bash
 USE_GKE_GCLOUD_AUTH_PLUGIN=True \
     gcloud container clusters get-credentials demo-cluster --zone us-central1-a
@@ -471,8 +478,8 @@ Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes Docker images in two flavors
 
 | Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
 |---|---|---|---|---|
-| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | driver 575.57.08 (CUDA 12.9), driver 580.126.20 (CUDA 13.0) |
-| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | driver 590.48.01 (CUDA 13.1) |
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | GKE: R570 (570.133.20, T4, forward compat). k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01). Docker compose: R590 (590.48.01) |
 
 We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry. The CUDA 13 flavor requires R590+ because the RAPIDS 26.02 base image (`rapidsai/base:26.02-cuda13-py3.10`) bakes CUDA 13.1 runtime (`CUDA_VERSION=13.1.0`), not 13.0. See the [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/) matrix and [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix.
 

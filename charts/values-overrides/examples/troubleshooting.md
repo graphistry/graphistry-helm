@@ -382,8 +382,8 @@ Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes two flavors: CUDA 12 and CUD
 
 | Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
 |---|---|---|---|---|
-| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | driver 575.57.08 (CUDA 12.9), driver 580.126.20 (CUDA 13.0) |
-| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | driver 590.48.01 (CUDA 13.1) |
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01). GKE: R570 (570.133.20, T4, forward compat) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01). Docker compose: R590 (590.48.01) |
 
 We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry.
 

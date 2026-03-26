@@ -98,7 +98,7 @@ gcloud beta container clusters create demo-cluster \
 ```
 
 - `--accelerator type=nvidia-tesla-t4,count=1`: Attaches 1 Tesla T4 GPU to each node.
-- `gpu-driver-version=disabled`: Disables GKE's automatic GPU driver installation so we can install the R570 driver manually via DaemonSet (see next step). GKE's `default` installs R535 (CUDA 12.2 max) and `latest` installs R580 (CUDA 13.x only, not backward compatible with CUDA 12.x).
+- `gpu-driver-version=disabled`: Disables GKE's automatic GPU driver installation so we can install the driver manually via DaemonSet (see next step). GKE's `default` installs R535 and `latest` installs R580. For Graphistry's CUDA 12 build (driver 535+) the R570 DaemonSet is recommended; for the CUDA 13 build (driver 590+) you need an R590+ driver.
 - `--image-type "UBUNTU_CONTAINERD"`: Ubuntu is required because Google provides a pre-built [R570 driver DaemonSet](https://github.com/GoogleCloudPlatform/container-engine-accelerators/blob/master/nvidia-driver-installer/ubuntu/daemonset-preloaded-R570.yaml) for Ubuntu but not for COS.
 - `--machine-type "n1-highmem-8"`: 8 vCPUs / 52 GB RAM. T4 GPUs [only attach to N1 machines](https://docs.cloud.google.com/compute/docs/gpus) (max 24 vCPUs with 1 T4). The `n1-highmem-4` (4 vCPUs) is too small — the PostgreSQL Operator (PGO) reserves ~1 CPU with Guaranteed QoS, and backup CronJobs need additional CPU to schedule. With 4 vCPUs the node runs at ~96% CPU, causing backup pods to stay Pending and block all downstream services.
 
@@ -129,7 +129,11 @@ Check the resources:
 kubectl get all
 ```
 
-## Install NVIDIA R570 GPU Driver (For CUDA 12.8)
+## Install NVIDIA GPU Driver
+
+The recommended driver for Graphistry's CUDA 12 flavor is R575+ and for CUDA 13 is R590+ (see driver compatibility table above). However, Google's pre-built [driver DaemonSets](https://github.com/GoogleCloudPlatform/container-engine-accelerators/tree/master/nvidia-driver-installer/ubuntu) currently only go up to R570. Check that repository for newer versions before proceeding. If R575+ or R590+ are not yet available, R570 may work with the CUDA 12 flavor via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer.
+
+### Install R570 Driver DaemonSet (CUDA 12)
 
 With `gpu-driver-version=disabled`, the GPU driver must be installed manually. Google provides a pre-built [R570 DaemonSet](https://github.com/GoogleCloudPlatform/container-engine-accelerators/blob/master/nvidia-driver-installer/ubuntu/daemonset-preloaded-R570.yaml) for Ubuntu, but it hardcodes driver version `570.124.06` which may not have a pre-built package for your node's kernel version.
 
@@ -167,7 +171,7 @@ Verify the driver is installed:
 kubectl logs -n kube-system -l k8s-app=nvidia-driver-installer -c nvidia-driver-installer --tail=20
 ```
 
-**Why R570?** CUDA 12.x requires driver >=525 and <580 ([NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/)). GKE's available driver options (`default`=R535, `latest`=R580) either cap at CUDA 12.2 or only support CUDA 13.x. R570 is the correct choice for CUDA 12.8.
+**Why R570?** R570 is the newest driver available in Google's pre-built [driver DaemonSets](https://github.com/GoogleCloudPlatform/container-engine-accelerators/tree/master/nvidia-driver-installer/ubuntu). GKE's built-in driver options (`default`=R535, `latest`=R580) do not match our recommended R575+ for CUDA 12 or R590+ for CUDA 13. R570 works with Graphistry's CUDA 12 flavor via NVIDIA's forward compatibility layer. Check the repository for newer DaemonSets (R575+, R590+) as they become available.
 
 ## Setup the NVIDIA GPU Operator
 Create the namespace:
@@ -237,7 +241,7 @@ helm install --wait --generate-name \
 ```
 
 Notes:
-1. `driver.enabled=false`: The R570 DaemonSet manages the GPU driver (570.124.06 for CUDA 12.8). The [NVIDIA GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) lists supported driver versions.
+1. `driver.enabled=false`: The R570 DaemonSet manages the GPU driver. The [NVIDIA GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) lists supported driver versions.
 2. `RUNTIME_CONFIG_SOURCE=file` is required for GKE's containerd 2.0+ (config v3 format).
 3. `NVIDIA_RUNTIME_SET_AS_DEFAULT=true` makes nvidia the default container runtime, so all pods get GPU access without explicit `nvidia.com/gpu` resource requests (equivalent to k3s `--default-runtime nvidia`).
 
@@ -463,13 +467,22 @@ kubectl get pods --watch -n graphistry
 **Note**: If pods stay in `Pending` state, verify the StorageClass is correctly configured (see [Configure StorageClass](#configure-storageclass)).
 
 ## Install Graphistry
-Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8`). You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/gke/gke_example_values.yaml`:
+Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes Docker images in two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"` and selects which image variant to pull (e.g., `graphistry/nexus:v2.50.0-12`). Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
+
+| Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
+|---|---|---|---|---|
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | driver 575.57.08 (CUDA 12.9), driver 580.126.20 (CUDA 13.0) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | driver 590.48.01 (CUDA 13.1) |
+
+We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry. The CUDA 13 flavor requires R590+ because the RAPIDS 26.02 base image (`rapidsai/base:26.02-cuda13-py3.10`) bakes CUDA 13.1 runtime (`CUDA_VERSION=13.1.0`), not 13.0. See the [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/) matrix and [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix.
+
+You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/gke/gke_example_values.yaml`:
 ```yaml
 cuda:
-  version: "12.8"   # or "11.8" - must match the GPU driver installed above
+  version: "12"   # or "13" - must match the GPU driver installed above
 
 global:  ## global settings for all charts
-  tag: v2.45.11
+  tag: v2.50.0
 ```
 
 Also verify that the values file references the correct Docker Hub pull secret ([Create Docker Hub Secret](#create-docker-hub-secret)) and StorageClass configuration ([Configure StorageClass](#configure-storageclass)):
@@ -642,6 +655,6 @@ For comprehensive troubleshooting, debugging, and verification commands covering
 
 **DCGM profiling error on COS nodes**: The DCGM profiling module is incompatible with GKE Container-Optimized OS (COS). If `dcgm-exporter` is in CrashLoopBackOff, apply the configmap patch that disables profiling metrics (see the DCGM fix section earlier in this guide).
 
-**GKE GPU driver version**: GKE auto-installs GPU drivers by default. If you need a specific driver version (e.g., R570 for CUDA 12.8), use `--gpu-driver-version=disabled` at cluster creation and install the driver manually via DaemonSet (see the R570 Driver Install section earlier in this guide).
+**GKE GPU driver version**: GKE auto-installs GPU drivers by default. If you need a specific driver version (e.g., R575+ for CUDA 12 or R590+ for CUDA 13), use `--gpu-driver-version=disabled` at cluster creation and install the driver manually via DaemonSet (see the GPU Driver Install section earlier in this guide).
 
 **n1-highmem-4 resource pressure**: PGO backup pods may stay Pending on `n1-highmem-4` instances due to insufficient CPU. Use `n1-highmem-8` or larger.

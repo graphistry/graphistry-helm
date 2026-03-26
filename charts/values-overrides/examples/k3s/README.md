@@ -30,16 +30,23 @@ Replace `<your-group>` with the OS group whose members should have kubectl acces
 | `--write-kubeconfig-group <group>` | Sets the group owner of `/etc/rancher/k3s/k3s.yaml` |
 | `--node-name <name>` | Sets a custom node name instead of the hostname |
 
-Set up KUBECONFIG so `kubectl` and `helm` work in all sessions:
+Set up KUBECONFIG so `kubectl` and `helm` work as a non-root user. The recommended approach is per-user via your shell's rc file since it is permanent and under the control of the user running the deployment:
 
 ```bash
-# Make KUBECONFIG available for all users on login
-cat > /etc/profile.d/k3s-env.sh << 'EOF'
-export KUBECONFIG=/etc/rancher/k3s/k3s.yaml
-EOF
+# Recommended: per-user, permanent for all new terminal windows
+# Use ~/.bashrc for bash, ~/.zshrc for zsh, or ~/.config/fish/config.fish for fish
+echo 'export KUBECONFIG=/etc/rancher/k3s/k3s.yaml' >> ~/.bashrc
+source ~/.bashrc
 ```
 
-> **Note:** Open a new terminal session (or run `source /etc/profile.d/k3s-env.sh`) for the KUBECONFIG to take effect.
+Other alternatives:
+
+| Method | Command | Scope |
+|--------|---------|-------|
+| Current session only | `export KUBECONFIG=/etc/rancher/k3s/k3s.yaml` | This terminal only, lost on close |
+| Per user (recommended) | Add `export KUBECONFIG=/etc/rancher/k3s/k3s.yaml` to `~/.bashrc`, `~/.zshrc`, etc. | All new terminal windows for this user |
+| All users, all sessions | Add `KUBECONFIG=/etc/rancher/k3s/k3s.yaml` to `/etc/environment` | Every new session (terminal, SSH, graphical) |
+| All users, login shells only | Add `export KUBECONFIG=/etc/rancher/k3s/k3s.yaml` to `/etc/profile.d/k3s-env.sh` | SSH and `bash --login` only, not desktop terminals |
 
 Install Helm if not already present:
 
@@ -56,7 +63,9 @@ kubectl get nodes -o wide
 
 ### Option 1: NVIDIA GPU Operator (Recommended)
 ```bash
-helm repo add nvidia https://helm.ngc.nvidia.com/nvidia && helm repo update
+helm repo add nvidia https://helm.ngc.nvidia.com/nvidia --force-update
+
+helm repo update
 
 # Operator installs the NVIDIA driver on the node
 helm install --wait --generate-name \
@@ -74,14 +83,14 @@ helm install --wait --generate-name \
     --timeout 60m
 ```
 
-Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8`). The GPU driver must be compatible with the chosen CUDA version:
+Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes Docker images in two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"` and selects which image variant to pull (e.g., `graphistry/nexus:v2.50.0-12`). Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
 
-| CUDA Version | Minimum Driver | Recommended `driver.version` | Notes |
-|---|---|---|---|
-| 12.8 | >=570.26 | `570.195.03` | R570 branch or newer |
-| 11.8 | >=520.61.05 | `535.288.01` | R535 branch or newer |
+| Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
+|---|---|---|---|---|
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | driver 575.57.08 (CUDA 12.9), driver 580.126.20 (CUDA 13.0) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | driver 590.48.01 (CUDA 13.1) |
 
-The chart default is `cuda.version: "12.8"`. If using CUDA 11.8, add `--set cuda.version="11.8"` to your Graphistry helm install command (the [Install Graphistry](#install-graphistry) step, not the GPU Operator). See the [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix.
+We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry. The chart default is `cuda.version: "12"`. The CUDA 13 flavor requires R590+ because the RAPIDS 26.02 base image (`rapidsai/base:26.02-cuda13-py3.10`) bakes CUDA 13.1 runtime (`CUDA_VERSION=13.1.0`), not 13.0. See the [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/) matrix and [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix.
 
 Wait for the operator pods to be ready:
 ```bash
@@ -127,14 +136,20 @@ Example output (in case of 2 GPUs):
 }
 ```
 
-Test that a GPU container can actually run (uses a temporary pod that cleans up after itself):
+Test that a GPU container can actually run (creates a temporary pod, waits for the image to pull, and cleans up after itself):
 
 ```bash
-kubectl run gpu-test --rm -it --restart=Never \
-    --image=nvidia/cuda:12.8.0-base-ubuntu22.04 -- nvidia-smi
+(GPU_TEST_POD=graphistry-gpu-test-$$; \
+  kubectl delete pod $GPU_TEST_POD --ignore-not-found && \
+  kubectl run $GPU_TEST_POD --restart=Never --image=nvidia/cuda:12.8.0-base-ubuntu24.04 -- nvidia-smi && \
+  kubectl wait --for=jsonpath='{.status.phase}'=Succeeded pod/$GPU_TEST_POD --timeout=300s && \
+  kubectl logs $GPU_TEST_POD; \
+  kubectl delete pod $GPU_TEST_POD --ignore-not-found)
 ```
 
-Expected output: nvidia-smi table showing your GPU model, driver version, and CUDA version. The driver must be in the compatible range for Graphistry's CUDA 12.8 images (driver 525-579). See the [troubleshooting guide](../troubleshooting.md#2-gpu-support) for the full driver compatibility table.
+Note: the first run may take a few minutes while the CUDA image is pulled. The `kubectl wait` handles this automatically with a 5 minute timeout.
+
+Expected output: nvidia-smi table showing your GPU model, driver version, and CUDA version. The driver must be in the compatible range for your chosen Graphistry CUDA build: 535+ for CUDA 12, 590+ for CUDA 13. See the [troubleshooting guide](../troubleshooting.md#2-gpu-support) for the full driver compatibility table.
 
 ## Get Graphistry Helm Charts
 
@@ -302,13 +317,13 @@ kubectl get pods --watch -n graphistry
 
 ## Install Graphistry
 
-Graphistry publishes Docker images for both CUDA 12.8 and CUDA 11.8. The `cuda.version` chart value selects which image variant to pull (e.g., `graphistry/nexus:v2.45.11-12.8`). You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/k3s/k3s_example_values.yaml`:
+You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/k3s/k3s_example_values.yaml` (see the driver compatibility table in the [GPU Support](#option-1-nvidia-gpu-operator-recommended) section above for accepted `cuda.version` values and driver requirements):
 ```yaml
 cuda:
-  version: "12.8"   # or "11.8" - must match the GPU driver installed above
+  version: "13"   # or "12" - must match the GPU driver installed above
 
 global:  ## global settings for all charts
-  tag: v2.45.11
+  tag: v2.50.0
 ```
 
 Also verify that the values file references the correct Docker Hub pull secret ([Create Docker Hub Secret](#create-docker-hub-secret)) and StorageClass configuration ([Configure StorageClass](#configure-storageclass)):
@@ -380,6 +395,16 @@ helm upgrade -i g-chart ./charts/graphistry-helm \
     --values ./charts/values-overrides/examples/k3s/k3s_example_values.yaml \
     --namespace graphistry --create-namespace
 ```
+
+If pods stay in `Pending` state after a reinstall, the PVs may have a stale `claimRef`. This commonly happens when you `helm uninstall` the Graphistry chart and then reinstall it: the StorageClass uses `reclaimPolicy: Retain`, so the PVs survive the uninstall but remain bound to the old (now deleted) PVCs. The new PVCs cannot bind to those PVs until the stale `claimRef` is cleared:
+
+```bash
+kubectl get pv -o json | \
+    jq -r '.items[] | select(.status.phase=="Released") | select(.spec.claimRef.namespace=="graphistry") | .metadata.name' | \
+    xargs -I {} kubectl patch pv {} -p '{"spec":{"claimRef": null}}'
+```
+
+Then re-run the helm upgrade. The PVCs will bind to the existing PVs via the `volumeName` field, preserving your data. For more details, see the [Troubleshooting Guide](../troubleshooting.md#troubleshoot-and-debug-9).
 
 ## Enabling Telemetry
 

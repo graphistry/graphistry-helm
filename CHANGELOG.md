@@ -11,6 +11,23 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Development]
 *   Working on fixing the Top level persistence for jupyter Notebooks, currently it is persistent inside the different directories but top level resets on redeployment.
 
+## [Version 0.4.2 - 2026-03-26]
+
+### Changed
+
+- RAPIDS upgrade: 25.02 -> 26.02. Graphistry v2.50.0+ now uses RAPIDS 26.02, which officially supports both CUDA 12 and CUDA 13 driver ranges. This resolves incompatibilities with NVIDIA driver 580.x that affected RAPIDS 25.02 (cudf pinned `cuda-python<13.0a0`).
+- CUDA flavors: Replaced CUDA 12.8 and CUDA 11.8 image variants with CUDA 12 and CUDA 13 flavors. The `cuda.version` chart value now accepts `"12"` or `"13"` (previously `"12.8"` or `"11.8"`). CUDA 12 uses RAPIDS base image with CUDA 12.9.1 toolkit (driver R575+ recommended). CUDA 13 uses RAPIDS base image with CUDA 13.1.0 toolkit (driver R590+ required).
+- Dropped CUDA 11 support.
+- Default CUDA version: `12.8` -> `12` in base values.yaml.
+- Default image tag: `v2.45.11` -> `v2.50.0` in base values.yaml, all example values, and Sphinx docs.
+- Driver compatibility tables: Updated across all platform READMEs (k3s, GKE, Tanzu), troubleshooting guide, and Sphinx docs (10mins-to-k8s.rst, graphistry-helm-docs.rst, values-override.rst) with new RAPIDS 26.02 driver requirements, verified driver versions, and references to RAPIDS Platform Support (https://docs.rapids.ai/platform-support/).
+- GKE GPU driver section: Restructured to note that Google's pre-built driver DaemonSets currently go up to R570. Users should check https://github.com/GoogleCloudPlatform/container-engine-accelerators for newer versions (R575+, R590+).
+- k3s KUBECONFIG setup: Replaced `/etc/profile.d/` approach (only works for login shells) with `~/.bashrc` (works for all terminal windows). Added alternatives table covering per-session, per-user, `/etc/environment`, and `/etc/profile.d/` options.
+- k3s GPU verification: Replaced `kubectl run --rm -it` (fails silently on first image pull) with `kubectl run` + `kubectl wait --timeout=300s` + `kubectl logs` pattern that handles image pull delays.
+- k3s helm repo add: Added `--force-update` flag so the command is idempotent (no error if repo already exists).
+- k3s redeployment: Added stale PV `claimRef` troubleshooting section explaining the common scenario where `helm uninstall` + reinstall with `reclaimPolicy: Retain` leaves orphaned PVs.
+- Charts version: graphistry-helm 0.4.1 -> 0.4.2.
+
 ## [Version 0.4.1 - 2026-02-05]
 
 ### Removed

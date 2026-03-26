@@ -279,7 +279,7 @@ longhornDashboard: false #enables longhorn dashboard - needs longhorn installed
 
 #cuda version
 cuda:
-  version: "12.8" #cuda version
+  version: "12" #cuda version: "12" or "13"
 
 
 #caddy repository name
@@ -404,7 +404,7 @@ global:  ## global settings for all charts
     user: graphistry
     port: 5432
     host: postgres
-  tag: v2.45.11
+  tag: v2.50.0
   imagePullPolicy: IfNotPresent
   restartPolicy: Always
   imagePullSecrets: []

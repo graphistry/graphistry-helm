@@ -93,7 +93,7 @@ There are some deployment-specific values which must be set, such as **global.pr
 
         global:
             provisioner: <your-csi-provisioner>
-            tag: v2.45.11
+            tag: v2.50.0
             storageClassNameOverride: ""
             nodeSelector:
               nvidia.com/gpu.present: "true"
@@ -440,7 +440,7 @@ The following table lists the configurable parameters of the Graphistry-helm-cha
 
    * - ``cuda.version``                                  
      - cuda version                                                                                        
-     - ``"12.8"``                                        
+     - ``"12"``                                        
 
 
 
@@ -686,7 +686,7 @@ The following table lists the configurable parameters of the Graphistry-helm-cha
 
    * - ``global.tag``                                    
      -                                                                                                     
-     - ``"v2.45.11"``                                    
+     - ``"v2.50.0"``                                    
 
 
 

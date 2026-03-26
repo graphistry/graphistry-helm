@@ -43,16 +43,18 @@ GPU Operator (Recommended)
 
 Set ``--set driver.enabled=true`` and ``--set driver.version="<VERSION>"`` if the NVIDIA driver is not already installed on the host.
 
-Graphistry publishes images for both CUDA 12.8 and CUDA 11.8. The GPU driver must be compatible with the chosen CUDA version:
+Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes images in two flavors: CUDA 12 and CUDA 13. The ``cuda.version`` chart value accepts ``"12"`` or ``"13"``. The GPU driver must be compatible with the chosen CUDA version:
 
-======== ============= ======================== =====
-CUDA     Min Driver    Recommended              Notes
-======== ============= ======================== =====
-12.8     >=570.26      ``570.195.03``           R570 branch or newer
-11.8     >=520.61.05   ``535.288.01``           R535 branch or newer
-======== ============= ======================== =====
+=============== ====== ================ ========================== ===============================================
+Build           RAPIDS CUDA Toolkit     Recommended Min Driver     Verified On
+=============== ====== ================ ========================== ===============================================
+cuda.version=12 26.02  12.9.1           R575+ (575.51.03+)         driver 575.57.08, driver 580.126.20
+cuda.version=13 26.02  13.1.0           R590+ (590.44.01+)         driver 590.48.01
+=============== ====== ================ ========================== ===============================================
 
-The chart default is ``cuda.version: "12.8"``. To use CUDA 11.8, add ``--set cuda.version="11.8"`` to your Graphistry helm install command.
+Older drivers may work via NVIDIA's `forward compatibility <https://docs.nvidia.com/deploy/cuda-compatibility/>`_ layer but are not verified by Graphistry. See the `RAPIDS Platform Support <https://docs.rapids.ai/platform-support/>`_ matrix and `CUDA Toolkit Release Notes <https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/>`_ for full details.
+
+The chart default is ``cuda.version: "12"``. To use CUDA 13 (requires driver R590+), add ``--set cuda.version="13"`` to your Graphistry helm install command.
 
 Wait for the operator pods to be ready:
 

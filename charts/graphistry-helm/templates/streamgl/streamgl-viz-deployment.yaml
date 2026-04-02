@@ -26,54 +26,15 @@ spec:
         io.kompose.service: streamgl-viz
     spec:
       initContainers:
-      - name: "streamgl-viz-wait-for-postgres"
-        image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
+      - name: "streamgl-viz-copy-static"
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.streamglviz.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
         resources:
           {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        command:
-          - "sh"
-          - "-c"
-          - |
-            echo "Waiting for PostgreSQL to be ready..."
-          {{ if eq .Values.global.IS_FOLLOWER true }}
-            until pg_isready -h {{ .Values.global.POSTGRES_HOST }} -p 5432; do
-          {{ else }}
-            until pg_isready -h {{ .Values.global.postgres.host }}-primary -p 5432; do
-          {{- end }}
-              echo "PostgreSQL not ready, waiting 5 seconds...";
-              sleep 5;
-            done;
-            echo "PostgreSQL is up!";
-      - name: "streamgl-viz-wait-for-redis"
-      {{ if eq .Values.global.IS_FOLLOWER true }}
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: {{.Values.redis.repository}}:{{.Values.redis.tag}} #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/{{.Values.redis.repository}}:{{.Values.redis.tag}}
-        {{- end }}
-        command:
-          - "sh"
-          - "-c"
-          - |
-            # Wait for Redis to be ready using the provided connection string
-            until redis-cli -u {{ .Values.global.REDIS_URL }} ping | grep -q PONG; do
-              echo "Waiting for Redis to be online..."
-              sleep 5
-            done
-            echo "Redis is online! ({{ .Values.global.REDIS_URL }})"
-      {{ else }}
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "service"
-        - "redis"
-      {{- end }}
+        command: ["sh", "-c", "cp -r /opt/graphistry/apps/core/viz/build/* /tmp/viz-static/"]
+        volumeMounts:
+          - name: data-mount
+            mountPath: /tmp/viz-static
+            subPath: static/viz-build
       containers:
         - env:
           - name: REDIS_URL

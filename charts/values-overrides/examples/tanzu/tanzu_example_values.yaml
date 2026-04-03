@@ -20,6 +20,13 @@ k8sDashboard:
   createServiceAccount: false
 
 global:
+  # Deployment tier. Each tier includes all capabilities of the previous tiers.
+  # platform  -> nexus + postgres (minimum tier, auth provider, foundation for Louie or other integrations)
+  # analytics -> platform + fep + dask + redis + nginx + caddy (GPU compute, ETL, GFQL, API)
+  # viz       -> analytics + streamgl (interactive graph visualization, WebGL, real-time layout)
+  # full      -> viz + gak + notebook + pivot (dashboards, Jupyter, all tools)
+  tier: "full"
+
   # Ingress class - change to "traefik" if using Traefik ingress controller
   ingressClassName: nginx
 
@@ -42,7 +49,7 @@ global:
     nvidia.com/gpu.present: "true"
 
   # Graphistry version
-  tag: v2.50.0
+  tag: v2.50.1
 
   # Image settings
   imagePullPolicy: Always

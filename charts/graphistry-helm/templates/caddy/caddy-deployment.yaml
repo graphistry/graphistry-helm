@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
 {{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
@@ -128,4 +129,5 @@ spec:
     io.kompose.service: caddy-{{ .Release.Namespace }}
 
 
+{{- end }}
 {{- end }}

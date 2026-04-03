@@ -1,5 +1,5 @@
 name: Graphistry-Helm-Chart
-version: 0.4.2
+version: 0.4.3
 apiVersion: v1
 description: >
  Helm Charts to deploy Graphistry to kubernetes for 100x visualizations
@@ -91,7 +91,7 @@ long_description: |
 
           global:
               provisioner: <your-csi-provisioner>
-              tag: v2.50.0
+              tag: v2.50.1
               storageClassNameOverride: ""
               nodeSelector:
                 nvidia.com/gpu.present: "true"

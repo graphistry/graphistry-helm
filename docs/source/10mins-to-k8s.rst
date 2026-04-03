@@ -43,7 +43,7 @@ GPU Operator (Recommended)
 
 Set ``--set driver.enabled=true`` and ``--set driver.version="<VERSION>"`` if the NVIDIA driver is not already installed on the host.
 
-Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes images in two flavors: CUDA 12 and CUDA 13. The ``cuda.version`` chart value accepts ``"12"`` or ``"13"``. The GPU driver must be compatible with the chosen CUDA version:
+Graphistry v2.50.1+ uses RAPIDS 26.02 and publishes images in two flavors: CUDA 12 and CUDA 13. The ``cuda.version`` chart value accepts ``"12"`` or ``"13"``. The GPU driver must be compatible with the chosen CUDA version:
 
 =============== ====== ================ ========================== ===============================================
 Build           RAPIDS CUDA Toolkit     Recommended Min Driver     Verified On
@@ -197,6 +197,75 @@ Wait for postgres pods to be running:
     kubectl get pods --watch -n graphistry
 
 
+Deployment Tiers
+----------------
+
+Graphistry v2.50.1+ supports four deployment tiers, each building on the previous. Set ``global.tier`` in your values file to control which services are deployed:
+
+.. code-block:: yaml
+
+    global:
+      tier: "full"   # platform | analytics | viz | full
+
+Each tier includes all capabilities of the previous tiers:
+
+=========== ============================================================================== ============
+Tier        Description                                                                    GPU Required
+=========== ============================================================================== ============
+``platform``  ``postgres`` + ``nexus``. Auth provider, foundation for Louie or other          No
+              integrations. Minimum tier, services in the same namespace connect internally
+              via ``http://nexus:8000``. For external access use port-forward or Ingress.
+``analytics`` ``platform`` + ``caddy``, ``nginx``, ``redis``, ``dask-scheduler``,              Yes
+              ``dask-cuda-worker``, ``forge-etl-python``. Public API access, GPU compute,
+              ETL processing and GFQL graph queries.
+``viz``       ``analytics`` + ``streamgl-sessions``, ``streamgl-gpu``, ``streamgl-viz``.       Yes
+              Interactive graph visualization with WebGL rendering and real-time GPU layout.
+``full``      ``viz`` + ``pivot``, ``notebook``, ``graph-app-kit`` (public/private).           Yes
+              Investigation tools (Pivot), Jupyter notebooks and Streamlit dashboards.
+              **Default tier**.
+=========== ============================================================================== ============
+
+Services per tier
+^^^^^^^^^^^^^^^^^
+
+========================= ========== ========== ==== =====
+Service                   platform   analytics  viz  full
+========================= ========== ========== ==== =====
+``postgres`` (pg-cluster) X          X          X    X
+``nexus``                 X          X          X    X
+``caddy``                            X          X    X
+``nginx``                            X          X    X
+``redis``                            X          X    X
+``dask-scheduler``                   X          X    X
+``dask-cuda-worker``                 X          X    X
+``forge-etl-python``                 X          X    X
+``streamgl-sessions``                           X    X
+``streamgl-gpu``                                X    X
+``streamgl-viz``                                X    X
+``pivot``                                            X
+``notebook``                                         X
+``graph-app-kit-public``                             X
+``graph-app-kit-private``                            X
+========================= ========== ========== ==== =====
+
+PVCs per tier
+^^^^^^^^^^^^^
+
+============================== ========== ========== ==== =====
+PVC                            platform   analytics  viz  full
+============================== ========== ========== ==== =====
+``data-mount`` (64Gi)          X          X          X    X
+``local-media-mount`` (4Gi)    X          X          X    X
+``uploads-files`` (40Gi)                  X          X    X
+``gak-public`` (4Gi)                                      X
+``gak-private`` (4Gi)                                     X
+============================== ========== ========== ==== =====
+
+Tiers and telemetry
+^^^^^^^^^^^^^^^^^^^
+
+Telemetry is orthogonal to the deployment tier. It is controlled independently via ``global.ENABLE_OPEN_TELEMETRY`` (default: ``true``). When enabled, the telemetry stack (otel-collector, Grafana, Prometheus, Jaeger, DCGM exporter, node exporter) deploys alongside whichever tier is selected. Services that are deployed export traces and metrics automatically; services not included in the tier simply don't emit data.
+
 Install Graphistry
 ------------------
 
@@ -254,6 +323,7 @@ When updating, preserve existing volume bindings so that data persists across re
     echo "volumeName:
       dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
       localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+      uploadsFiles: $(kubectl get pvc uploads-files -n graphistry -o jsonpath='{.spec.volumeName}')
       gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
       gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 

@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.full" .) "true" }}
 {{- if eq .Values.global.devMode false }}
 
 
@@ -128,5 +129,6 @@ spec:
   selector:
     io.kompose.service: graph-app-kit-public
 
+{{- end }}
 {{- end }}
 {{- end }}

@@ -1,5 +1,5 @@
 global:  ## global settings for all charts
-  tag: v2.50.0
+  tag: v2.50.1
   ENABLE_CLUSTER_MODE: true
   # Telemetry: https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
   ENABLE_OPEN_TELEMETRY: true

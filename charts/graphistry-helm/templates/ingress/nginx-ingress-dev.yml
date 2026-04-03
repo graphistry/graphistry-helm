@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
 {{ if eq .Values.global.devMode true }}
 
 apiVersion: networking.k8s.io/v1
@@ -55,4 +56,5 @@ spec:
     secretName: letsencrypt-staging-{{ .Release.Namespace }}
 {{- end }}
 
+{{- end }}
 {{- end }}

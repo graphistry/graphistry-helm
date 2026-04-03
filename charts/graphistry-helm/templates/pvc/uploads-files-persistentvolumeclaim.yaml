@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
 {{- if eq .Values.global.ENABLE_CLUSTER_MODE false }}
 apiVersion: v1
 kind: PersistentVolumeClaim
@@ -28,9 +29,12 @@ spec:
     - ReadWriteOnce
   storageClassName: {{ .Values.global.storageClassNameOverride | default "retain-sc" }}
 {{- end }}
-  #volumeName: pvc-8147f3f6-9b84-4974-b2bb-298a6395ad5a
+{{- if .Values.volumeName.uploadsFiles }}
+  volumeName: {{ .Values.volumeName.uploadsFiles }}
+{{- end }}
   resources:
     requests:
       storage: 40Gi
 status: {}
+{{- end }}
 {{- end }}

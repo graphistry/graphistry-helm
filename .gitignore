@@ -136,8 +136,6 @@ charts/eks-dev-values.yaml
 *.lock
 charts/*/Chart.lock
 
-charts/graphistry-helm/templates/_helpers.tpl
-
 *.tgz
 
 terraform/aws/.terraform

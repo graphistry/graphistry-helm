@@ -60,7 +60,7 @@ spec:
               echo "Waiting for Redis to be online..."
               sleep 5
             done
-            echo "Redis is online! ({{ .Values.global.REDIS_URL }})"
+            echo "Redis is online!"
       {{ else }}
         {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
         image: "groundnuty/k8s-wait-for:latest" #DockerHub

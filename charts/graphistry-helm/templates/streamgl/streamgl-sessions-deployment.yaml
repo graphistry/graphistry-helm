@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.viz" .) "true" }}
 {{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
@@ -131,4 +132,5 @@ spec:
 status:
   loadBalancer: {}
 
+{{- end }}
 {{- end }}

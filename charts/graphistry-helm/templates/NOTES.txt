@@ -1,5 +1,3 @@
-
-
 "============================================================================="
 "                                                                             "
 " ______  ______ _______  _____  _     _ _____ _______ _______  ______ __   __"
@@ -9,260 +7,176 @@
 "                                                                             "
 "============================================================================="
 
-
 Thank you for installing {{ .Chart.Name }}.
 
-Your release is named {{ .Release.Name }}.
+Release: {{ .Release.Name }}
+Namespace: {{ .Release.Namespace }}
+Version: {{ .Values.global.tag }}
+CUDA: {{ .Values.cuda.version }}
+Tier: {{ .Values.global.tier | default "full" }}
 
-To learn more about the release, try:
+{{- if eq .Values.global.devMode false }}
 
+PREREQUISITES (must be installed before Graphistry):
+  1. Postgres cluster:  helm install pg-cluster ./charts/postgres-cluster -n {{ .Release.Namespace }}
+  2. Docker Hub secret:  kubectl create secret docker-registry docker-secret-prod \
+       --namespace {{ .Release.Namespace }} --docker-server=docker.io \
+       --docker-username=<USER> --docker-password=<TOKEN>
+  3. StorageClass:       kubectl apply -f retain-sc.yaml (reclaimPolicy: Retain)
+
+  If nexus stays in Init or ImagePullBackOff, check these first.
+
+DEPLOYED SERVICES:
+{{- if eq (include "graphistry.tier.platform" .) "true" }}
+  [platform] nexus (auth, dashboard, API)
+{{- end }}
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
+  [analytics] forge-etl-python, dask-scheduler, dask-cuda-worker, redis, nginx, caddy
+{{- end }}
+{{- if eq (include "graphistry.tier.viz" .) "true" }}
+  [viz] streamgl-gpu, streamgl-viz, streamgl-sessions
+{{- end }}
+{{- if eq (include "graphistry.tier.full" .) "true" }}
+  [full] graph-app-kit-public, graph-app-kit-private, notebook, pivot
+{{- end }}
+
+TIER:
+  Current: {{ .Values.global.tier | default "full" }}
+  Set via global.tier in your values file. To change tiers, update the value and
+  follow the redeployment steps below.
+
+  Available tiers (each includes all capabilities of the previous):
+    platform  -> nexus + postgres (minimum tier, auth provider, foundation for Louie or other integrations)
+    analytics -> platform + fep + dask + redis + nginx + caddy (GPU compute, ETL, GFQL, API)
+    viz       -> analytics + streamgl (interactive graph visualization, WebGL, real-time layout)
+    full      -> viz + gak + notebook + pivot (dashboards, Jupyter, all tools)
+
+{{- if eq .Values.global.tier "platform" }}
+
+  Note: platform is the minimum tier, intended as a foundation for other products
+  (e.g., Louie). Services in the same namespace connect to nexus internally via
+  http://nexus:8000. For external access, use port-forward or create an Ingress:
+  $ kubectl port-forward -n {{ .Release.Namespace }} svc/nexus 8000:8000
+{{- end }}
+
+VERIFY DEPLOYMENT:
   $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
   $ helm get all {{ .Release.Name }} -n {{ .Release.Namespace }}
+  $ kubectl get pods -n {{ .Release.Namespace }}
+  $ kubectl get pvc -n {{ .Release.Namespace }}
 
-{{ if eq .Values.global.devMode false }} 
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
 
-HOW TO:
-
-
-
-RESTART POLICY
-
-restartPolicy - is set to: {{ .Values.restartPolicy }}
-
-To change the restartPolicy while deployed: 
-
-
-HOW TO:
-helm upgrade -i {{ .Release.Name }} --set restartPolicy=Never graphistry-helm/Graphistry-Helm-Chart  -n {{ .Release.Namespace }}
-
-
-
-VERSION
-
-tag - release being deployed is:  {{ .Values.tag }}
-
-To change the tag while deployed set tag to another version that is in your Azure container registry by setting the proper version: 
-
-
-HOW TO:
-
-helm upgrade -i {{ .Release.Name }} --set tag=v2.38.10 graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }}
-
-LOAD BALANCER
- 
- INGRESS MANAGEMENT ANNOTATIONS - default is set to: {{ .Values.ingress.management.annotations }} can be configured for each major cloud service (aws, azure, gcp)
-in the values.yaml file:
-ingress:
-  management:
-    annotations:
-      #service.beta.kubernetes.io/azure-load-balancer-internal: "true"
-      #cloud.google.com/load-balancer-type: "Internal"
-      #service.beta.kubernetes.io/aws-load-balancer-internal: "true"
-
- Can change while deployed : 
-
-HOW TO:
-
- helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
-  --set-string ingress.management.annotations."service\.beta\.kubernetes\.io/azure-load-balancer-internal"="true" 
-
-
-NODE SELECTOR
-
-
-nodeSelector - is set to: {{ .Values.nodeSelector }}
-
-
-
-can change the nodeSelector while deployed:
-
-HOW TO:
-
-1)create a label on the preferred node 
-
-ex:
-kubectl label nodes <node_name> accelerator=nvidia (by default the nodeSelector is accelerator=nvidia)
-
-2) set the nodeSelector while deploying with the label you assigned the node:
-ex:
-
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \ 
-  --set nodeSelector."accelerator"=nvidia 
-
-can change to any label provided by kubectl describe node <node_name> just follow the format provided.
-
-
-
-
-MULTI NODE - 
-
-multiNode- is set to {{ .Values.global.multiNode }}
-
-HOW TO:
-
-1)create a label on the preferred node 
-
-ex:
-kubectl label nodes <node_name> accelerator=nvidia (by default the nodeSelector is accelerator=nvidia)
-
-2) set the multiNode flag to true while deploying with the label you assigned the node along with the nodeSelector
-label you assigned.:
-
-ex:
-
-helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \ 
-  --set multiNode=true \
-  --set nodeSelector."accelerator"=nvidia  
-
-NOTE:
-azure has a predefined nodelabel for GPUS:  --set nodeSelector."kubernetes\\.azure\\.com/accelerator"=nvidia 
-
-
-
-DEPLOYMENT STRATEGY
-
-rollingUpdate: is set to {{ .Values.rollingUpdate }}
-
-false: sets deployment strategy to Recreate
-true: sets deployment strategy to RollingUpdate
-
-HOW TO:
-
-to change deployment strategy to rollingUpdate while deployed:
-
-ex:
-
-$ helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
-  --set rollingUpdate=true
-
-DOMAIN
-
-domain is set to : {{ .Values.domain }}
-
-HOW TO:
-to change the domain while deployed:
-
-ex: 
-
-  $ helm upgrade -i {{ .Release.Name }} graphistry-helm/Graphistry-Helm-Chart -n {{ .Release.Namespace }} \
-    --set domain=graphistry.com but DNS has to resolve to the IP address of the node and you must own the domain.
-
-{{- if eq .Values.tls true  }}
- can use  http://nip.io  for wildcard DNS for any address 
- https://<node_IP>.nip.io
-
- to visit the deployed application:
-https://{{ .Values.domain }}
-
-{{ if eq .Values.k8sDashboard.enabled true }} 
-
-k8sDashboard - is enabled and set to: 
-readonly: {{ .Values.k8sDashboard.readonly }}
-
- to visit the deployed dashboard:
-https://{{ .Values.domain }}/k8s/dashboard/
-{{ end }}
-
-
-{{ else }}
-
- can use  http://nip.io  for wildcard DNS for any address 
- http://<node_IP>.nip.io
-
-{{ if .Values.domain }}
- to visit the deployed application:
-http://{{ .Values.domain }}
-{{ else }}
- to visit the deployed application:
-kubectl get ingress -n {{ .Release.Namespace }}
-{{ end }}
+GPU HEALTH CHECKS:
+  $ kubectl exec -n {{ .Release.Namespace }} $(kubectl get pods -n {{ .Release.Namespace }} -o name | grep forge-etl-python | head -1) -- nvidia-smi
+  $ kubectl exec -n {{ .Release.Namespace }} $(kubectl get pods -n {{ .Release.Namespace }} -o name | grep forge-etl-python | head -1) -- curl -s http://localhost:8080/cudfhealth
 {{- end }}
 
-{{ if eq .Values.global.ENABLE_CLUSTER_MODE true }}
-You are installing the Graphistry Cluster Mode deployment!
-
-1. The leader instance runs in a separate namespace (e.g., graphistry1).
-2. The leader namespace  has the primary PostgreSQL instance, while followers connect to it from other namespaces.
-3. Redis is also centrally managed by the leader's namespace for all Nexus and forge-etl-python services.
-4. When enabled, the leader namespace has the Telemetry stack for the cluster.
-5. The follower instances run in separate namespaces (e.g., graphistry2, graphistry3, etc.).
-6. The follower instances connect to the leader's namespace services, and replicate data and user actions.
-7. All instances use the same Storage Class for sharing the datasets and files (see retain-sc-cluster).
-
-{{ if eq .Values.global.IS_FOLLOWER true }}
-This deployment is set up as a follower instance and will use the leader's namespace services.
+ACCESS:
+{{- if eq .Values.tls true }}
+  Graphistry: https://{{ .Values.domain }}
+{{- else if .Values.domain }}
+  Graphistry: http://{{ .Values.domain }}
 {{- else }}
-This deployment is set up as the leader instance, the services should be accessible by the followers for proper replication and data consistency.
+  $ kubectl get ingress -n {{ .Release.Namespace }}
+{{- end }}
+{{- if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+{{- if .Values.domain }}
+  Grafana:    {{ if eq .Values.tls true }}https{{ else }}http{{ end }}://{{ .Values.domain }}/grafana
+  Prometheus: {{ if eq .Values.tls true }}https{{ else }}http{{ end }}://{{ .Values.domain }}/prometheus
+  Jaeger:     {{ if eq .Values.tls true }}https{{ else }}http{{ end }}://{{ .Values.domain }}/jaeger
+{{- else }}
+  Telemetry endpoints available at /grafana, /prometheus, /jaeger (see kubectl get ingress -n {{ .Release.Namespace }})
+{{- end }}
 {{- end }}
 
-Next steps:
-1. Verify the deployment:
-   To check the status of your deployment:
-   $ helm status {{ .Release.Name }} -n {{ .Release.Namespace }}
-
-2. Access the Graphistry instance:
-   Get the addresses of your instance:
-   $ kubectl get services --namespace {{ .Release.Namespace }} | grep caddy
-
-3. Monitor your resources:
-   Check the resources and status of pods:
-   $ kubectl get pods --namespace {{ .Release.Namespace }}
-
-4. Telemetry (Optional):
-   When telemetry is enabled, if telemetryStack.OTEL_CLOUD_MODE is set to true, the followers send telemetry data directly to the OTEL_EXPORTER_OTLP_ENDPOINT. Otherwise, they send it to the leader's OpenTelemetry Collector, which forwards the data to the observability tools.
-
-For more information, refer to the official Graphistry cluster deployment documentation:
-https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/cluster
-https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
-
-Enjoy managing and scaling your Graphistry cluster!
-
+CUDA:
+  Version: {{ .Values.cuda.version }} (valid options: "12" or "13")
+{{- if eq .Values.cuda.version "12" }}
+  Base image: rapidsai/base:26.02-cuda12-py3.10 (CUDA 12.9.1 toolkit)
+  Recommended driver: R575+ (575.51.03+). Verified on R570 (forward compat), R575, R580, R590, R595.
+{{- else }}
+  Base image: rapidsai/base:26.02-cuda13-py3.10 (CUDA 13.1.0 toolkit)
+  Required driver: R590+ (590.44.01+). RAPIDS 26.02 base image bakes CUDA 13.1, not 13.0.
+  Verified on R590, R595.
 {{- end }}
+  Full driver compatibility: https://docs.rapids.ai/platform-support/
+
+TELEMETRY:
+  ENABLE_OPEN_TELEMETRY: {{ .Values.global.ENABLE_OPEN_TELEMETRY }}
+{{- if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  OTEL endpoint: {{ .Values.global.OTEL_EXPORTER_OTLP_ENDPOINT }}
+  Ingress paths: /grafana, /prometheus, /jaeger
+  Docs: https://graphistry-admin-docs.readthedocs.io/en/latest/telemetry/kubernetes.html
+{{- end }}
+
+{{- if eq .Values.global.ENABLE_CLUSTER_MODE true }}
+CLUSTER MODE:
+  Leader/follower: {{ if eq .Values.global.IS_FOLLOWER true }}follower{{ else }}leader{{ end }}
+
+  1. The leader namespace has the primary PostgreSQL instance, while followers connect to it from other namespaces.
+  2. Redis is centrally managed by the leader's namespace for all Nexus and forge-etl-python services.
+  3. When enabled, the leader namespace has the Telemetry stack for the cluster.
+  4. Follower instances connect to the leader's namespace services and replicate data and user actions.
+  5. All instances use the same Storage Class for sharing datasets and files (see retain-sc-cluster).
+{{- if eq .Values.global.ENABLE_OPEN_TELEMETRY true }}
+  6. Telemetry: {{ if .Values.global.telemetryStack.OTEL_CLOUD_MODE }}followers send data directly to OTEL_EXPORTER_OTLP_ENDPOINT{{ else }}followers send data to leader's OpenTelemetry Collector{{ end }}.
+{{- end }}
+
+  See: https://github.com/graphistry/graphistry-helm/tree/main/charts/values-overrides/examples/cluster
+{{- end }}
+
+VOLUMES:
+  PVCs created for this deployment:
+{{- if eq (include "graphistry.tier.platform" .) "true" }}
+    data-mount (64Gi)        - shared data: datasets, cache, notebooks, static files
+    local-media-mount (4Gi)  - nexus static files (Django collectstatic)
+{{- end }}
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
+    uploads-files (40Gi)     - user uploaded files for ETL processing
+{{- end }}
+{{- if eq (include "graphistry.tier.full" .) "true" }}
+    gak-public (4Gi)         - Graph App Kit public dashboards
+    gak-private (4Gi)        - Graph App Kit private dashboards
+{{- end }}
+
+  Check PVC status:
+  $ kubectl get pvc -n {{ .Release.Namespace }}
+
+REDEPLOYMENT:
+  Before upgrading or reinstalling, preserve existing volume bindings:
+
+  $ echo "volumeName:
+    dataMount: $(kubectl get pvc data-mount -n {{ .Release.Namespace }} -o jsonpath='{.spec.volumeName}')
+    localMediaMount: $(kubectl get pvc local-media-mount -n {{ .Release.Namespace }} -o jsonpath='{.spec.volumeName}')
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
+    uploadsFiles: $(kubectl get pvc uploads-files -n {{ .Release.Namespace }} -o jsonpath='{.spec.volumeName}')
+{{- end }}
+{{- if eq (include "graphistry.tier.full" .) "true" }}
+    gakPublic: $(kubectl get pvc gak-public -n {{ .Release.Namespace }} -o jsonpath='{.spec.volumeName}')
+    gakPrivate: $(kubectl get pvc gak-private -n {{ .Release.Namespace }} -o jsonpath='{.spec.volumeName}')
+{{- end -}}
+  "
+
+  Copy the output into your values file, then run helm upgrade.
+
+  If pods stay Pending after reinstall (stale PV claimRef):
+  $ kubectl get pv -o json | \
+      jq -r '.items[] | select(.status.phase=="Released") | select(.spec.claimRef.namespace=="{{ .Release.Namespace }}") | .metadata.name' | \
+      xargs -I {} kubectl patch pv {} -p '{"spec":{"claimRef": null}}'
+
+TROUBLESHOOTING:
+  https://github.com/graphistry/graphistry-helm/blob/main/charts/values-overrides/examples/troubleshooting.md
 
 {{ else }}
 
-*** DEV MODE IS {{.Values.global.devMode }} ***
-  
-The cluster is currently running in Developers Mode with only a small number of containers running.
+*** DEV MODE ***
 
-postgres, nexus, nginx, are all running in Developers Mode
+  tag: {{ .Values.global.tag }}
 
-HOW TO:
-
-When in developer mode set the Tag in the values.yaml file to the latest version of the developers containers.
-
-Tag: is set to {{ .Values.tag }} for this deployment of development containers.
-
-to set the tag to the latest version of the developers containers while deployed:
-$ helm upgrade -i {{ .Release.Name }} ./charts/graphistry-helm -n {{ .Release.Namespace }} \
-  --set tag={{ .Values.tag }} \ 
-  --values ./charts/graphistry-helm/skinny-values.yaml
-
-
-HOW TO:
-
-check logs: 
-
-1) to get the name of the pod: 
-$ kubectl get pods -n {{ .Release.Namespace }} 
-
-
-2) THEN:
-$ kubectl logs -n graphistry <pod name> -f
-
-HOW TO:
-
-shell into the pod:
-
-1) to get the name of the pod:
-$ kubectl get pods -n {{ .Release.Namespace }} 
-
-2) to get shell in the pod:
-$ kubectl exec -it -n {{ .Release.Namespace }} <pod name> -- /bin/bash
-
-
+  Useful commands:
+  $ kubectl get pods -n {{ .Release.Namespace }}
+  $ kubectl logs -n {{ .Release.Namespace }} <pod-name> -f
+  $ kubectl exec -it -n {{ .Release.Namespace }} <pod-name> -- /bin/bash
 
 {{- end }}
-
-
-

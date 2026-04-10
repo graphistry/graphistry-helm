@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
@@ -16,3 +17,4 @@ data:
                   trusted_proxies private_ranges
           }
     }
+{{- end }}

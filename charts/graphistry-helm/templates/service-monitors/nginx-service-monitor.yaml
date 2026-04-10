@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
 {{if eq .Values.metrics true }}
 apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
@@ -12,4 +13,5 @@ spec:
       app: nginx-{{ .Release.Namespace }}
   endpoints:
   - port: metrics
+{{- end }}
 {{- end }}

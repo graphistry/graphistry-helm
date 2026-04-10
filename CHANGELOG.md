@@ -11,6 +11,44 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 ## [Development]
 *   Working on fixing the Top level persistence for jupyter Notebooks, currently it is persistent inside the different directories but top level resets on redeployment.
 
+## [Version 0.4.3 - 2026-04-03]
+
+### Added
+
+- Deployment tiers: New `global.tier` value (`platform | analytics | viz | full`) controls which services are deployed. Each tier includes all capabilities of the previous tiers. Platform deploys only nexus + postgres (auth foundation for Louie or other integrations). Analytics adds GPU compute (fep, dask, redis, nginx, caddy). Viz adds graph visualization (streamgl). Full adds dashboards, notebooks, and investigation tools (gak, notebook, pivot). Default is `full` (backward compatible). Implemented via `_helpers.tpl` tier helper functions and conditional wrappers on all 21 service/PVC templates.
+- NOTES.txt: Complete rewrite. Tier-aware output showing deployed services, CUDA driver info, telemetry endpoints, PVC status, redeployment commands with volumeName preservation, and prerequisites (postgres-cluster, Docker Hub secret, StorageClass).
+- Deployment Tiers documentation: Added to all platform READMEs (k3s, GKE, Tanzu) with tier descriptions, services per tier table, PVCs per tier table, and tiers/telemetry relationship.
+- `GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME` env var: Added to base values.yaml (commented out) and k3s example values. Required for notebook iframe rendering to resolve correctly in k8s (browser needs external URL, not internal service name).
+- `volumeName.uploadsFiles`: Added to values.yaml and uploads-files PVC template. Previously missing, meaning uploads-files PVC could not rebind to existing PVs on redeployment (data loss risk). Now consistent with the other 4 PVCs.
+- Notebook persistence note: Added to all platform READMEs and configure-storageclass.rst. Only files saved under `/home/graphistry/notebooks/` persist across redeployments; demo notebooks at `/home/graphistry/demos/` reset when the image tag changes.
+- k3s `--data-dir` flag: Documented in k3s README install command. Graphistry images are large (~14GB each) and can fill the root disk; operators can point k3s storage to a separate disk.
+- README.md: Complete rewrite with repository structure, quick start links, deployment tiers overview, install commands, CUDA/driver support table, and documentation links. Preserved Azure ACR sections.
+
+### Changed
+
+- Service dependencies aligned with docker compose release.yml:
+  - dask-scheduler: removed nexus init wait (no depends_on in compose)
+  - dask-cuda-worker: changed nexus wait to dask-scheduler (matches compose)
+  - streamgl-gpu: removed nexus init wait (no depends_on in compose, gpu-router only imports config schema)
+  - pivot: removed nexus wait, kept postgres only (matches compose)
+  - forge-etl-python: added missing dask-cuda-worker and redis waits (matches compose)
+  - streamgl-viz: removed postgres and redis waits (no depends_on in compose)
+  - nginx: removed all service waits (compose has no depends_on, nginx returns 502 if upstream not ready)
+- Static file sharing: streamgl-viz and pivot copy static files to data-mount PVC subpaths (static/viz-build, static/pivot-www). Nginx reads from PVC subpaths instead of emptyDir volumes. Eliminates two heavy init containers that pulled full streamgl-viz (~14GB) and pivot images just to copy frontend files.
+- dask-cuda-worker liveness `failureThreshold`: 1 -> 3, matching all other services. Threshold of 1 caused unnecessary restarts during startup race when forge-etl-python was not ready yet.
+- PV claimRef patch instructions: Updated across all READMEs, troubleshooting, and configure-storageclass.rst to include `kubectl get pv --watch | grep Released` step. PVs take up to 60 seconds to transition from Bound to Released after helm uninstall; running the patch too early produces no output.
+- Default image tag: v2.50.0 -> v2.50.1 in base values.yaml, all example values, all READMEs, and Sphinx docs.
+- Driver verification tables: Added R595 (595.58.03) to verified drivers for both CUDA 12 and CUDA 13 across all platform READMEs and troubleshooting guide.
+- Helm repo add: Added `--force-update` flag in k3s README (idempotent, no error if repo already exists).
+- Charts version: graphistry-helm 0.4.2 -> 0.4.3.
+- Platform READMEs (k3s, GKE, Tanzu): Added Deployment Tiers section, notebook persistence note, uploadsFiles in volumeName echo commands, PV --watch instructions, k3s --data-dir flag, KUBECONFIG ~/.bashrc recommendation, GPU test wait pattern, GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME for notebook iframe rendering.
+- Troubleshooting guide: Updated PV claimRef patch with --watch, added uploadsFiles to volumeName examples, updated driver compatibility tables with R595 verification.
+- Sphinx docs (10mins-to-k8s.rst, graphistry-helm-docs.rst, values-override.rst, configure-storageclass.rst): Added full Deployment Tiers section (tier descriptions, services per tier table, PVCs per tier table, tiers and telemetry). Updated version references, added uploadsFiles to volumeName examples, added notebook persistence note, added PV --watch instructions.
+
+### Fixed
+
+- uploads-files PVC volumeName binding: Was hardcoded as a comment (`#volumeName: pvc-...`) instead of using the dynamic `volumeName.uploadsFiles` value like the other 4 PVCs. On redeployment, uploads-files PVC could not rebind to its existing PV, causing user upload data loss.
+
 ## [Version 0.4.2 - 2026-03-26]
 
 ### Changed

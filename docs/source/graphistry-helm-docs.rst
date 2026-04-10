@@ -77,6 +77,75 @@ Create the secret above as gak-secret.yaml and run the following command to crea
 
 Once you have Created the user provided in the secret in Graphistry, Graph App Kit will display dashboards.
 
+Deployment Tiers
+----------------
+
+Graphistry v2.50.1+ supports four deployment tiers, each building on the previous. Set ``global.tier`` in your values file to control which services are deployed:
+
+.. code-block:: yaml
+
+    global:
+      tier: "full"   # platform | analytics | viz | full
+
+Each tier includes all capabilities of the previous tiers:
+
+=========== ============================================================================== ============
+Tier        Description                                                                    GPU Required
+=========== ============================================================================== ============
+``platform``  ``postgres`` + ``nexus``. Auth provider, foundation for Louie or other          No
+              integrations. Minimum tier, services in the same namespace connect internally
+              via ``http://nexus:8000``. For external access use port-forward or Ingress.
+``analytics`` ``platform`` + ``caddy``, ``nginx``, ``redis``, ``dask-scheduler``,              Yes
+              ``dask-cuda-worker``, ``forge-etl-python``. Public API access, GPU compute,
+              ETL processing and GFQL graph queries.
+``viz``       ``analytics`` + ``streamgl-sessions``, ``streamgl-gpu``, ``streamgl-viz``.       Yes
+              Interactive graph visualization with WebGL rendering and real-time GPU layout.
+``full``      ``viz`` + ``pivot``, ``notebook``, ``graph-app-kit`` (public/private).           Yes
+              Investigation tools (Pivot), Jupyter notebooks and Streamlit dashboards.
+              **Default tier**.
+=========== ============================================================================== ============
+
+Services per tier
+^^^^^^^^^^^^^^^^^
+
+========================= ========== ========== ==== =====
+Service                   platform   analytics  viz  full
+========================= ========== ========== ==== =====
+``postgres`` (pg-cluster) X          X          X    X
+``nexus``                 X          X          X    X
+``caddy``                            X          X    X
+``nginx``                            X          X    X
+``redis``                            X          X    X
+``dask-scheduler``                   X          X    X
+``dask-cuda-worker``                 X          X    X
+``forge-etl-python``                 X          X    X
+``streamgl-sessions``                           X    X
+``streamgl-gpu``                                X    X
+``streamgl-viz``                                X    X
+``pivot``                                            X
+``notebook``                                         X
+``graph-app-kit-public``                             X
+``graph-app-kit-private``                            X
+========================= ========== ========== ==== =====
+
+PVCs per tier
+^^^^^^^^^^^^^
+
+============================== ========== ========== ==== =====
+PVC                            platform   analytics  viz  full
+============================== ========== ========== ==== =====
+``data-mount`` (64Gi)          X          X          X    X
+``local-media-mount`` (4Gi)    X          X          X    X
+``uploads-files`` (40Gi)                  X          X    X
+``gak-public`` (4Gi)                                      X
+``gak-private`` (4Gi)                                     X
+============================== ========== ========== ==== =====
+
+Tiers and telemetry
+^^^^^^^^^^^^^^^^^^^
+
+Telemetry is orthogonal to the deployment tier. It is controlled independently via ``global.ENABLE_OPEN_TELEMETRY`` (default: ``true``). When enabled, the telemetry stack (otel-collector, Grafana, Prometheus, Jaeger, DCGM exporter, node exporter) deploys alongside whichever tier is selected. Services that are deployed export traces and metrics automatically; services not included in the tier simply don't emit data.
+
 Configuring Graphistry
 ----------------------
 
@@ -88,12 +157,13 @@ There are some deployment-specific values which must be set, such as **global.pr
         volumeName:
             dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
             localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
+            uploadsFiles: pvc-a417fc34-2128-4824-99de-a3267e21e4dc
             gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
             gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
 
         global:
             provisioner: <your-csi-provisioner>
-            tag: v2.50.0
+            tag: v2.50.1
             storageClassNameOverride: ""
             nodeSelector:
               nvidia.com/gpu.present: "true"
@@ -127,6 +197,7 @@ To preserve volume bindings across redeployments, generate the ``volumeName`` bl
         echo "volumeName:
           dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
           localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+          uploadsFiles: $(kubectl get pvc uploads-files -n graphistry -o jsonpath='{.spec.volumeName}')
           gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
           gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 
@@ -137,6 +208,7 @@ Copy the output into your values file under the ``volumeName`` section, for exam
         volumeName:
             dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
             localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
+            uploadsFiles: pvc-a417fc34-2128-4824-99de-a3267e21e4dc
             gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
             gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
 
@@ -686,7 +758,7 @@ The following table lists the configurable parameters of the Graphistry-helm-cha
 
    * - ``global.tag``                                    
      -                                                                                                     
-     - ``"v2.50.0"``                                    
+     - ``"v2.50.1"``                                    
 
 
 

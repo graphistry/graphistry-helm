@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
 {{ if eq .Values.dask.operator false }}
 {{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
@@ -36,9 +37,9 @@ spec:
         resources:
             {{- toYaml .Values.InitContainerResources | nindent 10 }}
         imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
+        args:
         - "service"
-        - "nexus"
+        - "dask-scheduler"
       containers:
         - args:
             - dask cuda worker
@@ -119,7 +120,7 @@ spec:
                 - -c
                 - "curl -Lf http://localhost:8787/health && curl -f http://forge-etl-python:8080/workerhealth"
 
-            failureThreshold: 1
+            failureThreshold: 3
             initialDelaySeconds: 180
             periodSeconds: 120
             timeoutSeconds: 30
@@ -173,5 +174,6 @@ spec:
 status:
   loadBalancer: {}
 
-{{ end }}  
 {{ end }}
+{{ end }}
+{{- end }}

@@ -339,7 +339,7 @@ kubectl exec -n gpu-operator $(kubectl get pods -n gpu-operator -o name | grep d
 
 This confirms the driver is functional and shows the GPU model, driver version, CUDA version, memory, and temperature. If this command fails, the driver is not working correctly and must be fixed before proceeding. See [Troubleshoot and Debug](#troubleshoot-and-debug-1) below.
 
-Verify the GPU is usable by Graphistry CUDA containers. The previous step confirmed the GPU Operator pods can access the GPU. This step verifies that a standalone CUDA container can also use it, which is how Graphistry services run. Graphistry v2.50.0+ supports CUDA 12 and CUDA 13 (see driver compatibility table below).
+Verify the GPU is usable by Graphistry CUDA containers. The previous step confirmed the GPU Operator pods can access the GPU. This step verifies that a standalone CUDA container can also use it, which is how Graphistry services run. Graphistry v2.50.1+ supports CUDA 12 and CUDA 13 (see driver compatibility table below).
 
 ```bash
 # Graphistry supports CUDA 12 (driver 535+) and CUDA 13 (driver 590+). Test with the version matching your driver.
@@ -376,14 +376,14 @@ pod "graphistry-gpu-test-3407611" deleted from default namespace
 
 > **Note (Tanzu vGPU):** In vGPU mode, nvidia-smi will show the **vGPU profile name** instead of the physical GPU model (e.g., `NVIDIA A100-4C` instead of `NVIDIA A100-PCIE-40GB`), and memory will reflect the vGPU allocation, not the full physical GPU memory. It will also display a `vGPU Software License Status` line showing `Licensed` (with expiry) or `Unlicensed`. If it shows `Unlicensed`, verify the licensing secret (`gridd.conf` and `client_configuration_token.tok`) in the `gpu-operator` namespace. See the [Tanzu README](tanzu/README.md) for vGPU licensing setup.
 
-**Driver compatibility for Graphistry v2.50.0+ CUDA images** (sources: [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/), [CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/)):
+**Driver compatibility for Graphistry v2.50.1+ CUDA images** (sources: [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/), [CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/)):
 
-Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"`. Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
+Graphistry v2.50.1+ uses RAPIDS 26.02 and publishes two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"`. Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
 
 | Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
 |---|---|---|---|---|
-| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01). GKE: R570 (570.133.20, T4, forward compat) |
-| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01). Docker compose: R590 (590.48.01) |
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01), R595 (595.58.03). GKE: R570 (570.133.20, T4, forward compat) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01), R595 (595.58.03). Docker compose: R590 (590.48.01) |
 
 We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry.
 
@@ -3309,6 +3309,7 @@ Before running `helm upgrade` or after a `helm uninstall` + reinstall, generate 
 echo "volumeName:
   dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
   localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+  uploadsFiles: $(kubectl get pvc uploads-files -n graphistry -o jsonpath='{.spec.volumeName}')
   gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
   gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 ```
@@ -3319,6 +3320,7 @@ Expected output:
 volumeName:
   dataMount: pvc-6327f91b-8c7f-4644-93b1-e3eb6f79b49a
   localMediaMount: pvc-76680b21-4688-4c81-a79e-b01317a6f4db
+  uploadsFiles: pvc-a417fc34-2128-4824-99de-a3267e21e4dc
   gakPublic: pvc-fbcee9c7-c985-4c73-8f79-74943eae87a3
   gakPrivate: pvc-7e49e1e1-de5f-4847-821b-041d4376d941
 ```
@@ -3341,15 +3343,19 @@ This is normal behavior with `reclaimPolicy: Retain`. The PV preserves your data
 
 **PVC Pending after reinstall (PV claimRef still points to old PVC):**
 
-If you did not set `volumeName` in your values file and the PVC stays Pending, the PV's `claimRef` still points to the old (deleted) PVC. Clear the claimRef on all Released PVs belonging to the graphistry namespace:
+If you did not set `volumeName` in your values file and the PVC stays Pending, the PV's `claimRef` still points to the old (deleted) PVC. After `helm uninstall`, PVs take up to 60 seconds to transition from `Bound` to `Released`. Watch for the transition before clearing the claimRef:
 
 ```bash
+# Watch until PVs show Released (Ctrl+C once you see them)
+kubectl get pv --watch | grep Released
+
+# Then clear the stale claimRef
 kubectl get pv -o json | \
     jq -r '.items[] | select(.status.phase=="Released") | select(.spec.claimRef.namespace=="graphistry") | .metadata.name' | \
     xargs -I {} kubectl patch pv {} -p '{"spec":{"claimRef": null}}'
 ```
 
-If the command produces no output, there are no Released PVs to patch (all PVs are already Bound, which is the healthy state). After patching, the PVCs should automatically bind to the freed PVs. However, using `volumeName` in the values file (as shown above) is the recommended approach because it avoids this issue entirely.
+After patching, the PVCs should automatically bind to the freed PVs. However, using `volumeName` in the values file (as shown above) is the recommended approach because it avoids this issue entirely.
 
 **Stale volumeName pointing to deleted PVs (fresh deployment after full cleanup):**
 
@@ -3397,6 +3403,7 @@ The root cause is `volumeName` in your values file pinning PVCs to PVs that were
 volumeName:
   dataMount: pvc-6327f91b-8c7f-4644-93b1-e3eb6f79b49a
   localMediaMount: pvc-76680b21-4688-4c81-a79e-b01317a6f4db
+  uploadsFiles: pvc-a417fc34-2128-4824-99de-a3267e21e4dc
   gakPublic: pvc-fbcee9c7-c985-4c73-8f79-74943eae87a3
   gakPrivate: pvc-7e49e1e1-de5f-4847-821b-041d4376d941
 ```
@@ -3407,6 +3414,7 @@ For a fresh deployment, comment out or remove the `volumeName` block in your val
 #volumeName:
 #  dataMount:
 #  localMediaMount:
+#  uploadsFiles:
 #  gakPublic:
 #  gakPrivate:
 ```

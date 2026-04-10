@@ -1,5 +1,6 @@
+{{- if eq (include "graphistry.tier.full" .) "true" }}
 
-{{ if eq .Values.global.devMode false }} 
+{{ if eq .Values.global.devMode false }}
 
 {{ if eq .Values.graphAppKitPublic true }}
 
@@ -46,4 +47,5 @@ status: {}
 {{- end }}
 
 
+{{- end }}
 {{- end }}

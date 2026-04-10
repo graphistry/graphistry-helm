@@ -104,6 +104,10 @@ PVC                            Used By Services
 ``uploads-files``              nginx, forge-etl-python
 ============================== ==============================================================================================
 
+.. note::
+
+   The notebook service mounts ``data-mount`` at ``/home/graphistry/notebooks/`` (subPath: ``notebooks``). Only files saved under this directory persist across redeployments. The default demo notebooks at ``/home/graphistry/demos/`` are baked into the Docker image and reset when the image tag changes. To preserve your work, save or copy notebooks to ``/home/graphistry/notebooks/``.
+
 
 Postgres Storage
 ----------------
@@ -128,6 +132,7 @@ To preserve volume bindings across redeployments, generate the ``volumeName`` bl
     echo "volumeName:
       dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
       localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+      uploadsFiles: $(kubectl get pvc uploads-files -n graphistry -o jsonpath='{.spec.volumeName}')
       gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
       gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 
@@ -138,6 +143,7 @@ Copy the output into your values file, for example:
     volumeName:
       dataMount: pvc-91a0b93-f7c9-471c-b00b-ab6dfb59885f
       localMediaMount: pvc-89ac98bf-2d96-4690-9a24-fb19a93d2c43
+      uploadsFiles: pvc-a417fc34-2128-4824-99de-a3267e21e4dc
       gakPublic: pvc-97h36989-9cfa-4058-b420-fbcab0c3dc7f
       gakPrivate: pvc-9ase0164-e483-4b54-62a5-79a7181071e5
 
@@ -148,3 +154,19 @@ Then run the normal upgrade command:
     helm upgrade -i g-chart ./charts/graphistry-helm \
         --values ./your-values.yaml \
         --namespace graphistry --create-namespace
+
+If pods stay in ``Pending`` state after a reinstall, the PVs may have a stale ``claimRef``. This commonly happens when you ``helm uninstall`` the Graphistry chart and then reinstall it: the StorageClass uses ``reclaimPolicy: Retain``, so the PVs survive the uninstall but remain bound to the old (now deleted) PVCs. The new PVCs cannot bind to those PVs until the stale ``claimRef`` is cleared.
+
+After ``helm uninstall``, PVs take up to 60 seconds to transition from ``Bound`` to ``Released``. Watch for the transition before clearing the claimRef:
+
+.. code-block:: shell-session
+
+    # Watch until PVs show Released (Ctrl+C once you see them)
+    kubectl get pv --watch | grep Released
+
+    # Then clear the stale claimRef
+    kubectl get pv -o json | \
+        jq -r '.items[] | select(.status.phase=="Released") | select(.spec.claimRef.namespace=="graphistry") | .metadata.name' | \
+        xargs -I {} kubectl patch pv {} -p '{"spec":{"claimRef": null}}'
+
+Then re-run the helm upgrade. The PVCs will bind to the existing PVs via the ``volumeName`` field, preserving your data.

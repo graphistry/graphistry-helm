@@ -13,9 +13,10 @@ graphistry: graphistry   #graphistry tag for the docker image
 #volume names
 volumeName: #volume names
   dataMount: #data-mount pvc volume name
-  localMediaMount: #local-media-mount pvc volume name 
-  gakPublic:  #gak-public pvc volume name
-  gakPrivate: ##data-mount pvc volume name
+  localMediaMount: #local-media-mount pvc volume name
+  uploadsFiles: #uploads-files pvc volume name
+  gakPublic: #gak-public pvc volume name
+  gakPrivate: #gak-private pvc volume name
 
 #the namespace of the ingress controller - this is the namespace that the ingress controller is going to be deployed to.
 ingressNamespace: ingress-nginx #the namespace of the ingress controller
@@ -384,6 +385,13 @@ ProxyBodySize: 20000m #sets the proxy body size for ingress controller and uploa
 graphistryKey: ## graphistry key for dev mode in pivot deployment
 
 global:  ## global settings for all charts
+  # Deployment tier. Each tier includes all capabilities of the previous tiers.
+  # platform  -> nexus + postgres (minimum tier, auth provider, foundation for Louie or other integrations)
+  # analytics -> platform + fep + dask + redis + nginx + caddy (GPU compute, ETL, GFQL, API)
+  # viz       -> analytics + streamgl (interactive graph visualization, WebGL, real-time layout)
+  # full      -> viz + gak + notebook + pivot (dashboards, Jupyter, all tools)
+  tier: "full"
+
   # For new K8s versions (e.g. GKE) that don't need anymore the legacy annotation kubernetes.io/ingress.class: nginx
   ingressClassName: nginx
   #storage class provisioner - Each StorageClass has a provisioner that determines what volume plugin is used for provisioning PVs.
@@ -404,7 +412,7 @@ global:  ## global settings for all charts
     user: graphistry
     port: 5432
     host: postgres
-  tag: v2.50.0
+  tag: v2.50.1
   imagePullPolicy: IfNotPresent
   restartPolicy: Always
   imagePullSecrets: []
@@ -533,6 +541,11 @@ env: #environment variables
    value: "false"
  - name: ACME_AGREE
    value: "true"
+ # URL used by the browser to reach Graphistry (e.g., for notebook iframe rendering).
+ # Set to your external domain for production (e.g., https://graphistry.example.com).
+ # For local testing without a domain, use http://localhost.
+ #- name: GRAPHISTRY_CLIENT_PROTOCOL_HOSTNAME
+ #  value: "https://graphistry.example.com"
 
 #streamlit environment variables
  # can be set like helm upgrade -i  chart_name --name release_name \

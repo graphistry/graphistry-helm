@@ -1,5 +1,6 @@
+{{- if eq (include "graphistry.tier.full" .) "true" }}
 
-{{ if eq .Values.global.devMode false }} 
+{{ if eq .Values.global.devMode false }}
 
 {{ if eq .Values.graphAppKitPrivate true }}
 apiVersion: v1
@@ -44,4 +45,5 @@ spec:
 status: {}      
 {{- end }}
 
+{{- end }}
 {{- end }}

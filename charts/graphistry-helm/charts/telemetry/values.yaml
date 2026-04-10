@@ -39,7 +39,7 @@ global:  ## global settings for all charts
   # Telemetry documentation:
   # https://github.com/graphistry/graphistry-cli/blob/master/docs/tools/telemetry.md#kubernetes-deployment
   telemetryStack:
-    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials bellow
+    OTEL_CLOUD_MODE: false   # false: deploy our stack: jaeger, prometheus, grafana etc.; else fill OTEL_COLLECTOR_OTLP_HTTP_ENDPOINT and credentials below
     openTelemetryCollector:
       image: "otel/opentelemetry-collector-contrib:0.87.0"
       # Settings for cloud mode (when OTEL_CLOUD_MODE: true)

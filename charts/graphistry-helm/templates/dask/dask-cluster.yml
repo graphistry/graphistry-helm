@@ -1,4 +1,5 @@
-{{ if eq .Values.dask.operator true }} 
+{{- if eq (include "graphistry.tier.analytics" .) "true" }}
+{{ if eq .Values.dask.operator true }}
 {{ if eq .Values.global.devMode false }}
 apiVersion: kubernetes.dask.org/v1
 kind: DaskCluster
@@ -80,7 +81,7 @@ spec:
                 - -c
                 - "curl -Lf http://localhost:8787/health && curl -f http://forge-etl-python:8080/workerhealth"
 
-            failureThreshold: 1
+            failureThreshold: 3
             initialDelaySeconds: 180
             periodSeconds: 120
             timeoutSeconds: 30
@@ -231,5 +232,6 @@ spec:
         targetPort: "http-dashboard"
 
 
-{{ end }}     
-{{ end }}    
+{{ end }}
+{{ end }}
+{{- end }}

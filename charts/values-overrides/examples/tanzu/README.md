@@ -190,12 +190,12 @@ helm install --wait --generate-name \
 
 **Choose `<DRIVER_VERSION>` based on your CUDA version:**
 
-Graphistry v2.50.0+ uses RAPIDS 26.02 and publishes Docker images in two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"` and selects which image variant to pull (e.g., `graphistry/nexus:v2.50.0-12`). Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
+Graphistry v2.50.1+ uses RAPIDS 26.02 and publishes Docker images in two flavors: CUDA 12 and CUDA 13. The `cuda.version` chart value accepts `"12"` or `"13"` and selects which image variant to pull (e.g., `graphistry/nexus:v2.50.1-12`). Internally, Graphistry builds on top of RAPIDS base images (`rapidsai/base:26.02-cuda12-py3.10` and `rapidsai/base:26.02-cuda13-py3.10`), which ship specific CUDA toolkit versions that determine the minimum driver requirement:
 
 | Graphistry Build | RAPIDS | CUDA Toolkit in Image | Recommended Min Driver | Verified On |
 |---|---|---|---|---|
-| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01). GKE: R570 (570.133.20, T4, forward compat) |
-| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01). Docker compose: R590 (590.48.01) |
+| `cuda.version: "12"` | 26.02 | 12.9.1 | R575+ (575.51.03+) | k3s: R575 (575.57.08), R580 (580.126.20), R590 (590.44.01), R595 (595.58.03). GKE: R570 (570.133.20, T4, forward compat) |
+| `cuda.version: "13"` | 26.02 | 13.1.0 | R590+ (590.44.01+) | k3s: R590 (590.44.01), R595 (595.58.03). Docker compose: R590 (590.48.01) |
 
 We recommend the driver versions in the table above. Older drivers may work via NVIDIA's [forward compatibility](https://docs.nvidia.com/deploy/cuda-compatibility/) layer but are not verified by Graphistry. The chart default is `cuda.version: "12"`. The CUDA 13 flavor requires R590+ because the RAPIDS 26.02 base image (`rapidsai/base:26.02-cuda13-py3.10`) bakes CUDA 13.1 runtime (`CUDA_VERSION=13.1.0`), not 13.0. See the [RAPIDS Platform Support](https://docs.rapids.ai/platform-support/) matrix, [NVIDIA CUDA Toolkit Release Notes](https://docs.nvidia.com/cuda/cuda-toolkit-release-notes/) for the full driver compatibility matrix, and the [GPU Operator Component Matrix](https://docs.nvidia.com/datacenter/cloud-native/gpu-operator/latest/platform-support.html#gpu-operator-component-matrix) for supported driver versions per operator release.
 
@@ -279,8 +279,8 @@ For environments with limited or no internet access, update your values file:
 global:
   # Redirect image pulls to your private registry
   # Images are pulled as: <containerregistry.name>/<image>:<tag>
-  # Default: docker.io/graphistry (e.g., docker.io/graphistry/nexus:v2.50.0-12)
-  # Air-gapped: my-registry.local/graphistry (e.g., my-registry.local/graphistry/nexus:v2.50.0-12)
+  # Default: docker.io/graphistry (e.g., docker.io/graphistry/nexus:v2.50.1-12)
+  # Air-gapped: my-registry.local/graphistry (e.g., my-registry.local/graphistry/nexus:v2.50.1-12)
   containerregistry:
     name: my-private-registry.local/graphistry
 
@@ -414,7 +414,9 @@ global:
 | `gak-private` | graph-app-kit-private, notebook |
 | `uploads-files` | nginx, forge-etl-python |
 
-**Note**: The Postgres Cluster also requires the same StorageClass.
+**Notes**:
+- The Postgres Cluster also requires the same StorageClass.
+- The notebook service mounts `data-mount` at `/home/graphistry/notebooks/` (subPath: `notebooks`). Only files saved under this directory persist across redeployments. The default demo notebooks at `/home/graphistry/demos/` are baked into the Docker image and reset when the image tag changes. To preserve your work, save or copy notebooks to `/home/graphistry/notebooks/`.
 
 ## Install Postgres Cluster
 
@@ -450,6 +452,58 @@ kubectl get pods --watch -n graphistry
 
 **Note**: If pods stay in `Pending` state, verify the StorageClass is correctly configured (see [Configure StorageClass](#configure-storageclass)).
 
+## Deployment Tiers
+
+Graphistry supports four deployment tiers, each building on the previous. Set `global.tier` in your values file to control which services are deployed:
+
+```yaml
+global:
+  tier: "full"   # platform | analytics | viz | full
+```
+
+Each tier includes all capabilities of the previous tiers:
+
+| Tier | Description | GPU Required |
+|------|-------------|:------------:|
+| `platform` | `postgres` + `nexus`. Auth provider, foundation for Louie or other integrations. Minimum tier, services in the same namespace connect internally via `http://nexus:8000`. For external access use port-forward (`kubectl port-forward -n graphistry svc/nexus 8000:8000`) or create an Ingress. | No |
+| `analytics` | `platform` + `caddy`, `nginx`, `redis`, `dask-scheduler`, `dask-cuda-worker`, `forge-etl-python`. Public API access, GPU compute, ETL processing and GFQL graph queries. | Yes |
+| `viz` | `analytics` + `streamgl-sessions`, `streamgl-gpu`, `streamgl-viz`. Interactive graph visualization with WebGL rendering and real-time GPU layout. | Yes |
+| `full` | `viz` + `pivot`, `notebook`, `graph-app-kit` (public/private). Investigation tools (Pivot), Jupyter notebooks and Streamlit dashboards. **Default tier**. | Yes |
+
+### Services per tier
+
+| Service | platform | analytics | viz | full |
+|---------|:--------:|:---------:|:---:|:----:|
+| `postgres` (postgres-cluster chart) | X | X | X | X |
+| `nexus` | X | X | X | X |
+| `caddy` | | X | X | X |
+| `nginx` | | X | X | X |
+| `redis` | | X | X | X |
+| `dask-scheduler` | | X | X | X |
+| `dask-cuda-worker` | | X | X | X |
+| `forge-etl-python` | | X | X | X |
+| `streamgl-sessions` | | | X | X |
+| `streamgl-gpu` | | | X | X |
+| `streamgl-viz` | | | X | X |
+| `pivot` | | | | X |
+| `notebook` | | | | X |
+| `graph-app-kit-public` | | | | X |
+| `graph-app-kit-private` | | | | X |
+
+### PVCs per tier
+
+| PVC | platform | analytics | viz | full |
+|-----|:--------:|:---------:|:---:|:----:|
+| `data-mount` (64Gi) | X | X | X | X |
+| `local-media-mount` (4Gi) | X | X | X | X |
+| `uploads-files` (40Gi) | | X | X | X |
+| `gak-public` (4Gi) | | | | X |
+| `gak-private` (4Gi) | | | | X |
+
+### Tiers and telemetry
+
+Telemetry is orthogonal to the deployment tier. It is controlled independently via `global.ENABLE_OPEN_TELEMETRY` (default: `true`). When enabled, the telemetry stack (otel-collector, Grafana, Prometheus, Jaeger, DCGM exporter, node exporter) deploys alongside whichever tier is selected. Services that are deployed export traces and metrics automatically; services not included in the tier simply don't emit data.
+
 ## Install Graphistry
 
 You can set the CUDA and Graphistry versions by editing `./charts/values-overrides/examples/tanzu/tanzu_example_values.yaml`:
@@ -458,7 +512,7 @@ cuda:
   version: "12"   # or "13" - must match the GPU driver installed above
 
 global:  ## global settings for all charts
-  tag: v2.50.0
+  tag: v2.50.1
 ```
 
 Also verify that the values file references the correct Docker Hub pull secret ([Create Docker Hub Secret](#create-docker-hub-secret)) and StorageClass configuration ([Configure StorageClass](#configure-storageclass)):
@@ -514,6 +568,7 @@ When updating, preserve existing volume bindings so that data persists across re
 echo "volumeName:
   dataMount: $(kubectl get pvc data-mount -n graphistry -o jsonpath='{.spec.volumeName}')
   localMediaMount: $(kubectl get pvc local-media-mount -n graphistry -o jsonpath='{.spec.volumeName}')
+  uploadsFiles: $(kubectl get pvc uploads-files -n graphistry -o jsonpath='{.spec.volumeName}')
   gakPublic: $(kubectl get pvc gak-public -n graphistry -o jsonpath='{.spec.volumeName}')
   gakPrivate: $(kubectl get pvc gak-private -n graphistry -o jsonpath='{.spec.volumeName}')"
 ```

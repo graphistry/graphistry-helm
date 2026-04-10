@@ -48,7 +48,7 @@ Below is an example ``values.yaml`` for a single-node deployment:
       nodeSelector:
         nvidia.com/gpu.present: "true"
 
-      tag: v2.50.0
+      tag: v2.50.1
       imagePullPolicy: Always
       imagePullSecrets:
         - name: docker-secret-prod
@@ -83,7 +83,7 @@ The following values must be set for a working deployment:
 * **global.imagePullSecrets** -- Docker registry credentials for pulling Graphistry images
 * **global.provisioner** -- CSI storage provisioner for your platform (e.g., ``rancher.io/local-path``, ``pd.csi.storage.gke.io``)
 * **global.nodeSelector** -- Label selector to schedule pods on GPU nodes
-* **global.tag** -- Graphistry version tag (e.g., ``v2.50.0``)
+* **global.tag** -- Graphistry version tag (e.g., ``v2.50.1``)
 
 Optional but Recommended
 -------------------------

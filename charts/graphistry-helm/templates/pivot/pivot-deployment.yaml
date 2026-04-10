@@ -1,3 +1,4 @@
+{{- if eq (include "graphistry.tier.full" .) "true" }}
 {{ if eq .Values.global.devMode false }}
 apiVersion: apps/v1
 kind: Deployment
@@ -26,6 +27,19 @@ spec:
         io.kompose.service: pivot
     spec:
       initContainers:
+      - name: "pivot-copy-static"
+        {{ if eq .Values.global.devMode false }}
+        image: {{.Values.global.containerregistry.name}}/{{.Values.graphistry}}:{{.Values.pivot.repository}}-{{.Values.global.tag}}-{{.Values.cuda.version}}
+        {{ else }}
+        image: {{.Values.graphistry}}/{{.Values.pivotDev.repository}}:{{.Values.global.tag}}-dev
+        {{- end }}
+        resources:
+          {{- toYaml .Values.InitContainerResources | nindent 10 }}
+        command: ["sh", "-c", "cp -r /opt/graphistry/apps/core/pivot/www/* /tmp/pivot-static/"]
+        volumeMounts:
+          - name: data-mount
+            mountPath: /tmp/pivot-static
+            subPath: static/pivot-www
       - name: "pivot-wait-for-postgres"
         image: registry.developers.crunchydata.com/crunchydata/crunchy-postgres:ubi8-14.5-1
         resources:
@@ -44,18 +58,6 @@ spec:
               sleep 5;
             done;
             echo "PostgreSQL is up!";
-      - name: "pivot-wait-for-nexus"
-        {{- if eq .Values.global.containerregistry.name "docker.io/graphistry" }}
-        image: "groundnuty/k8s-wait-for:latest" #DockerHub
-        {{ else }}
-        image: {{.Values.global.containerregistry.name}}/k8s-wait-for:latest
-        {{- end }}
-        resources:
-          {{- toYaml .Values.InitContainerResources | nindent 10 }}
-        imagePullPolicy: {{.Values.global.imagePullPolicy }} 
-        args: 
-        - "service"
-        - "nexus"
       containers:
         - env:
           - name: ENABLE_CLUSTER_MODE
@@ -169,3 +171,4 @@ status:
   loadBalancer: {}
 ---
 {{ end }}
+{{- end }}
